@@ -36,7 +36,6 @@ pub fn check_gpu_passthrough() -> GpuPassthroughResult {
 
 #[cfg(target_os = "linux")]
 fn check_linux_gpu() -> GpuPassthroughResult {
-    use std::fs;
     use std::path::Path;
 
     // Find NVIDIA/AMD GPU PCI devices
