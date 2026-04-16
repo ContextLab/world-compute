@@ -1,0 +1,194 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1776259111493,
+  "projectRoot": "/Users/jmanning/world-compute",
+  "techStack": {
+    "languages": [],
+    "frameworks": [],
+    "packageManager": null,
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {},
+  "hotPaths": [
+    {
+      "path": "specs/001-world-compute-core/spec.md",
+      "accessCount": 52,
+      "lastAccessed": 1776306914321,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 29,
+      "lastAccessed": 1776306303026,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/whitepaper.md",
+      "accessCount": 27,
+      "lastAccessed": 1776306700243,
+      "type": "file"
+    },
+    {
+      "path": ".specify/memory/constitution.md",
+      "accessCount": 18,
+      "lastAccessed": 1776304707875,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/research/07-governance-testing-ux.md",
+      "accessCount": 6,
+      "lastAccessed": 1776300700501,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/research/06-fairness-and-credits.md",
+      "accessCount": 6,
+      "lastAccessed": 1776304659970,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/research/01-job-management.md",
+      "accessCount": 6,
+      "lastAccessed": 1776304692961,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/research/09-mesh-llm.md",
+      "accessCount": 6,
+      "lastAccessed": 1776306081135,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/research/04-storage.md",
+      "accessCount": 5,
+      "lastAccessed": 1776300652185,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/research/05-discovery-and-bootstrap.md",
+      "accessCount": 5,
+      "lastAccessed": 1776304693346,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/research/03-sandboxing.md",
+      "accessCount": 4,
+      "lastAccessed": 1776294518662,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/research/02-trust-and-verification.md",
+      "accessCount": 4,
+      "lastAccessed": 1776300647760,
+      "type": "directory"
+    },
+    {
+      "path": "specs/001-world-compute-core/data-model.md",
+      "accessCount": 4,
+      "lastAccessed": 1776306915306,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/design/architecture-overview.md",
+      "accessCount": 3,
+      "lastAccessed": 1776300708457,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/plan.md",
+      "accessCount": 3,
+      "lastAccessed": 1776306893871,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/research/08-priority-redesign.md",
+      "accessCount": 2,
+      "lastAccessed": 1776306062709,
+      "type": "file"
+    },
+    {
+      "path": ".specify/templates/tasks-template.md",
+      "accessCount": 2,
+      "lastAccessed": 1776306892652,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/quickstart.md",
+      "accessCount": 2,
+      "lastAccessed": 1776306898629,
+      "type": "file"
+    },
+    {
+      "path": ".specify/extensions.yml",
+      "accessCount": 1,
+      "lastAccessed": 1776259612462,
+      "type": "file"
+    },
+    {
+      "path": ".specify/templates/plan-template.md",
+      "accessCount": 1,
+      "lastAccessed": 1776259612847,
+      "type": "file"
+    },
+    {
+      "path": ".specify/templates/spec-template.md",
+      "accessCount": 1,
+      "lastAccessed": 1776259613350,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/checklists/requirements.md",
+      "accessCount": 1,
+      "lastAccessed": 1776295107403,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/research.md",
+      "accessCount": 1,
+      "lastAccessed": 1776303869637,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/contracts/README.md",
+      "accessCount": 1,
+      "lastAccessed": 1776306897913,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/contracts",
+      "accessCount": 1,
+      "lastAccessed": 1776306919966,
+      "type": "directory"
+    },
+    {
+      "path": "specs/001-world-compute-core/tasks.md",
+      "accessCount": 1,
+      "lastAccessed": 1776307133540,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
