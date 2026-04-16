@@ -227,6 +227,24 @@ Adversarial testing of sandboxes — VM escape attempts, IOMMU isolation verific
 
 ---
 
+## Safety Hardening and Admission Control
+
+Following an independent red team review, the project added a comprehensive safety hardening layer addressing enforcement gaps in the original design. The full specification is in `specs/002-safety-hardening/`.
+
+**Deterministic policy engine.** Every job submission passes through a 10-step deterministic evaluation pipeline before reaching the scheduler. The pipeline wraps the existing manifest validation with checks for submitter identity, cryptographic signature verification, artifact registry lookup, workload class approval (including quarantine status), resource quotas, endpoint allowlists, data classification compatibility, and ban status. Each evaluation produces an immutable `PolicyDecision` audit record with full reasoning. The LLM advisory layer may flag submissions but is explicitly non-authoritative — it cannot override the deterministic engine's verdict.
+
+**Attestation enforcement.** The original design specified hardware attestation (TPM 2.0, SEV-SNP, TDX) but the verification functions accepted any non-empty quote. The safety hardening replaced these with real structural verification: TPM2 PCR measurements are validated against a `MeasurementRegistry` of known-good values per agent version; SEV-SNP reports are checked against expected guest measurements; TDX quotes are validated against expected MRTD values. Nodes presenting invalid (non-empty) attestation are rejected outright, not silently downgraded. Empty attestation classifies the node as T0 (WASM-only, public data, 5x replication).
+
+**Default-deny network egress.** All sandbox drivers enforce default-deny outbound networking at the hypervisor/namespace level. RFC1918 private ranges, link-local addresses, cloud metadata endpoints (169.254.169.254), loopback, and multicast are blocked. Jobs requesting network access must declare approved endpoints in their manifest, validated by the policy engine against an approved endpoint list.
+
+**Governance separation of duties.** No single identity can hold both the WorkloadApprover and ArtifactSigner roles, or ArtifactSigner and PolicyDeployer, within the same approval flow. Safety-critical governance proposals (EmergencyHalt, ConstitutionAmendment) require an elevated Humanity Points threshold (HP >= 5) for voters. ConstitutionAmendment proposals enforce a mandatory 7-day review period before votes can be tallied. The emergency halt function requires cryptographic proof of the OnCallResponder role.
+
+**Incident response.** Containment primitives — FreezeHost, QuarantineWorkloadClass, BlockSubmitter, RevokeArtifact, DrainHostPool — allow authorized responders to contain security incidents within 60 seconds. Every containment action produces an immutable audit record with actor identity, justification, and reversibility status. Quarantined workload classes are rejected by the policy engine automatically.
+
+**Supply chain.** Build provenance metadata (git commit, build timestamp) is embedded in every binary. An approved artifact registry enforces that the signer and approver of each artifact are different identities. Release channels (development, staging, production) enforce sequential promotion — direct development-to-production promotion is blocked.
+
+---
+
 ## Storage
 
 Every artifact in World Compute — workload images, job inputs, outputs, checkpoints, and the credit ledger — is identified by a CIDv1 content address (SHA-256). The address is a cryptographic commitment to the content. A donor cannot serve you the wrong bytes for a CID; the hash check fails immediately.

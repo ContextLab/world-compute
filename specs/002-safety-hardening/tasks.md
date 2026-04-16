@@ -248,15 +248,15 @@
 
 **Purpose**: Final integration, red team exercise, documentation updates, and cross-story validation
 
-- [ ] T099 Run full integration test: end-to-end job submission through policy engine → attestation → sandbox → completion
-- [ ] T100 [P] Run cargo clippy on all new and modified modules — zero warnings
-- [ ] T101 [P] Verify all new modules have doc comments per Rust conventions
-- [ ] T102 [P] Update whitepaper to reflect safety hardening: add sections on deterministic policy engine, attestation enforcement, default-deny egress, governance separation, and incident response in specs/001-world-compute-core/whitepaper.md
-- [ ] T103 [P] Update README.md to reflect safety posture: document trust tiers, attestation requirements, policy engine, approved workload catalog, and incident response capabilities in README.md
-- [ ] T104 [P] Update spec 001 (world-compute-core) to cross-reference safety hardening spec for security-related FRs in specs/001-world-compute-core/spec.md
+- [X] T099 Run full integration test: end-to-end job submission through policy engine → attestation → sandbox → completion
+- [X] T100 [P] Run cargo clippy on all new and modified modules — zero warnings
+- [X] T101 [P] Verify all new modules have doc comments per Rust conventions
+- [X] T102 [P] Update whitepaper to reflect safety hardening: add sections on deterministic policy engine, attestation enforcement, default-deny egress, governance separation, and incident response in specs/001-world-compute-core/whitepaper.md
+- [X] T103 [P] Update README.md to reflect safety posture: document trust tiers, attestation requirements, policy engine, approved workload catalog, and incident response capabilities in README.md
+- [X] T104 [P] Update spec 001 (world-compute-core) to cross-reference safety hardening spec for security-related FRs in specs/001-world-compute-core/spec.md
 - [ ] T105 **GO/NO-GO GATE**: Formal red team exercise — malicious workload, compromised account, policy bypass, sandbox escape, supply-chain injection (SC-S008). This task MUST pass before any multi-institution deployment. Failure blocks Phase 1+ rollout.
-- [ ] T106 Validate quickstart.md against actual implementation — all commands work
-- [ ] T107 Run cargo test across entire crate — all tests pass including new adversarial tests
+- [X] T106 Validate quickstart.md against actual implementation — all commands work
+- [X] T107 Run cargo test across entire crate — all tests pass including new adversarial tests
 
 ---
 

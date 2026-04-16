@@ -83,6 +83,7 @@ World Compute has completed its initial implementation across all 11 phases. Upd
 | Quickstart direct-test plan (7 adversarial tests) | Complete | `specs/001-world-compute-core/quickstart.md` |
 | Implementation plan + task list (151 tasks) | Complete | `specs/001-world-compute-core/plan.md`, `tasks.md` |
 | Whitepaper v0.2 (PDF) | Complete | `specs/001-world-compute-core/whitepaper.pdf` |
+| Safety hardening spec (30 FRs, 10 SCs, red team response) | Complete | `specs/002-safety-hardening/` |
 | This README + proposed API reference | Complete | `README.md` |
 
 ### Implementation (in progress)
@@ -93,6 +94,13 @@ World Compute has completed its initial implementation across all 11 phases. Upd
 | Core types (NcuAmount, TrustScore, Cid, etc.) | Complete | — | `src/types.rs` |
 | Error model (20 codes, gRPC + HTTP mapping) | Complete | — | `src/error.rs` |
 | Sandbox trait + 4 platform drivers + GPU check | Complete | 3 tests | `src/sandbox/` |
+| Sandbox egress enforcement (default-deny) | Complete | 6 tests | `src/sandbox/egress.rs` |
+| Deterministic policy engine (10-step pipeline) | Complete | 10 tests | `src/policy/` |
+| Attestation verification (TPM2/SEV-SNP/TDX) | Complete | 12 tests | `src/verification/attestation.rs` |
+| Governance separation of duties | Complete | 6 tests | `src/governance/roles.rs` |
+| Incident response containment | Complete | 3 tests | `src/incident/` |
+| Approved artifact registry | Complete | 3 tests | `src/registry/` |
+| Identity (DonorId, HP verification stubs) | Complete | 5 tests | `src/identity/`, `src/agent/donor.rs` |
 | Preemption supervisor (<10ms SIGSTOP) | Complete | 5 tests | `src/preemption/` |
 | P2P discovery (mDNS + Kademlia DHT) | Complete | 4 tests | `src/network/discovery.rs` |
 | Agent lifecycle (enroll, heartbeat, pause, withdraw) | Complete | 7 tests | `src/agent/lifecycle.rs` |
@@ -893,6 +901,20 @@ Rate limits are enforced per account at the API gateway. Default limits for newl
 Principle I of the constitution makes security not a feature but the precondition for this project's existence. Every production component is required to be open-source, independently auditable, and reproducibly built. Closed-source binaries are prohibited from running on donor machines by constitutional mandate. The sandboxing architecture uses hardware-enforced hypervisor boundaries on every supported platform; process-level isolation alone (namespaces, seccomp, gVisor without KVM) is explicitly insufficient and is prohibited by the feature specification (FR-010).
 
 Any discovered sandbox escape, privilege escalation, or host-data exfiltration is a P0 incident. The constitution requires that affected agent versions be remotely disabled, new job dispatches halted cluster-wide, and public disclosure made within 72 hours of mitigation (and within 30 days of detection even if mitigation is delayed).
+
+### Safety hardening (002-safety-hardening)
+
+Following an independent red team review ([issue #4](https://github.com/ContextLab/world-compute/issues/4)), the project underwent a comprehensive safety hardening pass. Key additions:
+
+- **Deterministic policy engine**: Every job submission passes through a 10-step evaluation pipeline before scheduling. The policy engine wraps `validate_manifest()` with identity, signature, artifact registry, workload class, quota, egress allowlist, data classification, and ban checks. All decisions produce auditable `PolicyDecision` records.
+- **Attestation enforcement**: TPM2 PCR measurement validation, SEV-SNP report verification, and TDX quote verification replace previous stubs. Nodes presenting invalid attestation are rejected (not silently downgraded). A `MeasurementRegistry` maps agent versions to expected measurements with a rolling acceptance window.
+- **Default-deny network egress**: All sandbox drivers enforce default-deny outbound networking. RFC1918, link-local, cloud metadata (169.254.169.254), loopback, and multicast destinations are blocked. Jobs requesting network access must declare approved endpoints validated by the policy engine.
+- **Governance separation of duties**: No single identity can hold both WorkloadApprover and ArtifactSigner roles, or ArtifactSigner and PolicyDeployer. Safety-critical proposals (EmergencyHalt, ConstitutionAmendment) require elevated Humanity Points (HP >= 5) and ConstitutionAmendment proposals enforce a mandatory 7-day review period. `halt()` requires the OnCallResponder role.
+- **Incident response**: Containment primitives (FreezeHost, QuarantineWorkloadClass, BlockSubmitter, RevokeArtifact, DrainHostPool) with full audit trails. Quarantined workload classes are rejected by the policy engine. All actions require OnCallResponder authorization.
+- **Approved artifact registry**: Workload artifacts are checked by CID against a registry that enforces signer != approver per separation of duties. Revoked artifacts are rejected.
+- **Identity hardening**: `DonorId` is a strongly-typed identifier derived from the Ed25519 public key hash, ensuring uniqueness and format consistency. Proof-of-personhood and OAuth2 verification stubs are in place for Humanity Points.
+
+The full safety hardening specification, implementation plan, and 108-task breakdown are in `specs/002-safety-hardening/`.
 
 Before the project establishes a formal security contact, use GitHub's private vulnerability reporting feature for sensitive findings, or open a public issue tagged `security` for non-sensitive disclosures. A formal security contact address and written incident-disclosure policy will be published before the Phase 3 public alpha.
 
