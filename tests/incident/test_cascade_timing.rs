@@ -12,10 +12,13 @@ fn test_node(peer_id: &str) -> NodeInfo {
         peer_id: peer_id.into(),
         region_code: "us-east-1".into(),
         capacity: ResourceEnvelope {
-            cpu_millicores: 8000, ram_bytes: 16 * 1024 * 1024 * 1024,
-            gpu_class: None, gpu_vram_bytes: 0,
+            cpu_millicores: 8000,
+            ram_bytes: 16 * 1024 * 1024 * 1024,
+            gpu_class: None,
+            gpu_vram_bytes: 0,
             scratch_bytes: 10 * 1024 * 1024 * 1024,
-            network_egress_bytes: 0, walltime_budget_ms: 3_600_000,
+            network_egress_bytes: 0,
+            walltime_budget_ms: 3_600_000,
         },
         trust_tier: 1,
         attestation_verified: true,
@@ -51,7 +54,8 @@ fn containment_cascade_completes_within_60_seconds() {
         "OnCallResponder",
         "Repeated denied syscalls detected — possible sandbox escape attempt",
         "incident-cascade-001",
-    ).unwrap();
+    )
+    .unwrap();
     assert!(freeze_record.reversible);
     broker.freeze_host(&"peer-compromised".into());
 
@@ -63,7 +67,8 @@ fn containment_cascade_completes_within_60_seconds() {
         "OnCallResponder",
         "Workload class associated with anomaly on peer-compromised",
         "incident-cascade-001",
-    ).unwrap();
+    )
+    .unwrap();
     assert!(quarantine_record.reversible);
 
     // Step 4: Verify frozen host excluded from scheduling
@@ -120,7 +125,8 @@ fn containment_reversal_works() {
         "OnCallResponder",
         "Investigation complete — no compromise found",
         "incident-cascade-001",
-    ).unwrap();
+    )
+    .unwrap();
     broker.unfreeze_host(&"peer-1".into());
 
     // Verify unfrozen

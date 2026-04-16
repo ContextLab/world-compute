@@ -116,10 +116,28 @@
       "status": "completed",
       "completed_at": "2026-04-16T12:15:52.499Z",
       "duration_ms": 56176
+    },
+    {
+      "agent_id": "a72eef0b3fefdd11d",
+      "agent_type": "oh-my-claudecode:scientist",
+      "started_at": "2026-04-16T19:34:07.707Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-16T19:35:26.952Z",
+      "duration_ms": 79245
+    },
+    {
+      "agent_id": "a6545dc6872fff4e5",
+      "agent_type": "oh-my-claudecode:scientist",
+      "started_at": "2026-04-16T19:34:13.878Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-16T19:35:28.824Z",
+      "duration_ms": 74946
     }
   ],
-  "total_spawned": 13,
-  "total_completed": 13,
+  "total_spawned": 15,
+  "total_completed": 15,
   "total_failed": 0,
-  "last_updated": "2026-04-16T12:15:58.336Z"
+  "last_updated": "2026-04-16T19:35:28.926Z"
 }

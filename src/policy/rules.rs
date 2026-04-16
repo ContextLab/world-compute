@@ -115,7 +115,9 @@ pub fn check_workload_class_with_quarantine(
             return PolicyCheck {
                 check_name: "workload_class".into(),
                 passed: false,
-                detail: format!("Workload class {class_name} is quarantined — rejected per FR-S062"),
+                detail: format!(
+                    "Workload class {class_name} is quarantined — rejected per FR-S062"
+                ),
             };
         }
     }

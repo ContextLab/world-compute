@@ -35,10 +35,7 @@ pub struct Vote {
 
 /// Check if a proposal type is safety-critical per FR-S030.
 pub fn is_safety_critical(proposal_type: ProposalType) -> bool {
-    matches!(
-        proposal_type,
-        ProposalType::EmergencyHalt | ProposalType::ConstitutionAmendment
-    )
+    matches!(proposal_type, ProposalType::EmergencyHalt | ProposalType::ConstitutionAmendment)
 }
 
 /// Validate a vote against a proposal.

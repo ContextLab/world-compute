@@ -67,9 +67,7 @@ pub fn brightid_link_url(context_id: &str) -> String {
 /// In production, it should be called at enrollment time and
 /// re-verified at trust score recalculation intervals.
 pub fn verify_personhood(context_id: &str) -> PersonhoodResult {
-    let url = format!(
-        "{BRIGHTID_NODE_URL}/verifications/{BRIGHTID_CONTEXT}/{context_id}"
-    );
+    let url = format!("{BRIGHTID_NODE_URL}/verifications/{BRIGHTID_CONTEXT}/{context_id}");
 
     // Use a blocking HTTP client for simplicity.
     // In production, this should be async via reqwest or hyper.

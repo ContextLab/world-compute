@@ -31,9 +31,7 @@ impl AdminServiceHandler {
     ) -> WcResult<()> {
         // Verify caller has OnCallResponder role
         let has_responder_role = caller_roles.iter().any(|r| {
-            r.peer_id == caller_peer_id
-                && r.role == RoleType::OnCallResponder
-                && r.is_active()
+            r.peer_id == caller_peer_id && r.role == RoleType::OnCallResponder && r.is_active()
         });
 
         if !has_responder_role {
@@ -64,9 +62,7 @@ impl AdminServiceHandler {
         caller_roles: &[GovernanceRole],
     ) -> WcResult<()> {
         let has_responder_role = caller_roles.iter().any(|r| {
-            r.peer_id == caller_peer_id
-                && r.role == RoleType::OnCallResponder
-                && r.is_active()
+            r.peer_id == caller_peer_id && r.role == RoleType::OnCallResponder && r.is_active()
         });
 
         if !has_responder_role {

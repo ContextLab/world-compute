@@ -14,7 +14,12 @@ fn oauth2_returns_unavailable_until_implemented() {
 
 #[test]
 fn all_providers_return_unavailable() {
-    for provider in [OAuth2Provider::Email, OAuth2Provider::GitHub, OAuth2Provider::Google, OAuth2Provider::Twitter] {
+    for provider in [
+        OAuth2Provider::Email,
+        OAuth2Provider::GitHub,
+        OAuth2Provider::Google,
+        OAuth2Provider::Twitter,
+    ] {
         assert!(matches!(
             verify_oauth2(provider, "https://example.com/callback"),
             OAuth2Result::ProviderUnavailable(_)

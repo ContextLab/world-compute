@@ -28,5 +28,6 @@ fn donor_id_unique_per_key() {
 fn invalid_donor_id_format_rejected() {
     assert!(DonorId::from_string("not-a-donor-id").is_err());
     assert!(DonorId::from_string("wc-donor-tooshort").is_err());
-    assert!(DonorId::from_string("wc-donor-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz").is_err()); // non-hex
+    assert!(DonorId::from_string("wc-donor-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz").is_err());
+    // non-hex
 }

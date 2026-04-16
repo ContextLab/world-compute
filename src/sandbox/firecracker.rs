@@ -159,7 +159,9 @@ impl FirecrackerSandbox {
             let status = Command::new("kill")
                 .args([&format!("-{signal}"), &pid.to_string()])
                 .status()
-                .map_err(|e| WcError::new(ErrorCode::Internal, format!("Failed to signal FC: {e}")))?;
+                .map_err(|e| {
+                    WcError::new(ErrorCode::Internal, format!("Failed to signal FC: {e}"))
+                })?;
             if !status.success() {
                 return Err(WcError::new(
                     ErrorCode::Internal,
@@ -286,8 +288,9 @@ impl Sandbox for FirecrackerSandbox {
 
         // Compute CID of the snapshot
         let snapshot_data = std::fs::read(self.work_dir.join("snapshot.bin")).unwrap_or_default();
-        let cid = crate::data_plane::cid_store::compute_cid(&snapshot_data)
-            .map_err(|e| WcError::new(ErrorCode::Internal, format!("CID computation failed: {e}")))?;
+        let cid = crate::data_plane::cid_store::compute_cid(&snapshot_data).map_err(|e| {
+            WcError::new(ErrorCode::Internal, format!("CID computation failed: {e}"))
+        })?;
 
         Ok(cid)
     }
@@ -297,9 +300,7 @@ impl Sandbox for FirecrackerSandbox {
         {
             if let Some(pid) = self.fc_pid.take() {
                 // SIGKILL the firecracker process
-                let _ = std::process::Command::new("kill")
-                    .args(["-9", &pid.to_string()])
-                    .status();
+                let _ = std::process::Command::new("kill").args(["-9", &pid.to_string()]).status();
                 tracing::info!(pid, "Firecracker process terminated");
             }
         }

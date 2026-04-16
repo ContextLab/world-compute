@@ -23,7 +23,5 @@ pub fn send_verification_code(_phone_number: &str) -> Result<String, String> {
 ///
 /// TODO(T088): Implement real code verification against sent code.
 pub fn verify_code(_session_id: &str, _code: &str) -> PhoneResult {
-    PhoneResult::ProviderUnavailable(
-        "Phone verification not yet implemented (see T088)".into(),
-    )
+    PhoneResult::ProviderUnavailable("Phone verification not yet implemented (see T088)".into())
 }

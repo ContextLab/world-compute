@@ -36,11 +36,7 @@ pub struct EgressPolicy {
 impl EgressPolicy {
     /// Create a default-deny policy (no egress).
     pub fn deny_all() -> Self {
-        Self {
-            egress_allowed: false,
-            approved_endpoints: Vec::new(),
-            max_egress_bytes: 0,
-        }
+        Self { egress_allowed: false, approved_endpoints: Vec::new(), max_egress_bytes: 0 }
     }
 
     /// Create a policy allowing specific endpoints.

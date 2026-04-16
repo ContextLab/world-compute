@@ -75,7 +75,10 @@ impl HyperVSandbox {
             // (Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V).State
             use std::process::Command;
             let output = Command::new("powershell")
-                .args(["-Command", "(Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V).State"])
+                .args([
+                    "-Command",
+                    "(Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V).State",
+                ])
                 .output()
                 .ok()?;
             let stdout = String::from_utf8_lossy(&output.stdout);
@@ -148,7 +151,12 @@ impl Sandbox for HyperVSandbox {
                 let status = Command::new("powershell")
                     .args(["-Command", &format!("Start-VM -Name '{vm_name}'")])
                     .status()
-                    .map_err(|e| WcError::new(ErrorCode::SandboxUnavailable, format!("Failed to start VM: {e}")))?;
+                    .map_err(|e| {
+                        WcError::new(
+                            ErrorCode::SandboxUnavailable,
+                            format!("Failed to start VM: {e}"),
+                        )
+                    })?;
                 if !status.success() {
                     return Err(WcError::new(ErrorCode::SandboxUnavailable, "Start-VM failed"));
                 }
@@ -186,7 +194,12 @@ impl Sandbox for HyperVSandbox {
             if let Some(vm_name) = &self.vm_name {
                 let checkpoint_name = format!("wc-checkpoint-{}", crate::types::Timestamp::now().0);
                 let _ = Command::new("powershell")
-                    .args(["-Command", &format!("Checkpoint-VM -Name '{vm_name}' -SnapshotName '{checkpoint_name}'")])
+                    .args([
+                        "-Command",
+                        &format!(
+                            "Checkpoint-VM -Name '{vm_name}' -SnapshotName '{checkpoint_name}'"
+                        ),
+                    ])
                     .status();
             }
         }

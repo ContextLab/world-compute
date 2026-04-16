@@ -42,7 +42,10 @@ impl DonorId {
         }
         let hex_part = &s["wc-donor-".len()..];
         if hex_part.len() != 32 {
-            return Err(format!("Invalid donor ID: hex part must be 32 chars, got {}", hex_part.len()));
+            return Err(format!(
+                "Invalid donor ID: hex part must be 32 chars, got {}",
+                hex_part.len()
+            ));
         }
         if !hex_part.chars().all(|c| c.is_ascii_hexdigit()) {
             return Err("Invalid donor ID: hex part contains non-hex characters".into());

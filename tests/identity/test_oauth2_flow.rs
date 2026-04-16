@@ -5,13 +5,20 @@
 //! handling, and context ID derivation that feeds into HP scoring.
 
 use worldcompute::identity::oauth2::{verify_oauth2, OAuth2Provider, OAuth2Result};
-use worldcompute::identity::personhood::{peer_id_to_context_id, verify_personhood, PersonhoodResult};
+use worldcompute::identity::personhood::{
+    peer_id_to_context_id, verify_personhood, PersonhoodResult,
+};
 use worldcompute::identity::phone::{send_verification_code, verify_code, PhoneResult};
 
 #[test]
 fn oauth2_flow_returns_unavailable_with_provider_info() {
     // Each provider should return a meaningful unavailability message
-    for provider in [OAuth2Provider::Email, OAuth2Provider::GitHub, OAuth2Provider::Google, OAuth2Provider::Twitter] {
+    for provider in [
+        OAuth2Provider::Email,
+        OAuth2Provider::GitHub,
+        OAuth2Provider::Google,
+        OAuth2Provider::Twitter,
+    ] {
         match verify_oauth2(provider, "https://localhost/callback") {
             OAuth2Result::ProviderUnavailable(msg) => {
                 assert!(!msg.is_empty(), "Provider {provider:?} should give a reason");
@@ -35,8 +42,10 @@ fn personhood_flow_returns_unavailable_with_brightid_context() {
     let context_id = peer_id_to_context_id("12D3KooWTestPeer");
     match verify_personhood(&context_id) {
         PersonhoodResult::ProviderUnavailable(msg) => {
-            assert!(msg.contains("BrightID") || msg.contains("HTTP"),
-                "Should reference BrightID, got: {msg}");
+            assert!(
+                msg.contains("BrightID") || msg.contains("HTTP"),
+                "Should reference BrightID, got: {msg}"
+            );
         }
         other => panic!("Expected ProviderUnavailable, got {other:?}"),
     }

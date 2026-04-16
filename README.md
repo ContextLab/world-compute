@@ -14,9 +14,9 @@
 > This repository contains a ratified governing constitution, a full research package (~28,600 words), detailed feature specifications, and substantial library code (391 tests passing across safety-critical modules). **However, there is no runnable agent, no working CLI, no testnet, and no deployable binary.** The CLI compiles but all commands print "not yet implemented." The library modules (policy engine, attestation verification, governance, incident response, egress enforcement) work as tested Rust code but are not wired into a running daemon.
 >
 > **What exists and works (as of 2026-04-16):**
-> - Library crate with 391 passing tests covering safety-critical paths
+> - Library crate with 422 passing tests covering safety-critical paths
 > - Deterministic policy engine (10-step evaluation pipeline)
-> - Attestation verification (TPM2/SEV-SNP/TDX with real crypto, not stubs)
+> - Attestation verification (TPM2/SEV-SNP/TDX — measurement validation and signature binding; full CA certificate-chain validation is pluggable but not yet integrated)
 > - Governance separation of duties, quorum thresholds, time-locks
 > - Network egress blocking (RFC1918, link-local, cloud metadata)
 > - Incident response containment primitives with audit trails
@@ -109,15 +109,16 @@ World Compute has completed library-level implementation across core and safety 
 | Cargo workspace + protos + CI | Complete | — | `Cargo.toml`, `proto/`, `.github/workflows/ci.yml` |
 | Core types (NcuAmount, TrustScore, Cid, etc.) | Complete | — | `src/types.rs` |
 | Error model (20 codes, gRPC + HTTP mapping) | Complete | — | `src/error.rs` |
-| Sandbox trait + 4 platform drivers + GPU check | Complete | 3 tests | `src/sandbox/` |
-| Sandbox egress enforcement (default-deny) | Complete | 6 tests | `src/sandbox/egress.rs` |
-| Deterministic policy engine (10-step pipeline) | Complete | 10 tests | `src/policy/` |
-| Attestation verification (TPM2/SEV-SNP/TDX) | Complete | 12 tests | `src/verification/attestation.rs` |
-| Governance separation of duties | Complete | 6 tests | `src/governance/roles.rs` |
-| Incident response containment | Complete | 3 tests | `src/incident/` |
-| Approved artifact registry | Complete | 3 tests | `src/registry/` |
-| Identity (DonorId, HP verification stubs) | Complete | 5 tests | `src/identity/`, `src/agent/donor.rs` |
-| Preemption supervisor (<10ms SIGSTOP) | Complete | 5 tests | `src/preemption/` |
+| Sandbox trait + 4 platform drivers + GPU check | Complete | 18 inline tests | `src/sandbox/` |
+| Sandbox egress enforcement (default-deny) | Complete | 6 inline + 21 integration | `src/sandbox/egress.rs` |
+| Deterministic policy engine (10-step pipeline) | Complete | 14 inline + 14 integration | `src/policy/` |
+| Attestation verification (TPM2/SEV-SNP/TDX) | Complete | 13 inline tests | `src/verification/attestation.rs` |
+| Governance (roles, quorum, time-lock, halt auth) | Complete | 52 inline + 15 integration | `src/governance/` |
+| Incident response containment | Complete | 3 inline + 9 integration | `src/incident/` |
+| Approved artifact registry + release channels | Complete | 10 inline tests | `src/registry/` |
+| Identity (DonorId, BrightID, OAuth2 stubs) | Complete | 6 inline + 13 integration | `src/identity/`, `src/agent/donor.rs` |
+| Red team adversarial exercise (5 scenarios) | Complete | 26 integration tests | `tests/red_team/` |
+| Preemption supervisor (<10ms SIGSTOP) | Complete | 6 inline tests | `src/preemption/` |
 | P2P discovery (mDNS + Kademlia DHT) | Complete | 4 tests | `src/network/discovery.rs` |
 | Agent lifecycle (enroll, heartbeat, pause, withdraw) | Complete | 7 tests | `src/agent/lifecycle.rs` |
 | Cryptographic attestation (5 types) | Complete | 2 tests | `src/verification/attestation.rs` |
@@ -161,9 +162,9 @@ World Compute has completed library-level implementation across core and safety 
 | Build info (reproducible builds) | Complete | 1 test | `src/agent/build_info.rs` |
 | Desktop GUI (Tauri scaffold) | Complete | — | `gui/` |
 | CLI (donor + job + governance + admin) | Complete | — | `src/cli/` |
-| Adversarial tests (4 stubs, #[ignore]) | Complete | — | `tests/adversarial/` |
+| Adversarial tests (original 4 + red team 26) | Complete | 26 red team tests | `tests/adversarial/`, `tests/red_team/` |
 
-**Total: 8,421 lines Rust across 84 files, 228 real tests (0 mocks), all passing.**
+**Total: ~11,700 lines Rust across 94 source files + 44 test files, 422 real tests (0 mocks), all passing.**
 
 ### Remaining (operational, not code)
 
@@ -938,7 +939,7 @@ Before the project establishes a formal security contact, use GitHub's private v
 
 ## Contributing
 
-World Compute is in the pre-code phase. The most valuable contributions right now are:
+World Compute has substantial library code (~11,700 lines, 422 tests) but no functional CLI or running agent. The most valuable contributions right now are:
 
 - **Review and critique the research.** All seven research documents are in `specs/001-world-compute-core/research/`. Factual corrections, omitted prior art, and design tradeoff challenges are welcome as GitHub issues or pull requests against the research documents.
 - **Review and critique the spec.** `specs/001-world-compute-core/spec.md` is the feature specification. Gaps, inconsistencies with the research findings, and missing requirements are valuable.
@@ -1049,7 +1050,7 @@ Operating costs — security audits, developer salaries, CI infrastructure, test
 
 **When can I install it?**
 
-You cannot yet. This is a pre-code project as of 2026-04-15. No agent binary, CLI, testnet, or hosted service exists. Watch this repository for updates. The roadmap above describes the phase gates that must be cleared before any public installation is offered.
+You cannot yet. The project has library code and passing tests but no functional CLI, agent daemon, or testnet as of 2026-04-16. The binary compiles (`cargo build`) but all CLI subcommands print "not yet implemented." Watch this repository for updates. The roadmap above describes the phase gates that must be cleared before any public installation is offered.
 
 **Where do I send money?**
 

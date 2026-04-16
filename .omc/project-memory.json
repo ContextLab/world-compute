@@ -41,8 +41,8 @@
     },
     {
       "path": "README.md",
-      "accessCount": 45,
-      "lastAccessed": 1776359969370,
+      "accessCount": 56,
+      "lastAccessed": 1776368296776,
       "type": "file"
     },
     {
@@ -58,15 +58,15 @@
       "type": "file"
     },
     {
-      "path": "src/error.rs",
-      "accessCount": 12,
-      "lastAccessed": 1776347614572,
+      "path": "src/verification/attestation.rs",
+      "accessCount": 13,
+      "lastAccessed": 1776368088474,
       "type": "file"
     },
     {
-      "path": "src/verification/attestation.rs",
-      "accessCount": 11,
-      "lastAccessed": 1776348408827,
+      "path": "src/error.rs",
+      "accessCount": 12,
+      "lastAccessed": 1776347614572,
       "type": "file"
     },
     {
@@ -76,15 +76,15 @@
       "type": "file"
     },
     {
-      "path": "src/types.rs",
-      "accessCount": 9,
-      "lastAccessed": 1776347613606,
+      "path": "src/lib.rs",
+      "accessCount": 10,
+      "lastAccessed": 1776368059138,
       "type": "file"
     },
     {
-      "path": "src/lib.rs",
+      "path": "src/types.rs",
       "accessCount": 9,
-      "lastAccessed": 1776347845474,
+      "lastAccessed": 1776347613606,
       "type": "file"
     },
     {
@@ -214,6 +214,12 @@
       "type": "file"
     },
     {
+      "path": "src/main.rs",
+      "accessCount": 3,
+      "lastAccessed": 1776368059690,
+      "type": "file"
+    },
+    {
       "path": "specs/001-world-compute-core/research/08-priority-redesign.md",
       "accessCount": 2,
       "lastAccessed": 1776306062709,
@@ -253,12 +259,6 @@
       "path": ".specify/templates/spec-template.md",
       "accessCount": 2,
       "lastAccessed": 1776341583523,
-      "type": "file"
-    },
-    {
-      "path": "src/main.rs",
-      "accessCount": 2,
-      "lastAccessed": 1776359918377,
       "type": "file"
     },
     {

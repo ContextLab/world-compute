@@ -48,9 +48,7 @@ pub struct KnownGoodMeasurement {
 
 impl MeasurementRegistry {
     pub fn new() -> Self {
-        Self {
-            entries: Arc::new(RwLock::new(HashMap::new())),
-        }
+        Self { entries: Arc::new(RwLock::new(HashMap::new())) }
     }
 
     /// Register a known-good measurement for an agent version.
@@ -137,7 +135,11 @@ fn parse_tpm2_quote(quote_bytes: &[u8]) -> Result<Tpm2Quote, WcError> {
     if quote_bytes.len() < expected_len {
         return Err(WcError::new(
             ErrorCode::AttestationFailed,
-            format!("TPM2 quote truncated: expected {} bytes, got {}", expected_len, quote_bytes.len()),
+            format!(
+                "TPM2 quote truncated: expected {} bytes, got {}",
+                expected_len,
+                quote_bytes.len()
+            ),
         ));
     }
 
@@ -158,12 +160,7 @@ fn parse_tpm2_quote(quote_bytes: &[u8]) -> Result<Tpm2Quote, WcError> {
     let signature = quote_bytes[sig_start..sig_start + 64].to_vec();
     let signed_data = quote_bytes[..sig_start].to_vec();
 
-    Ok(Tpm2Quote {
-        agent_version,
-        pcr_values,
-        signature,
-        signed_data,
-    })
+    Ok(Tpm2Quote { agent_version, pcr_values, signature, signed_data })
 }
 
 // ─── SEV-SNP report structure ────────────────────────────────────────────
@@ -210,12 +207,7 @@ fn parse_sev_snp_report(quote_bytes: &[u8]) -> Result<SevSnpReport, WcError> {
     let signature = quote_bytes[sig_start..sig_start + 64].to_vec();
     let signed_data = quote_bytes[..sig_start].to_vec();
 
-    Ok(SevSnpReport {
-        agent_version,
-        measurement,
-        signature,
-        signed_data,
-    })
+    Ok(SevSnpReport { agent_version, measurement, signature, signed_data })
 }
 
 // ─── TDX quote structure ─────────────────────────────────────────────────
@@ -259,12 +251,7 @@ fn parse_tdx_quote(quote_bytes: &[u8]) -> Result<TdxQuote, WcError> {
     let signature = quote_bytes[sig_start..sig_start + 64].to_vec();
     let signed_data = quote_bytes[..sig_start].to_vec();
 
-    Ok(TdxQuote {
-        agent_version,
-        mrtd,
-        signature,
-        signed_data,
-    })
+    Ok(TdxQuote { agent_version, mrtd, signature, signed_data })
 }
 
 // ─── Verification functions ──────────────────────────────────────────────
@@ -301,7 +288,10 @@ pub fn verify_attestation_with_registry(
             let expected = registry.lookup(&parsed.agent_version).ok_or_else(|| {
                 WcError::new(
                     ErrorCode::AttestationFailed,
-                    format!("Agent version '{}' not in measurement registry or not active", parsed.agent_version),
+                    format!(
+                        "Agent version '{}' not in measurement registry or not active",
+                        parsed.agent_version
+                    ),
                 )
             })?;
 

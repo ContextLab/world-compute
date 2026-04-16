@@ -111,11 +111,7 @@ impl PreemptionSupervisor {
         let elapsed = start.elapsed();
         self.frozen = false;
 
-        ResumeResult {
-            resumed_count,
-            resume_latency_us: elapsed.as_micros() as u64,
-            errors,
-        }
+        ResumeResult { resumed_count, resume_latency_us: elapsed.as_micros() as u64, errors }
     }
 
     pub fn is_frozen(&self) -> bool {

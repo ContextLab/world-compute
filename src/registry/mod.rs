@@ -39,9 +39,7 @@ pub struct ArtifactRegistry {
 
 impl ArtifactRegistry {
     pub fn new() -> Self {
-        Self {
-            artifacts: Arc::new(RwLock::new(HashMap::new())),
-        }
+        Self { artifacts: Arc::new(RwLock::new(HashMap::new())) }
     }
 
     /// Register a new approved artifact.

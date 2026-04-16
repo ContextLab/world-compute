@@ -84,10 +84,7 @@ pub fn validate_manifest(manifest: &JobManifest) -> Result<(), WcError> {
     // All-zero signatures are rejected. Full Ed25519 verification is done
     // by the policy engine; this is the structural gate.
     if manifest.submitter_signature.is_empty() {
-        return Err(WcError::new(
-            ErrorCode::InvalidManifest,
-            "Submitter signature is empty",
-        ));
+        return Err(WcError::new(ErrorCode::InvalidManifest, "Submitter signature is empty"));
     }
     if manifest.submitter_signature.iter().all(|&b| b == 0) {
         return Err(WcError::new(

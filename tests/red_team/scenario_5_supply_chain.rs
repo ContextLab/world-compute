@@ -3,8 +3,8 @@
 //! Attack: Register a malicious artifact, bypass signer/approver separation,
 //! promote directly from dev to production, inject forged provenance.
 
+use worldcompute::registry::transparency::{build_metadata, ReleaseChannel};
 use worldcompute::registry::{ApprovedArtifact, ArtifactRegistry};
-use worldcompute::registry::transparency::{ReleaseChannel, build_metadata};
 use worldcompute::types::Timestamp;
 
 #[test]

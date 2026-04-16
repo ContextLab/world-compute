@@ -52,13 +52,7 @@ impl AppleVfSandbox {
     }
 
     pub fn with_config(work_dir: PathBuf, config: AppleVfConfig) -> Self {
-        Self {
-            workload_cid: None,
-            running: false,
-            frozen: false,
-            work_dir,
-            config,
-        }
+        Self { workload_cid: None, running: false, frozen: false, work_dir, config }
     }
 
     /// Check if Virtualization.framework is available.

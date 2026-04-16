@@ -5,7 +5,12 @@ use worldcompute::governance::admin_service::AdminServiceHandler;
 use worldcompute::governance::roles::{GovernanceRole, RoleType};
 
 fn responder_role(peer_id: &str) -> GovernanceRole {
-    GovernanceRole::new("role-resp".into(), peer_id.into(), RoleType::OnCallResponder, "admin".into())
+    GovernanceRole::new(
+        "role-resp".into(),
+        peer_id.into(),
+        RoleType::OnCallResponder,
+        "admin".into(),
+    )
 }
 
 #[test]

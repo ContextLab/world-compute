@@ -23,9 +23,7 @@ pub fn execute_containment(
     if actor_role != "OnCallResponder" {
         return Err(WcError::new(
             ErrorCode::PermissionDenied,
-            format!(
-                "Containment actions require OnCallResponder role, got '{actor_role}'"
-            ),
+            format!("Containment actions require OnCallResponder role, got '{actor_role}'"),
         ));
     }
 

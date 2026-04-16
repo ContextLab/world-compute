@@ -16,16 +16,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // This allows the binary to self-report its build origin for verification.
     println!(
         "cargo:rustc-env=WC_BUILD_TIMESTAMP={}",
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs()
+        std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()
     );
     if let Ok(hash) = std::env::var("GIT_COMMIT_HASH") {
         println!("cargo:rustc-env=WC_GIT_COMMIT={hash}");
-    } else if let Ok(output) = std::process::Command::new("git")
-        .args(["rev-parse", "HEAD"])
-        .output()
+    } else if let Ok(output) =
+        std::process::Command::new("git").args(["rev-parse", "HEAD"]).output()
     {
         let hash = String::from_utf8_lossy(&output.stdout).trim().to_string();
         if !hash.is_empty() {
@@ -34,8 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     println!(
         "cargo:rustc-env=WC_RUSTC_VERSION={}",
-        std::env::var("RUSTC_WRAPPER")
-            .unwrap_or_else(|_| "rustc".to_string())
+        std::env::var("RUSTC_WRAPPER").unwrap_or_else(|_| "rustc".to_string())
     );
 
     Ok(())

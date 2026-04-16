@@ -23,7 +23,7 @@ fn attack_4a_host_filesystem_inaccessible_after_cleanup() {
 fn attack_4b_lan_scanning_blocked() {
     // Common LAN ranges an attacker would scan
     let lan_targets = [
-        Ipv4Addr::new(192, 168, 1, 1),    // common router
+        Ipv4Addr::new(192, 168, 1, 1),     // common router
         Ipv4Addr::new(10, 0, 0, 1),        // corporate gateway
         Ipv4Addr::new(172, 16, 0, 1),      // Docker default
         Ipv4Addr::new(169, 254, 169, 254), // cloud metadata
@@ -32,7 +32,8 @@ fn attack_4b_lan_scanning_blocked() {
     for target in &lan_targets {
         assert!(
             is_blocked_destination(&IpAddr::V4(*target)),
-            "LAN target {} must be blocked", target
+            "LAN target {} must be blocked",
+            target
         );
     }
 }
@@ -60,13 +61,14 @@ fn attack_4d_cloud_metadata_theft_blocked() {
 fn attack_4e_broadcast_multicast_discovery_blocked() {
     assert!(is_blocked_destination(&IpAddr::V4(Ipv4Addr::new(255, 255, 255, 255))));
     assert!(is_blocked_destination(&IpAddr::V4(Ipv4Addr::new(224, 0, 0, 251)))); // mDNS
-    assert!(is_blocked_destination(&IpAddr::V4(Ipv4Addr::new(239, 255, 255, 250)))); // SSDP
+    assert!(is_blocked_destination(&IpAddr::V4(Ipv4Addr::new(239, 255, 255, 250))));
+    // SSDP
 }
 
 #[test]
 fn attack_4f_egress_policy_default_is_deny() {
-    use worldcompute::sandbox::firecracker::FirecrackerConfig;
     use worldcompute::sandbox::apple_vf::AppleVfConfig;
+    use worldcompute::sandbox::firecracker::FirecrackerConfig;
     use worldcompute::sandbox::hyperv::HyperVConfig;
 
     assert!(!FirecrackerConfig::default().egress_policy.egress_allowed);

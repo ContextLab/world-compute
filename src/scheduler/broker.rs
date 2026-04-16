@@ -118,10 +118,8 @@ impl Broker {
             .collect();
 
         // Exclude frozen hosts (incident response)
-        let eligible: Vec<PeerIdStr> = eligible
-            .into_iter()
-            .filter(|p| !self.frozen_hosts.contains(p))
-            .collect();
+        let eligible: Vec<PeerIdStr> =
+            eligible.into_iter().filter(|p| !self.frozen_hosts.contains(p)).collect();
 
         if eligible.is_empty() {
             return Err(WcError::new(
@@ -146,8 +144,8 @@ impl Broker {
         registry: &MeasurementRegistry,
     ) -> WcResult<()> {
         // Verify attestation
-        let verified = attestation::verify_attestation_with_registry(quote, registry)
-            .unwrap_or(false);
+        let verified =
+            attestation::verify_attestation_with_registry(quote, registry).unwrap_or(false);
 
         if !verified {
             // If quote is non-empty but invalid, reject entirely

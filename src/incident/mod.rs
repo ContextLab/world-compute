@@ -32,7 +32,10 @@ impl ContainmentAction {
     /// Whether this action type is reversible.
     pub fn is_reversible(self) -> bool {
         match self {
-            Self::FreezeHost | Self::QuarantineWorkloadClass | Self::BlockSubmitter | Self::DrainHostPool => true,
+            Self::FreezeHost
+            | Self::QuarantineWorkloadClass
+            | Self::BlockSubmitter
+            | Self::DrainHostPool => true,
             Self::RevokeArtifact => false, // re-approval required
             Self::LiftFreeze | Self::LiftQuarantine | Self::UnblockSubmitter => true,
         }

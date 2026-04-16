@@ -2,7 +2,9 @@
 
 use worldcompute::error::ErrorCode;
 use worldcompute::governance::proposal::{GovernanceProposal, ProposalState, ProposalType};
-use worldcompute::governance::vote::{validate_vote_with_hp, Vote, VoteChoice, SAFETY_CRITICAL_MIN_HP};
+use worldcompute::governance::vote::{
+    validate_vote_with_hp, Vote, VoteChoice, SAFETY_CRITICAL_MIN_HP,
+};
 use worldcompute::types::Timestamp;
 
 fn make_emergency_proposal() -> GovernanceProposal {
