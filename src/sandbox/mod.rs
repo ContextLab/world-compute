@@ -3,6 +3,12 @@
 //! Per FR-010: all workloads MUST execute inside a hypervisor- or VM-level
 //! sandbox. Process-only sandboxes are NOT sufficient.
 
+pub mod apple_vf;
+pub mod firecracker;
+pub mod gpu;
+pub mod hyperv;
+pub mod wasm;
+
 use crate::types::{Cid, DurationMs};
 use serde::{Deserialize, Serialize};
 
