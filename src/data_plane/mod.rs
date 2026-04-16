@@ -2,3 +2,4 @@
 
 pub mod cid_store;
 pub mod erasure;
+pub mod staging;

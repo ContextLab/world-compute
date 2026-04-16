@@ -8,6 +8,32 @@
 use libp2p::{kad, mdns, swarm::NetworkBehaviour, PeerId};
 use std::time::Duration;
 
+/// DNS bootstrap seeds for initial WAN contact.
+///
+/// On startup, the agent resolves these DNS names to multiaddresses and
+/// dials them to enter the global Kademlia DHT. Replace placeholders with
+/// real records before mainnet launch.
+pub const BOOTSTRAP_DNS_SEEDS: &[&str] = &[
+    "/dnsaddr/bootstrap1.worldcompute.org",
+    "/dnsaddr/bootstrap2.worldcompute.org",
+    "/dnsaddr/bootstrap3.worldcompute.org",
+];
+
+/// Result of merging a locally-discovered LAN cluster with the global DHT.
+///
+/// When a group of nodes on a LAN all join the WAN DHT, the LAN cluster's
+/// local Kademlia state merges with the global routing table. This struct
+/// captures the outcome of that merge event.
+#[derive(Debug, Clone)]
+pub struct ClusterMergeResult {
+    /// Number of LAN peers that were successfully announced to the global DHT.
+    pub peers_announced: usize,
+    /// Number of routing table entries added from the global DHT.
+    pub routes_added: usize,
+    /// Whether the merge completed without errors.
+    pub success: bool,
+}
+
 /// Combined network behaviour for peer discovery.
 /// mDNS for LAN (zero-config, <2s) and Kademlia for WAN.
 #[derive(NetworkBehaviour)]
@@ -90,6 +116,22 @@ pub struct PeerCounts {
 mod tests {
     use super::*;
     use libp2p::identity;
+
+    #[test]
+    fn bootstrap_dns_seeds_is_non_empty() {
+        assert!(BOOTSTRAP_DNS_SEEDS.len() >= 2, "Need at least 2 bootstrap seeds");
+        for seed in BOOTSTRAP_DNS_SEEDS {
+            assert!(seed.starts_with("/dnsaddr/"), "Seed should be a /dnsaddr/ multiaddr: {seed}");
+        }
+    }
+
+    #[test]
+    fn cluster_merge_result_fields() {
+        let result = ClusterMergeResult { peers_announced: 3, routes_added: 10, success: true };
+        assert_eq!(result.peers_announced, 3);
+        assert_eq!(result.routes_added, 10);
+        assert!(result.success);
+    }
 
     #[test]
     fn discovery_config_has_sane_defaults() {

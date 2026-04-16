@@ -1,8 +1,11 @@
 //! Scheduler module — job model, priority, placement, broker, coordinator.
 
+pub mod broker;
+pub mod coordinator;
 pub mod job;
 pub mod manifest;
 pub mod priority;
+pub mod submitter;
 
 use serde::{Deserialize, Serialize};
 

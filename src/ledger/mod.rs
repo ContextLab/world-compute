@@ -3,6 +3,8 @@
 //! NOT a blockchain. CRDT-replicated, threshold-signed, anchored to
 //! Sigstore Rekor every 10 minutes per FR-051.
 
+pub mod crdt;
 pub mod entry;
+pub mod transparency;
 
 pub use entry::{LedgerEntry, LedgerEntryType, LedgerShard, MerkleRoot};
