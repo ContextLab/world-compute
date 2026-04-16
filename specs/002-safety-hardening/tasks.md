@@ -23,16 +23,16 @@
 
 **Purpose**: Create new module scaffolding and shared types required by all user stories
 
-- [ ] T001 Create policy engine module skeleton in src/policy/mod.rs with pipeline trait definition
-- [ ] T002 [P] Create incident response module skeleton in src/incident/mod.rs with ContainmentAction enum
-- [ ] T003 [P] Create identity verification module skeleton in src/identity/mod.rs
-- [ ] T004 [P] Create approved artifact registry module skeleton in src/registry/mod.rs
-- [ ] T005 [P] Create network egress enforcement module skeleton in src/sandbox/egress.rs
-- [ ] T006 [P] Create governance roles module in src/governance/roles.rs with RoleType enum and GovernanceRole struct
-- [ ] T007 Add PolicyDecision struct in src/policy/decision.rs per data-model.md
-- [ ] T008 [P] Add IncidentRecord struct in src/incident/audit.rs per data-model.md
-- [ ] T009 [P] Add ApprovedArtifact struct in src/registry/mod.rs per data-model.md
-- [ ] T010 Register all new modules in src/lib.rs (policy, incident, identity, registry)
+- [X] T001 Create policy engine module skeleton in src/policy/mod.rs with pipeline trait definition
+- [X] T002 [P] Create incident response module skeleton in src/incident/mod.rs with ContainmentAction enum
+- [X] T003 [P] Create identity verification module skeleton in src/identity/mod.rs
+- [X] T004 [P] Create approved artifact registry module skeleton in src/registry/mod.rs
+- [X] T005 [P] Create network egress enforcement module skeleton in src/sandbox/egress.rs
+- [X] T006 [P] Create governance roles module in src/governance/roles.rs with RoleType enum and GovernanceRole struct
+- [X] T007 Add PolicyDecision struct in src/policy/decision.rs per data-model.md
+- [X] T008 [P] Add IncidentRecord struct in src/incident/audit.rs per data-model.md
+- [X] T009 [P] Add ApprovedArtifact struct in src/registry/mod.rs per data-model.md
+- [X] T010 Register all new modules in src/lib.rs (policy, incident, identity, registry)
 
 ---
 
