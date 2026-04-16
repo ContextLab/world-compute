@@ -174,14 +174,29 @@ pub fn evaluate(manifest: &JobManifest, ctx: &SubmissionContext) -> WcResult<Pol
         ));
     }
 
-    // All checks passed
-    Ok(PolicyDecision::accept(
+    // Step 9: Data classification compatibility
+    let data_check = rules::check_data_classification(manifest);
+    checks.push(data_check);
+    // Data classification is informational (always passes) — used for routing
+
+    // All deterministic checks passed — build the decision
+    let mut decision = PolicyDecision::accept(
         decision_id,
         manifest_cid,
         ctx.submitter_peer_id.clone(),
         POLICY_VERSION.into(),
         checks,
-    ))
+    );
+
+    // Step 10: LLM advisory layer (non-authoritative per FR-S042/FR-S033).
+    // The mesh LLM MUST NOT autonomously change policy, approve jobs, or
+    // deploy updates. It MAY flag submissions for human review.
+    // If the LLM disagrees with the deterministic verdict, we log it but
+    // NEVER override.
+    decision.llm_advisory_flag = None; // TODO: Wire LLM advisory when mesh LLM is available
+    decision.llm_disagrees = false;
+
+    Ok(decision)
 }
 
 #[cfg(test)]

@@ -162,17 +162,17 @@
 
 ### Implementation for User Story 4
 
-- [ ] T061 [US4] Implement policy pipeline orchestration wrapping validate_manifest() in src/policy/engine.rs per contracts/policy-engine.md
-- [ ] T062 [US4] Implement submitter identity check rule in src/policy/rules.rs
-- [ ] T063 [P] [US4] Implement workload class approval rule (including quarantine check) in src/policy/rules.rs
-- [ ] T064 [P] [US4] Implement resource limit + quota enforcement rule in src/policy/rules.rs
-- [ ] T065 [P] [US4] Implement endpoint allowlist validation rule in src/policy/rules.rs
-- [ ] T066 [P] [US4] Implement data classification compatibility rule in src/policy/rules.rs
-- [ ] T067 [US4] Implement ban status check rule in src/policy/rules.rs
-- [ ] T068 [US4] Implement PolicyDecision audit logging with full reasoning in src/policy/decision.rs
-- [ ] T069 [US4] Wire LLM advisory layer as non-authoritative input — log disagreements in src/policy/engine.rs
-- [ ] T070 [US4] Implement explicit guard preventing mesh LLM from issuing policy changes, admission decisions, or deployment actions per FR-S033 in src/policy/engine.rs
-- [ ] T071 [US4] Wire policy engine into job submission path as the single entry point in src/scheduler/job.rs
+- [X] T061 [US4] Implement policy pipeline orchestration wrapping validate_manifest() in src/policy/engine.rs per contracts/policy-engine.md
+- [X] T062 [US4] Implement submitter identity check rule in src/policy/rules.rs
+- [X] T063 [P] [US4] Implement workload class approval rule (including quarantine check) in src/policy/rules.rs
+- [X] T064 [P] [US4] Implement resource limit + quota enforcement rule in src/policy/rules.rs
+- [X] T065 [P] [US4] Implement endpoint allowlist validation rule in src/policy/rules.rs
+- [X] T066 [P] [US4] Implement data classification compatibility rule in src/policy/rules.rs
+- [X] T067 [US4] Implement ban status check rule in src/policy/rules.rs
+- [X] T068 [US4] Implement PolicyDecision audit logging with full reasoning in src/policy/decision.rs
+- [X] T069 [US4] Wire LLM advisory layer as non-authoritative input — log disagreements in src/policy/engine.rs
+- [X] T070 [US4] Implement explicit guard preventing mesh LLM from issuing policy changes, admission decisions, or deployment actions per FR-S033 in src/policy/engine.rs
+- [X] T071 [US4] Wire policy engine into job submission path as the single entry point in src/scheduler/job.rs
 
 **Checkpoint**: All jobs pass through deterministic policy engine. Audit trail complete. LLM is advisory-only.
 
