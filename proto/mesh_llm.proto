@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package worldcompute.v1;
+
+// MeshLLMService — distributed ensemble-of-experts inference and self-improvement (FR-120 to FR-126).
+service MeshLlmService {
+  // Register a GPU donor's expert node with the mesh.
+  rpc RegisterExpert(RegisterExpertRequest) returns (RegisterExpertResponse);
+  // Query current router status: how many experts are online.
+  rpc GetRouterStatus(GetRouterStatusRequest) returns (GetRouterStatusResponse);
+  // Submit a self-improvement task for the mesh to process.
+  rpc SubmitSelfTask(SubmitSelfTaskRequest) returns (SubmitSelfTaskResponse);
+  // Engage the governance kill switch; halts all autonomous mesh actions.
+  rpc HaltMesh(HaltMeshRequest) returns (HaltMeshResponse);
+}
+
+message RegisterExpertRequest {
+  string expert_id = 1;
+  string model_name = 2;
+  // Throughput in tokens per second for this node.
+  double capacity_tokens_per_sec = 3;
+}
+
+message RegisterExpertResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetRouterStatusRequest {}
+
+message GetRouterStatusResponse {
+  uint32 online_expert_count = 1;
+  repeated string online_expert_ids = 2;
+}
+
+message SubmitSelfTaskRequest {
+  // One of: scheduler_optimization, security_log_analysis, test_generation,
+  //         config_tuning, governance_proposal_draft
+  string task_type = 1;
+}
+
+message SubmitSelfTaskResponse {
+  bool accepted = 1;
+  // First 200 characters of the generated prompt for logging/debugging.
+  string prompt_preview = 2;
+}
+
+message HaltMeshRequest {
+  string requester_id = 1;
+  string reason = 2;
+}
+
+message HaltMeshResponse {
+  bool halted = 1;
+}

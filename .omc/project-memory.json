@@ -35,26 +35,68 @@
   "hotPaths": [
     {
       "path": "specs/001-world-compute-core/spec.md",
-      "accessCount": 52,
-      "lastAccessed": 1776306914321,
+      "accessCount": 61,
+      "lastAccessed": 1776307960110,
       "type": "file"
     },
     {
       "path": "README.md",
-      "accessCount": 29,
-      "lastAccessed": 1776306303026,
+      "accessCount": 34,
+      "lastAccessed": 1776310984774,
       "type": "file"
     },
     {
       "path": "specs/001-world-compute-core/whitepaper.md",
-      "accessCount": 27,
-      "lastAccessed": 1776306700243,
+      "accessCount": 30,
+      "lastAccessed": 1776308140339,
       "type": "file"
     },
     {
       "path": ".specify/memory/constitution.md",
-      "accessCount": 18,
-      "lastAccessed": 1776304707875,
+      "accessCount": 19,
+      "lastAccessed": 1776307322154,
+      "type": "file"
+    },
+    {
+      "path": "src/error.rs",
+      "accessCount": 10,
+      "lastAccessed": 1776340601353,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/tasks.md",
+      "accessCount": 8,
+      "lastAccessed": 1776307968852,
+      "type": "file"
+    },
+    {
+      "path": "src/verification/attestation.rs",
+      "accessCount": 8,
+      "lastAccessed": 1776310426600,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/design/architecture-overview.md",
+      "accessCount": 7,
+      "lastAccessed": 1776307945259,
+      "type": "file"
+    },
+    {
+      "path": "src/types.rs",
+      "accessCount": 7,
+      "lastAccessed": 1776340119004,
+      "type": "file"
+    },
+    {
+      "path": "Cargo.toml",
+      "accessCount": 7,
+      "lastAccessed": 1776340125199,
+      "type": "file"
+    },
+    {
+      "path": "src/lib.rs",
+      "accessCount": 7,
+      "lastAccessed": 1776340608973,
       "type": "file"
     },
     {
@@ -79,6 +121,18 @@
       "path": "specs/001-world-compute-core/research/09-mesh-llm.md",
       "accessCount": 6,
       "lastAccessed": 1776306081135,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/plan.md",
+      "accessCount": 6,
+      "lastAccessed": 1776307881335,
+      "type": "file"
+    },
+    {
+      "path": "src/credits/ncu.rs",
+      "accessCount": 6,
+      "lastAccessed": 1776340597246,
       "type": "file"
     },
     {
@@ -112,15 +166,39 @@
       "type": "file"
     },
     {
-      "path": "specs/001-world-compute-core/design/architecture-overview.md",
+      "path": "adapters/kubernetes/Cargo.toml",
       "accessCount": 3,
-      "lastAccessed": 1776300708457,
+      "lastAccessed": 1776340102610,
       "type": "file"
     },
     {
-      "path": "specs/001-world-compute-core/plan.md",
+      "path": "adapters/cloud/Cargo.toml",
       "accessCount": 3,
-      "lastAccessed": 1776306893871,
+      "lastAccessed": 1776340103689,
+      "type": "file"
+    },
+    {
+      "path": "adapters/slurm/src/main.rs",
+      "accessCount": 3,
+      "lastAccessed": 1776340124502,
+      "type": "file"
+    },
+    {
+      "path": "adapters/kubernetes/src/main.rs",
+      "accessCount": 3,
+      "lastAccessed": 1776340145449,
+      "type": "file"
+    },
+    {
+      "path": "adapters/cloud/src/main.rs",
+      "accessCount": 3,
+      "lastAccessed": 1776340159051,
+      "type": "file"
+    },
+    {
+      "path": "gui/src-tauri/src/main.rs",
+      "accessCount": 3,
+      "lastAccessed": 1776340595806,
       "type": "file"
     },
     {
@@ -139,6 +217,24 @@
       "path": "specs/001-world-compute-core/quickstart.md",
       "accessCount": 2,
       "lastAccessed": 1776306898629,
+      "type": "file"
+    },
+    {
+      "path": "proto/governance.proto",
+      "accessCount": 2,
+      "lastAccessed": 1776340125017,
+      "type": "file"
+    },
+    {
+      "path": "gui/src-tauri/Cargo.toml",
+      "accessCount": 2,
+      "lastAccessed": 1776340570956,
+      "type": "file"
+    },
+    {
+      "path": "src/credits/caliber.rs",
+      "accessCount": 2,
+      "lastAccessed": 1776340599999,
       "type": "file"
     },
     {
@@ -184,9 +280,57 @@
       "type": "directory"
     },
     {
-      "path": "specs/001-world-compute-core/tasks.md",
+      "path": "rustfmt.toml",
       "accessCount": 1,
-      "lastAccessed": 1776307133540,
+      "lastAccessed": 1776308278124,
+      "type": "file"
+    },
+    {
+      "path": "clippy.toml",
+      "accessCount": 1,
+      "lastAccessed": 1776308279186,
+      "type": "file"
+    },
+    {
+      "path": "adapters/slurm/Cargo.toml",
+      "accessCount": 1,
+      "lastAccessed": 1776308285946,
+      "type": "file"
+    },
+    {
+      "path": "src/main.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776308306296,
+      "type": "file"
+    },
+    {
+      "path": "proto/donor.proto",
+      "accessCount": 1,
+      "lastAccessed": 1776308537384,
+      "type": "file"
+    },
+    {
+      "path": "proto/submitter.proto",
+      "accessCount": 1,
+      "lastAccessed": 1776308547197,
+      "type": "file"
+    },
+    {
+      "path": "proto/cluster.proto",
+      "accessCount": 1,
+      "lastAccessed": 1776308555291,
+      "type": "file"
+    },
+    {
+      "path": "proto/admin.proto",
+      "accessCount": 1,
+      "lastAccessed": 1776308572151,
+      "type": "file"
+    },
+    {
+      "path": "src/verification/trust_score.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776308798515,
       "type": "file"
     }
   ],

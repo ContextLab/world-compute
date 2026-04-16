@@ -1,5 +1,7 @@
 //! Acceptable use module — policy enforcement per FR-080, FR-081.
 
+pub mod filter;
+
 use serde::{Deserialize, Serialize};
 
 /// Acceptable use class for workloads.
