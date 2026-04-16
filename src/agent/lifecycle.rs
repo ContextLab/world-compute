@@ -69,6 +69,16 @@ impl AgentInstance {
         // Estimate caliber class from system resources
         let caliber = estimate_caliber_class();
 
+        // T091: Trigger identity verification at enrollment time.
+        // Per FR-S070/FR-S073: verify proof-of-personhood and OAuth2 at
+        // enrollment, re-verify at trust score recalculation intervals.
+        // Verification runs asynchronously — enrollment proceeds with
+        // unverified HP (score 0). HP updates when verification completes.
+        tracing::info!("Triggering identity verification at enrollment");
+        let _personhood = crate::identity::personhood::verify_personhood(&peer_id_str);
+        // OAuth2 and phone verification are user-initiated flows that
+        // happen after enrollment via the CLI/GUI, not inline here.
+
         // Create donor record
         let now = Timestamp::now();
         let donor = Donor {
