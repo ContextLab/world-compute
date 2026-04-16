@@ -1,9 +1,9 @@
 # World Compute
 
-**A planetary-scale, decentralized volunteer compute federation — governed by a ratified constitution, backed by full research, and not yet implemented.**
+**A planetary-scale, decentralized volunteer compute federation — governed by a ratified constitution, backed by full research, and in active early implementation.**
 
 [![Version](https://img.shields.io/badge/version-0.1.0--pre--alpha-lightgrey)]()
-[![Status](https://img.shields.io/badge/status-pre--code-orange)]()
+[![Status](https://img.shields.io/badge/status-early--implementation-yellow)]()
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)]()
 [![Constitution](https://img.shields.io/badge/constitution-v1.0.0%20ratified-green)]()
 
@@ -68,33 +68,66 @@ Five constitutional principles govern every design decision. They are not aspira
 
 ## Status
 
-World Compute is a pre-code project. The table below shows what exists and what does not as of 2026-04-15.
+World Compute is in early implementation. The design phase is complete; core Rust code is being built and tested. Updated 2026-04-15.
 
-| Artifact | Exists? | Location |
+### Design artifacts (complete)
+
+| Artifact | Status | Location |
 |-|-|-|
-| Ratified constitution (v1.0.0) | Yes | `.specify/memory/constitution.md` |
-| Feature specification (draft) | Yes | `specs/001-world-compute-core/spec.md` |
-| Research: job management | Yes | `specs/001-world-compute-core/research/01-job-management.md` |
-| Research: trust and verification | Yes | `specs/001-world-compute-core/research/02-trust-and-verification.md` |
-| Research: sandboxing | Yes | `specs/001-world-compute-core/research/03-sandboxing.md` |
-| Research: storage | Yes | `specs/001-world-compute-core/research/04-storage.md` |
-| Research: discovery and bootstrap | Yes | `specs/001-world-compute-core/research/05-discovery-and-bootstrap.md` |
-| Research: fairness and credits | Yes | `specs/001-world-compute-core/research/06-fairness-and-credits.md` |
-| Research: governance, testing, UX | Yes | `specs/001-world-compute-core/research/07-governance-testing-ux.md` |
-| Research: priority redesign (open access + multi-factor score) | Yes | `specs/001-world-compute-core/research/08-priority-redesign.md` |
-| Research: distributed mesh LLM self-improvement | Yes | `specs/001-world-compute-core/research/09-mesh-llm.md` |
-| Research: prior art — distributed inference | Yes | `specs/001-world-compute-core/research/10-prior-art-distributed-inference.md` |
-| Architecture overview design doc | Planned | `specs/001-world-compute-core/design/architecture-overview.md` |
-| Public whitepaper | Planned | `specs/001-world-compute-core/whitepaper.md` |
-| This README | Yes | `README.md` |
-| Any source code | **No** | — |
-| Agent binaries | **No** | — |
-| CLI (`worldcompute`) | **No** | — |
-| Desktop GUI | **No** | — |
-| Testnet | **No** | — |
-| Legal entity / 501(c)(3) | **No** | — |
+| Ratified constitution (v1.0.0) | Complete | `.specify/memory/constitution.md` |
+| Feature specification (130+ FRs, 12 SCs) | Complete | `specs/001-world-compute-core/spec.md` |
+| Research (10 stages, ~28,600 words) | Complete | `specs/001-world-compute-core/research/` |
+| Architecture design doc (22 entities) | Complete | `specs/001-world-compute-core/design/architecture-overview.md` |
+| Data model (22 entities, state machines) | Complete | `specs/001-world-compute-core/data-model.md` |
+| API contracts (5 services, 24 RPCs, 20 errors) | Complete | `specs/001-world-compute-core/contracts/` |
+| Quickstart direct-test plan (7 adversarial tests) | Complete | `specs/001-world-compute-core/quickstart.md` |
+| Implementation plan + task list (151 tasks) | Complete | `specs/001-world-compute-core/plan.md`, `tasks.md` |
+| Whitepaper v0.2 (PDF) | Complete | `specs/001-world-compute-core/whitepaper.pdf` |
+| This README + proposed API reference | Complete | `README.md` |
 
-The source of truth for what will be built is `specs/001-world-compute-core/spec.md`. Every requirement there is traceable to a research finding in the seven research documents listed above.
+### Implementation (in progress)
+
+| Component | Status | Tests | Key files |
+|-|-|-|-|
+| Cargo workspace + protos + CI | Complete | — | `Cargo.toml`, `proto/`, `.github/workflows/ci.yml` |
+| Core types (NcuAmount, TrustScore, Cid, etc.) | Complete | — | `src/types.rs` |
+| Error model (20 codes, gRPC + HTTP mapping) | Complete | — | `src/error.rs` |
+| Sandbox trait + 4 platform drivers + GPU check | Complete | 3 tests | `src/sandbox/` |
+| Preemption supervisor (<10ms SIGSTOP) | Complete | 5 tests | `src/preemption/` |
+| P2P discovery (mDNS + Kademlia DHT) | Complete | 2 tests | `src/network/discovery.rs` |
+| Agent lifecycle (enroll, heartbeat, pause, withdraw) | Complete | 7 tests | `src/agent/lifecycle.rs` |
+| Cryptographic attestation (5 types) | Complete | 2 tests | `src/verification/attestation.rs` |
+| Trust Score computation (T0-T4 tiers) | Complete | 4 tests | `src/verification/trust_score.rs` |
+| CaliberClass (C0-C4) + same-caliber guarantee | Complete | 3 tests | `src/credits/caliber.rs` |
+| NCU credits + S_ncu priority signal | Complete | 6 tests | `src/credits/ncu.rs` |
+| CIDv1 content-addressed store | Complete | 4 tests | `src/data_plane/cid_store.rs` |
+| Privacy-redacting telemetry | Complete | 4 tests | `src/telemetry/redaction.rs` |
+| Job manifest parsing + validation | Complete | 4 tests | `src/scheduler/manifest.rs` |
+| Multi-factor priority scorer (FR-032) | Complete | 5 tests | `src/scheduler/priority.rs` |
+| R=3 quorum verification | Complete | 5 tests | `src/verification/quorum.rs` |
+| Job/Task/Replica state machines | Complete | 6 tests | `src/scheduler/job.rs` |
+| RS(10,18) erasure coding | Complete | 5 tests | `src/data_plane/erasure.rs` |
+| CLI `worldcompute donor` subcommand | Scaffold | — | `src/cli/donor.rs` |
+| CRDT ledger + threshold signing | Not started | — | `src/ledger/` |
+| Regional broker + coordinator (Raft) | Not started | — | `src/scheduler/` |
+| Transport (QUIC, TCP, NAT traversal) | Not started | — | `src/network/` |
+| Desktop GUI (Tauri) | Not started | — | `gui/` |
+| Adapters (Slurm, K8s, cloud) | Not started | — | `adapters/` |
+| Governance + voting (Humanity Points) | Not started | — | `src/governance/` |
+| Mesh LLM self-improvement | Not started | — | `src/agent/mesh_llm/` |
+
+**Total: ~4,500 lines Rust, 66 real tests (0 mocks), all passing.**
+
+### Not yet started
+
+| Item | Target phase |
+|-|-|
+| Web dashboard (React SPA) | Phase 10-11 |
+| Testnet (multi-node real hardware) | Phase 1-2 of staged release |
+| Legal entity / 501(c)(3) | Before Phase 3 alpha |
+| Security audit | Before Phase 3 alpha |
+
+The source of truth for what will be built is `specs/001-world-compute-core/spec.md`. Every requirement is traceable to a research finding in the ten research documents and is covered by at least one implementation task.
 
 ---
 
