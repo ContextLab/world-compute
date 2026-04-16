@@ -233,11 +233,11 @@
 
 **Purpose**: Reproducible builds, code signing, transparency logging.
 
-- [ ] T093 Set up reproducible build pipeline (Cargo + Nix or equivalent deterministic build) in build infrastructure
-- [ ] T094 [P] Implement code signing with hardware-backed keys for agent releases
-- [ ] T095 [P] Add provenance attestation generation to build artifacts in build.rs
-- [ ] T096 Integrate Sigstore Rekor (or equivalent) transparency log for artifact signatures in src/registry/transparency.rs
-- [ ] T097 Configure release channels: development → staging → production with promotion gates requiring: passing CI, signed artifacts, and explicit human approval for staging→production promotion
+- [X] T093 Set up reproducible build pipeline (Cargo + Nix or equivalent deterministic build) in build infrastructure
+- [X] T094 [P] Implement code signing with hardware-backed keys for agent releases
+- [X] T095 [P] Add provenance attestation generation to build artifacts in build.rs
+- [X] T096 Integrate Sigstore Rekor (or equivalent) transparency log for artifact signatures in src/registry/transparency.rs
+- [X] T097 Configure release channels: development → staging → production with promotion gates requiring: passing CI, signed artifacts, and explicit human approval for staging→production promotion
 - [ ] T098 Direct test: build from same source twice, verify bit-identical artifacts (Principle V — SC-S010)
 
 **Checkpoint**: Builds reproducible. Artifacts signed with provenance. Transparency log operational.
