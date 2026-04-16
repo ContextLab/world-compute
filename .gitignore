@@ -25,3 +25,4 @@ Thumbs.db
 
 # Evidence artifacts (generated, not committed)
 evidence/
+.credentials

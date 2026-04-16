@@ -1,0 +1,211 @@
+name: Safety Hardening — Principle V Tests
+
+on:
+  push:
+    branches: [002-safety-hardening, main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # ─── Standard tests (all platforms) ─────────────────────────────────
+  test-linux:
+    name: Tests (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo build --lib
+
+      - name: Run unit + integration tests
+        run: cargo test --lib
+
+      - name: Clippy (zero warnings)
+        run: cargo clippy --lib -- -D warnings
+
+      - name: Verify attestation rejects forged quotes
+        run: cargo test --lib verification::attestation::tests -- --nocapture
+
+      - name: Verify policy engine rejects invalid submissions
+        run: cargo test --lib policy::engine::tests -- --nocapture
+
+      - name: Verify governance separation of duties
+        run: cargo test --lib governance::roles::tests -- --nocapture
+
+      - name: Verify egress IP blocking
+        run: cargo test --lib sandbox::egress::tests -- --nocapture
+
+      - name: Verify incident containment auth
+        run: cargo test --lib incident::containment::tests -- --nocapture
+
+      - name: Verify artifact registry separation
+        run: cargo test --lib registry::tests -- --nocapture
+
+  test-macos:
+    name: Tests (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo build --lib
+
+      - name: Run all tests
+        run: cargo test --lib
+
+      - name: Verify macOS idle detection works
+        run: cargo test --lib preemption::triggers::tests::system_idle_ms_returns_something_on_macos -- --nocapture
+
+      - name: Verify sandbox cleanup removes work dir
+        run: cargo test --lib sandbox::apple_vf::tests -- --nocapture
+
+  test-windows:
+    name: Tests (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo build --lib
+
+      - name: Run all tests
+        run: cargo test --lib
+
+  # ─── KVM sandbox tests (Linux with KVM) ─────────────────────────────
+  sandbox-linux-kvm:
+    name: Sandbox (Linux KVM)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check KVM availability
+        id: kvm
+        run: |
+          if [ -e /dev/kvm ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "KVM is available"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "KVM not available — sandbox tests will be skipped"
+          fi
+
+      - name: Install Firecracker
+        if: steps.kvm.outputs.available == 'true'
+        run: |
+          FC_VERSION="1.6.0"
+          curl -fsSL "https://github.com/firecracker-microvm/firecracker/releases/download/v${FC_VERSION}/firecracker-v${FC_VERSION}-x86_64.tgz" | tar xz
+          sudo mv "release-v${FC_VERSION}-x86_64/firecracker-v${FC_VERSION}-x86_64" /usr/local/bin/firecracker
+          sudo chmod +x /usr/local/bin/firecracker
+          firecracker --version
+
+      - name: Run sandbox tests (KVM)
+        if: steps.kvm.outputs.available == 'true'
+        run: |
+          cargo test --lib sandbox::firecracker::tests -- --nocapture
+          echo "Firecracker sandbox tests passed"
+
+      - name: Run egress enforcement tests
+        run: cargo test --lib sandbox::egress::tests -- --nocapture
+
+      - name: Generate Principle V evidence artifact
+        if: always()
+        env:
+          KVM_AVAILABLE: ${{ steps.kvm.outputs.available }}
+        run: |
+          mkdir -p evidence
+          echo "# Principle V Test Evidence" > evidence/sandbox-linux.md
+          echo "Date: $(date -u)" >> evidence/sandbox-linux.md
+          echo "Runner: $(uname -a)" >> evidence/sandbox-linux.md
+          echo "KVM available: ${KVM_AVAILABLE}" >> evidence/sandbox-linux.md
+          cargo test --lib sandbox 2>&1 | tail -1 >> evidence/sandbox-linux.md
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evidence-sandbox-linux
+          path: evidence/
+
+  # ─── Software TPM attestation tests ──────────────────────────────────
+  attestation-swtpm:
+    name: Attestation (swtpm)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install swtpm
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y swtpm swtpm-tools tpm2-tools || echo "swtpm install failed — using built-in test helpers"
+
+      - name: Run attestation verification tests
+        run: |
+          cargo test --lib verification::attestation::tests -- --nocapture
+          echo "All attestation tests passed"
+
+      - name: Run manifest signature tests
+        run: |
+          cargo test --lib scheduler::manifest::tests -- --nocapture
+          echo "Manifest signature verification tests passed"
+
+      - name: Generate Principle V evidence artifact
+        if: always()
+        run: |
+          mkdir -p evidence
+          echo "# Principle V Test Evidence — Attestation" > evidence/attestation.md
+          echo "Date: $(date -u)" >> evidence/attestation.md
+          echo "Runner: $(uname -a)" >> evidence/attestation.md
+          which swtpm > /dev/null 2>&1 && swtpm --version >> evidence/attestation.md || echo "swtpm: not available" >> evidence/attestation.md
+          cargo test --lib verification::attestation 2>&1 | tail -1 >> evidence/attestation.md
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evidence-attestation
+          path: evidence/
+
+  # ─── Full safety audit summary ───────────────────────────────────────
+  safety-audit:
+    name: Safety Audit Summary
+    runs-on: ubuntu-latest
+    needs: [test-linux, test-macos, test-windows, sandbox-linux-kvm, attestation-swtpm]
+    if: always()
+    env:
+      LINUX_RESULT: ${{ needs.test-linux.result }}
+      MACOS_RESULT: ${{ needs.test-macos.result }}
+      WINDOWS_RESULT: ${{ needs.test-windows.result }}
+      SANDBOX_RESULT: ${{ needs.sandbox-linux-kvm.result }}
+      ATTEST_RESULT: ${{ needs.attestation-swtpm.result }}
+    steps:
+      - name: Check all jobs passed
+        run: |
+          echo "=== Safety Hardening CI Results ==="
+          echo "test-linux: ${LINUX_RESULT}"
+          echo "test-macos: ${MACOS_RESULT}"
+          echo "test-windows: ${WINDOWS_RESULT}"
+          echo "sandbox-linux-kvm: ${SANDBOX_RESULT}"
+          echo "attestation-swtpm: ${ATTEST_RESULT}"
+          echo ""
+          if [ "${LINUX_RESULT}" != "success" ] || \
+             [ "${MACOS_RESULT}" != "success" ] || \
+             [ "${WINDOWS_RESULT}" != "success" ]; then
+            echo "FAIL: Core tests failed on one or more platforms"
+            exit 1
+          fi
+          echo "PASS: All core platform tests passed"
+          echo "Note: KVM/swtpm tests may skip if hardware unavailable"
