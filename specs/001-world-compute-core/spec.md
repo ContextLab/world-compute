@@ -58,6 +58,17 @@ whitepaper at `whitepaper.md`; and the public-facing README at the repo root.
   OpenTelemetry trifecta) with donor-privacy redaction enforced at the
   emit layer. Telemetry MUST NOT leak donor PII, submitter job
   contents, or host-identifying information.
+- Q: Should NCU gate job submission (requiring donation before use)?
+  → A: NO — NCU boosts priority but never gates access. Anyone can
+  submit jobs for free. Multi-factor priority score (FR-032) with
+  public human-verified voting, job size, queue age, and user cooldown.
+  Starvation-freedom guaranteed: S_age ensures no job waits forever.
+- Q: What is the concrete self-improvement mechanism (Principle IV)?
+  → A: Distributed ensemble-of-experts mesh LLM (FR-120–126). Each
+  GPU donor runs a complete small model; router selects K-of-N per
+  token; mesh self-prompts to improve the cluster. Phased rollout
+  from centralized (Phase 0) to full autonomous (Phase 4, ~5000+
+  nodes). LLaMA-3 tokenizer standardized.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -416,14 +427,30 @@ the ledger with a verifiable witness.
   regional libp2p gossip brokers using ClassAd-style matchmaking, (c)
   fully-autonomous local agents. No tier may be on the critical path of
   another tier's hard guarantees.
-- **FR-032**: The scheduler MUST enforce the following priority hierarchy
-  (highest first): LOCAL_USER (absolute) > DONOR_REDEMPTION (hard
-  guarantee, p95 queue < 2h for same-caliber match) > PAID_SPONSORED >
-  PUBLIC_GOOD > SELF_IMPROVEMENT. Paid sponsors MUST NOT preempt donor
-  redemption.
+- **FR-032**: The scheduler MUST use a continuous multi-factor priority
+  score for all jobs (LOCAL_USER preemption remains an absolute
+  override outside this formula). The composite score is:
+  `P(job) = 0.35·S_ncu + 0.25·S_vote + 0.15·S_size + 0.15·S_age + 0.10·S_cool`
+  where all signals are normalized to [0,1]:
+  - **S_ncu**: saturating function of the submitter's NCU balance
+    (donors get priority boost, not access gating — NCU is never
+    required to submit a job)
+  - **S_vote**: population-normalized public importance vote score
+    from verified human voters (see FR-055–058)
+  - **S_size**: exponential decay penalizing larger/longer jobs
+    (Slurm-style backfill — small jobs fill gaps)
+  - **S_age**: exponential saturation with a 4-hour half-life
+    ensuring every job reaches the top of any finite queue
+    (starvation freedom guarantee)
+  - **S_cool**: exponential decay over a 24-hour trailing window
+    penalizing users who recently consumed cluster compute
+    (prevents monopolization)
+  Anyone on Earth can submit a job for free. NCU boosts priority but
+  NEVER gates access. No job is ever permanently blocked.
 - **FR-033**: A reserved slice of total cluster capacity (5–10%) MUST be
-  allocated at all times to self-improvement workloads (Principle IV);
-  this slice MUST NOT starve under load and MUST NOT be monopolizable.
+  allocated at all times to self-improvement workloads (Principle IV),
+  concretely: the distributed mesh LLM system (see FR-120–126). This
+  slice MUST NOT starve under load and MUST NOT be monopolizable.
 - **FR-034**: The system MUST enforce disjoint-bucket placement of
   replicas: different autonomous systems, different geographic regions,
   different trust buckets.
@@ -437,10 +464,13 @@ the ledger with a verifiable witness.
 - **FR-041**: When a replica is preempted, the scheduler MUST maintain
   job liveness by promoting a pre-warmed hot standby or launching a new
   replica from the latest checkpoint without submitter action.
-- **FR-042**: Donated hardware MUST entitle the donor to redemption
-  compute of at least the same caliber class (0=RPi, 1=CPU laptop,
-  2=workstation, 3=server, 4=high-end GPU) as was donated, averaged
-  over the accounting window.
+- **FR-042**: Donated hardware earns NCU credits that boost the donor's
+  job priority via S_ncu (FR-032). Donors with NCU balance > 0 MUST
+  receive a priority boost proportional to their balance, with
+  caliber-class matching as a best-effort preference (same-tier
+  hardware preferred, lower-tier acceptable). NCU is a priority
+  accelerator, NOT an access gate — donors are never worse off than
+  non-donors, and non-donors are never fully blocked.
 
 #### Credit, accounting, and trust
 
@@ -461,6 +491,34 @@ the ledger with a verifiable witness.
 - **FR-054**: Donors MUST be able to inspect and cryptographically
   verify their own credit history locally with `worldcompute donor
   credits --verify`.
+
+#### Public voting and Sybil resistance
+
+- **FR-055**: Any human MUST be able to submit a compute proposal
+  ("I want to run X, here's why it matters") to the public proposal
+  board without holding NCU credits.
+- **FR-056**: Verified humans MUST be able to upvote or downvote
+  proposals on the public board. Vote weight is proportional to the
+  voter's Humanity Points (HP) score. Voters MUST hold HP >= 5 for
+  full vote weight; below that, fractional weight (HP/5).
+- **FR-057**: Humanity Points MUST be earned through a layered
+  composite score for Sybil resistance: Tier 1 (low friction) — email
+  verification (1 HP), phone number (3 HP), linked social accounts
+  (2 HP each, max 3). Tier 2 (higher friction) — web-of-trust vouching
+  from existing verified voters (2 HP per vouch, max 3), proof-of-
+  personhood protocol participation (e.g., BrightID, Idena — 3 HP
+  each). Tier 3 (highest trust) — active World Compute donor with
+  Trust Score > 0.7 (5 HP), because proof-of-hardware costs 3–4
+  orders of magnitude more to fake than digital identities. Biometric
+  collection (e.g., iris scans) is NOT permitted per Principle I.
+- **FR-058**: The voting system MUST implement anti-gaming measures:
+  quadratic voting (vote cost scales as n²), per-epoch vote budgets
+  (20 votes per 7-day epoch), anomaly detection for coordinated sock-
+  puppet campaigns, and a public audit log of all votes on the
+  tamper-evident ledger.
+- **FR-059**: Self-voting exclusion: a proposal submitter MUST NOT be
+  able to vote on their own proposal; donors MUST NOT be able to
+  vote-boost proposals that exclusively benefit their own jobs.
 
 #### Decentralized bootstrap & discovery
 
@@ -563,6 +621,43 @@ the ledger with a verifiable witness.
 - **FR-104**: A governance proposal/vote system MUST exist via CLI and
   web dashboard, with records written to the same ledger as compute
   provenance.
+
+#### Distributed mesh LLM (self-improvement, Principle IV)
+
+- **FR-120**: The self-improvement system MUST be a distributed
+  ensemble-of-experts LLM ("mesh LLM") where each participating GPU
+  donor node runs a complete small language model (e.g., LLaMA-3-8B
+  quantized to 4-bit) as one "expert" in a Mixture-of-Experts
+  architecture.
+- **FR-121**: All participating models MUST use the same tokenizer
+  (LLaMA-3 tokenizer, 128K vocabulary). This is the universal
+  interface — models with incompatible tokenizers MUST NOT participate
+  in the mesh until a cross-tokenizer vocabulary mapping is validated.
+- **FR-122**: A lightweight router model MUST select K-of-N experts
+  per token generation step. Each selected expert returns sparse
+  top-256 logits (~1.5 KB). The router computes the weighted average
+  of these distributions and samples the next token. This requires
+  one parallel network round-trip per token (not N sequential hops).
+- **FR-123**: The mesh LLM MUST be able to self-prompt — generating
+  tasks for itself, evaluating outputs, and using results to improve
+  the cluster (scheduler optimization, security log analysis, test
+  generation, configuration tuning, governance proposal drafting).
+- **FR-124**: The mesh LLM MUST be able to carve off subsets of itself
+  to work as independent parallel agents — e.g., one subset optimizes
+  scheduling while another analyzes storage health.
+- **FR-125**: Safety: all mesh LLM outputs that modify cluster
+  configuration, policy, or code MUST be classified into action tiers
+  (read-only, suggest, modify-minor, modify-major, deploy) and MUST
+  be sandboxed. Tier "modify-major" and above MUST require human
+  governance approval before deployment. All actions MUST be logged
+  to the tamper-evident ledger. A governance kill switch MUST be able
+  to halt all mesh LLM operations immediately.
+- **FR-126**: Phased rollout: Phase 0–1 use a centralized model on
+  project-operated infrastructure. Phase 2 (~280+ GPU nodes at 5%
+  capacity) enables a minimal distributed ensemble with human-reviewed
+  outputs only. Phase 3 (~1000+ nodes) adds learned routing and
+  sandboxed self-modification. Phase 4 (~5000+ nodes) enables full
+  autonomous self-improvement with governance-gated deployment.
 
 #### Observability
 
@@ -668,10 +763,11 @@ the ledger with a verifiable witness.
 - **SC-006**: A deliberately malicious donor injecting wrong results is
   detected and quarantined within 100 audited tasks with ≥95%
   probability.
-- **SC-007**: A donor redeeming earned credits for same-caliber-class
-  compute receives an allocation offer within p95 < 2 hours (measured
-  from request submission to resource assignment) in the steady-state
-  cluster.
+- **SC-007**: A job submitted with NCU balance > 0 (donor redemption)
+  receives scheduling within p95 < 30 minutes in the steady-state
+  cluster. A job submitted with NCU = 0 and positive public votes
+  receives scheduling within a worst-case bound of ~7 hours
+  (starvation freedom via S_age). No job is ever permanently blocked.
 - **SC-008**: The project publishes a quarterly financial report and
   an aggregate energy/carbon footprint report within 14 days of the
   quarter close for every quarter from GA onward.
@@ -743,6 +839,12 @@ the ledger with a verifiable witness.
 - `research/06-fairness-and-credits.md` — Fairness, scheduling, credits
 - `research/07-governance-testing-ux.md` — Governance, funding, testing,
   CLI/GUI
+- `research/08-priority-redesign.md` — Multi-factor priority queue,
+  open-access model, human-verified voting, Sybil resistance
+- `research/09-mesh-llm.md` — Distributed MoE mesh LLM architecture
+  for self-improvement (Principle IV)
+- `research/10-prior-art-distributed-inference.md` — Survey of Petals,
+  Hivemind, Exo, SWARM, proof-of-personhood systems
 - `design/architecture-overview.md` — Consolidated architecture design
   document
 - `whitepaper.md` — Public-facing whitepaper
