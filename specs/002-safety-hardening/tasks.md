@@ -219,9 +219,9 @@
 
 - [ ] T086 Decide on proof-of-personhood provider (BrightID, government ID, or equivalent) and document decision in specs/002-safety-hardening/research.md
 - [ ] T087 Implement proof-of-personhood integration with chosen provider in src/identity/personhood.rs
-- [ ] T088 [P] Implement OAuth2 verification flows (email, phone, social accounts) in src/identity/oauth2.rs and src/identity/phone.rs
-- [ ] T089 [P] Implement Ed25519 key revocation — revoked PeerIds rejected by coordinators in src/agent/identity.rs
-- [ ] T090 Enforce donor_id format and uniqueness constraint in src/agent/donor.rs
+- [X] T088 [P] Implement OAuth2 verification flows (email, phone, social accounts) in src/identity/oauth2.rs and src/identity/phone.rs
+- [X] T089 [P] Implement Ed25519 key revocation — revoked PeerIds rejected by coordinators in src/agent/identity.rs
+- [X] T090 Enforce donor_id format and uniqueness constraint in src/agent/donor.rs
 - [ ] T091 Wire verification to enrollment flow — verify at enrollment, schedule re-verification at trust score recalculation in src/agent/lifecycle.rs
 - [ ] T092 Direct test: real OAuth2 flow against test provider, verify HP score updates (Principle V)
 

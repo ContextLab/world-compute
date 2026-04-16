@@ -72,7 +72,7 @@ impl AgentInstance {
         // Create donor record
         let now = Timestamp::now();
         let donor = Donor {
-            donor_id: format!("donor-{}", &peer_id_str[..12]),
+            donor_id: crate::agent::donor::DonorId::from_public_key(signing_key.verifying_key().as_bytes()),
             peer_id: peer_id_str.clone(),
             caliber_class: caliber,
             credit_balance: NcuAmount::ZERO,
