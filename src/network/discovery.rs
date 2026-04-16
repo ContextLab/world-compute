@@ -47,7 +47,7 @@ impl Default for DiscoveryConfig {
 /// Create the discovery behaviour for a given local peer.
 pub fn build_discovery_behaviour(
     local_peer_id: PeerId,
-    config: &DiscoveryConfig,
+    _config: &DiscoveryConfig,
 ) -> Result<DiscoveryBehaviour, Box<dyn std::error::Error>> {
     // mDNS: discovers peers on the local network via multicast DNS.
     // Fires DiscoveredEvent within ~1-2 seconds on most platforms.

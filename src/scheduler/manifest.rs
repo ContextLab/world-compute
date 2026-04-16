@@ -81,13 +81,13 @@ pub fn validate_manifest(manifest: &JobManifest) -> Result<(), WcError> {
     }
 
     // Check confidential jobs require appropriate verification
-    if manifest.confidentiality == ConfidentialityLevel::ConfidentialHigh {
-        if !matches!(manifest.verification, VerificationMethod::TeeAttested) {
-            return Err(WcError::new(
-                ErrorCode::TrustTierMismatch,
-                "ConfidentialHigh jobs must use TeeAttested verification",
-            ));
-        }
+    if manifest.confidentiality == ConfidentialityLevel::ConfidentialHigh
+        && !matches!(manifest.verification, VerificationMethod::TeeAttested)
+    {
+        return Err(WcError::new(
+            ErrorCode::TrustTierMismatch,
+            "ConfidentialHigh jobs must use TeeAttested verification",
+        ));
     }
 
     Ok(())
@@ -115,13 +115,13 @@ mod tests {
                 gpu_vram_bytes: 0,
                 scratch_bytes: 1024 * 1024 * 1024,
                 network_egress_bytes: 0,
-                walltime_budget_ms: 3600_000,
+                walltime_budget_ms: 3_600_000,
             },
             category: JobCategory::PublicGood,
             confidentiality: ConfidentialityLevel::Public,
             verification: VerificationMethod::ReplicatedQuorum,
             acceptable_use_classes: vec![AcceptableUseClass::Scientific],
-            max_wallclock_ms: 3600_000,
+            max_wallclock_ms: 3_600_000,
             submitter_signature: vec![0u8; 64],
         }
     }

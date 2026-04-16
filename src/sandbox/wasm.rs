@@ -10,6 +10,7 @@ use wasmtime::{Config, Engine, Linker, Module, Store};
 
 /// WASM sandbox state.
 pub struct WasmSandbox {
+    #[allow(dead_code)]
     engine: Engine,
     workload_cid: Option<Cid>,
     module: Option<Module>,

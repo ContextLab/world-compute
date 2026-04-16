@@ -291,7 +291,6 @@ fn ram_gb() -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
 
     fn test_config() -> AgentConfig {
         let dir = std::env::temp_dir().join(format!("wc-test-{}", uuid::Uuid::new_v4()));

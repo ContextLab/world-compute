@@ -16,6 +16,7 @@ pub struct PreemptionSupervisor {
     /// Active sandboxes managed by this supervisor.
     sandboxes: Arc<Mutex<Vec<Box<dyn Sandbox>>>>,
     /// Receiver for sovereignty events from the idle detector.
+    #[allow(dead_code)]
     event_rx: watch::Receiver<Option<SovereigntyEvent>>,
     /// Whether workloads are currently frozen.
     frozen: bool,

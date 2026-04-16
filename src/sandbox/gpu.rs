@@ -3,6 +3,8 @@
 //! Checks singleton IOMMU group before exposing GPU to a guest.
 //! The ACS-override patch is explicitly prohibited.
 
+// Error types will be used when GPU check is fully implemented.
+#[allow(unused_imports)]
 use crate::error::{ErrorCode, WcError};
 
 /// Result of GPU passthrough eligibility check.

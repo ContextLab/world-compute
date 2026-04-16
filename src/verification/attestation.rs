@@ -3,7 +3,7 @@
 //! The control plane MUST perform attestation before dispatching any job.
 //! Supports: TPM 2.0 PCR (x86), SEV-SNP, TDX, Apple Secure Enclave, soft.
 
-use crate::error::{ErrorCode, WcError};
+use crate::error::WcError;
 use crate::types::{AttestationQuote, AttestationType};
 
 /// Verify an attestation quote from a donor node.
@@ -24,7 +24,7 @@ pub fn verify_attestation(quote: &AttestationQuote) -> Result<bool, WcError> {
 pub fn generate_soft_attestation(agent_version: &str, platform_info: &str) -> AttestationQuote {
     // Soft attestation: agent self-reports its version and platform.
     // This is the lowest trust tier and should only be used for T0 nodes.
-    let payload = format!("soft:{}:{}", agent_version, platform_info);
+    let payload = format!("soft:{agent_version}:{platform_info}");
     AttestationQuote {
         quote_type: AttestationType::Soft,
         quote_bytes: payload.into_bytes(),
