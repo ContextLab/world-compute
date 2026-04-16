@@ -58,7 +58,7 @@
 - [X] T019 Implement ApprovedArtifact registry with CID-based lookup and approval/revocation in src/registry/mod.rs
 - [X] T020 Add known-good PCR measurement mapping (agent version → expected PCR values) in src/verification/attestation.rs
 - [X] T021 Run attestation tests against software TPM (swtpm) to verify T011-T014 pass
-- [ ] T022 Direct test on real TPM2 hardware: verify real PCR quote accepted, forged quote rejected (Principle V)
+- [X] T022 Direct test on real TPM2 hardware: verify real PCR quote accepted, forged quote rejected (Principle V)
 
 **Checkpoint**: Attestation verification is real. Trust tiers T0-T4 are enforced by cryptographic evidence.
 
@@ -238,7 +238,7 @@
 - [X] T095 [P] Add provenance attestation generation to build artifacts in build.rs
 - [X] T096 Integrate Sigstore Rekor (or equivalent) transparency log for artifact signatures in src/registry/transparency.rs
 - [X] T097 Configure release channels: development → staging → production with promotion gates requiring: passing CI, signed artifacts, and explicit human approval for staging→production promotion
-- [ ] T098 Direct test: build from same source twice, verify bit-identical artifacts (Principle V — SC-S010)
+- [X] T098 Direct test: build from same source twice, verify bit-identical artifacts (Principle V — SC-S010)
 
 **Checkpoint**: Builds reproducible. Artifacts signed with provenance. Transparency log operational.
 
