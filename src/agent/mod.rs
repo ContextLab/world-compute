@@ -3,6 +3,7 @@
 pub mod config;
 pub mod donor;
 pub mod identity;
+pub mod lifecycle;
 pub mod mesh_llm;
 pub mod node;
 
