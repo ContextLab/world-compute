@@ -1,5 +1,6 @@
 //! Scheduler module — job model, priority, placement, broker, coordinator.
 
+pub mod job;
 pub mod manifest;
 pub mod priority;
 
