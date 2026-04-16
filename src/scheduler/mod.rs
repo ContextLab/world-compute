@@ -1,5 +1,8 @@
 //! Scheduler module — job model, priority, placement, broker, coordinator.
 
+pub mod manifest;
+pub mod priority;
+
 use serde::{Deserialize, Serialize};
 
 /// Job category label for accounting (NOT rigid scheduling order).
