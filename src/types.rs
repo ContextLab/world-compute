@@ -11,7 +11,12 @@ use std::fmt;
 pub type Cid = cid::Cid;
 
 /// Peer identity derived from Ed25519 public key (libp2p PeerId).
+/// We re-export the libp2p type for runtime use but use PeerIdStr in
+/// serializable structs since libp2p::PeerId doesn't derive serde.
 pub type PeerId = libp2p::PeerId;
+
+/// String representation of a PeerId for use in serializable structs.
+pub type PeerIdStr = String;
 
 /// Normalized Compute Unit amount in micro-NCU (1 NCU = 1_000_000 micro-NCU).
 /// Using u64 gives a range of ~18.4 billion NCU, sufficient for planetary scale.

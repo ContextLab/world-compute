@@ -3,6 +3,7 @@
 //! This crate provides the shared types, modules, and infrastructure used by
 //! the agent daemon, CLI, GUI, and adapters.
 
+pub mod error;
 pub mod types;
 
 pub mod acceptable_use;

@@ -62,8 +62,8 @@ sha2 = "0.10"
 rand = "0.8"
 
 # Content addressing
-cid = "0.11"
-multihash = "0.19"
+cid = { version = "0.11", features = ["serde"] }
+multihash = { version = "0.19", features = ["serde-codec"] }
 
 # Erasure coding
 reed-solomon-erasure = "6"
@@ -83,6 +83,7 @@ tracing-opentelemetry = "0.28"
 wasmtime = "27"
 
 # Misc
+regex-lite = "0.1"
 thiserror = "2"
 anyhow = "1"
 chrono = { version = "0.4", features = ["serde"] }
