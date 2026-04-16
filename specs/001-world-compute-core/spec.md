@@ -163,9 +163,12 @@ quorum / audit layer.
    execution to Trust Tier T3+ nodes (SEV-SNP, TDX, or H100 Confidential
    Compute) with hardware-attested guest measurement.
 5. **Given** a submitter with no earned credits submitting a `public-good`
-   job, **When** the scheduler places it, **Then** it runs only on
-   excess capacity and is preempted (with checkpoint) in favor of
-   higher-priority donor-redemption or paid-sponsored jobs.
+   job, **When** the scheduler places it, **Then** it receives a lower
+   composite priority score (S_ncu = 0, relying on S_vote, S_size,
+   S_age, S_cool) per FR-032. The job is NEVER permanently blocked —
+   S_age ensures it reaches the top of any finite queue within ~7
+   hours — but higher-scoring jobs (e.g., donor-redemption with NCU)
+   are scheduled first.
 
 ---
 
@@ -240,10 +243,11 @@ Kubernetes via the operator.
 
 ---
 
-### User Story 5 - Philanthropist / Donor Contributes Funds (Priority: P2)
+### User Story 5 - Philanthropist / Financial Supporter Contributes Funds (Priority: P2)
 
-A supporter — individual, foundation, corporation — wants to financially
-support the project. They donate through a transparent, publicly-auditable
+A financial supporter — individual, foundation, corporation — wants to
+fund the project (distinct from a "hardware donor" who contributes
+compute). They contribute through a transparent, publicly-auditable
 channel. Funds are managed by a named legal entity (US 501(c)(3) at
 launch) and spent under a published, quarterly-reported budget aligned to
 the constitution. Financial donation never buys compute priority (that
@@ -261,8 +265,8 @@ no financial donation confers compute scheduling priority.
 
 **Acceptance Scenarios**:
 
-1. **Given** the project is incorporated, **When** a donor visits the
-   public "Support" page, **Then** they see a legal entity name, tax
+1. **Given** the project is incorporated, **When** a financial supporter
+   visits the public "Support" page, **Then** they see a legal entity name, tax
    status, donation channels, a public ledger of funds, and the
    governance model.
 2. **Given** a corporate sponsor making a tier donation, **When** the
@@ -432,9 +436,10 @@ the ledger with a verifiable witness.
   override outside this formula). The composite score is:
   `P(job) = 0.35·S_ncu + 0.25·S_vote + 0.15·S_size + 0.15·S_age + 0.10·S_cool`
   where all signals are normalized to [0,1]:
-  - **S_ncu**: saturating function of the submitter's NCU balance
-    (donors get priority boost, not access gating — NCU is never
-    required to submit a job)
+  - **S_ncu**: `1 - exp(-α·balance)` where α is tuned so that the
+    median donor balance yields S_ncu ≈ 0.7 (donors get priority
+    boost, not access gating — NCU is never required to submit a job;
+    see research/08-priority-redesign.md for derivation)
   - **S_vote**: population-normalized public importance vote score
     from verified human voters (see FR-055–058)
   - **S_size**: exponential decay penalizing larger/longer jobs
@@ -466,11 +471,16 @@ the ledger with a verifiable witness.
   replica from the latest checkpoint without submitter action.
 - **FR-042**: Donated hardware earns NCU credits that boost the donor's
   job priority via S_ncu (FR-032). Donors with NCU balance > 0 MUST
-  receive a priority boost proportional to their balance, with
-  caliber-class matching as a best-effort preference (same-tier
-  hardware preferred, lower-tier acceptable). NCU is a priority
-  accelerator, NOT an access gate — donors are never worse off than
-  non-donors, and non-donors are never fully blocked.
+  receive a priority boost proportional to their balance. When a donor
+  redeems NCU for their own job, the scheduler MUST guarantee a
+  MINIMUM allocation of resources of at least the same caliber class
+  (0=RPi, 1=CPU laptop, 2=workstation, 3=server, 4=high-end GPU) as
+  was donated, averaged over the accounting window, per Constitution
+  Principle III. If no same-caliber node is available within the p95
+  SLA (SC-007), the donor MAY accept a lower-tier node voluntarily
+  with a 30% NCU refund, but MUST NOT be silently downgraded. NCU is
+  a priority accelerator, NOT an access gate — donors are never worse
+  off than non-donors, and non-donors are never fully blocked.
 
 #### Credit, accounting, and trust
 
@@ -504,7 +514,8 @@ the ledger with a verifiable witness.
 - **FR-057**: Humanity Points MUST be earned through a layered
   composite score for Sybil resistance: Tier 1 (low friction) — email
   verification (1 HP), phone number (3 HP), linked social accounts
-  (2 HP each, max 3). Tier 2 (higher friction) — web-of-trust vouching
+  with public activity history verifiable via OAuth2 (GitHub, LinkedIn,
+  or X/Twitter — 2 HP each, max 3). Tier 2 (higher friction) — web-of-trust vouching
   from existing verified voters (2 HP per vouch, max 3), proof-of-
   personhood protocol participation (e.g., BrightID, Idena — 3 HP
   each). Tier 3 (highest trust) — active World Compute donor with
@@ -595,7 +606,8 @@ the ledger with a verifiable witness.
   Phase 3 once their sandbox stories are independently audited.
 - **FR-095**: The user-facing surface MUST be accessible (WCAG 2.1 AA)
   and internationalized from v1; English plus at least 2 additional
-  launch languages.
+  launch languages (initial targets: Spanish and Simplified Chinese,
+  subject to governance revision).
 
 #### Governance & funding
 

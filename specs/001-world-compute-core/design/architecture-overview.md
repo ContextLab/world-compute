@@ -75,7 +75,7 @@ graph TB
 
     subgraph Donor nodes
         subgraph Node A
-            AGT[Agent process\ngo-libp2p]
+            AGT[Agent process\nrust-libp2p]
             PSUP[Preemption supervisor\n<10ms SIGSTOP]
             SCHED[Local scheduler\nlease manager]
             SDB[Sandbox driver\nFirecracker / Apple VF\nHyper-V / WASM]
@@ -135,7 +135,7 @@ graph TB
 
 **Failure modes**: Agent crash — sandbox driver detects absence of heartbeat; broker marks lease expired; job rescheduled from latest checkpoint. Agent compromised — TPM PCR mismatch on next attestation; coordinator quarantines node; P0 incident protocol if escape is confirmed.
 
-**v1 scope**: Linux (go-libp2p primary), macOS, Windows. rust-libp2p agent for edge/IoT is Phase 2. Mobile/browser are Phase 3.
+**v1 scope**: Linux, macOS, Windows (all rust-libp2p per FR-006). js-libp2p for browser donors in Phase 3. Mobile deferred to Phase 3.
 
 ---
 

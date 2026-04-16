@@ -9,7 +9,7 @@
 
 **Purpose**: Cargo workspace initialization, proto scaffolding, CI, and core type definitions
 
-- [ ] T001 Initialize Cargo workspace with root `Cargo.toml` defining workspace members: `src/`, `gui/src-tauri/`, `adapters/slurm/`, `adapters/kubernetes/`, `adapters/cloud/` in `Cargo.toml`
+- [ ] T001 Initialize Cargo workspace with root `Cargo.toml` defining workspace members: `src/`, `gui/src-tauri/`, `adapters/slurm/`, `adapters/kubernetes/`, `adapters/cloud/` in `Cargo.toml`; create `.gitignore` (target/, *.swp, .env), `rustfmt.toml`, and `clippy.toml`
 - [ ] T002 Create `src/lib.rs` with top-level module declarations for agent, sandbox, preemption, scheduler, network, data_plane, verification, ledger, credits, acceptable_use, governance, telemetry, cli
 - [ ] T003 [P] Create `proto/donor.proto` with DonorService definition (6 RPCs: Enroll, Heartbeat, GetDonorStatus, UpdateConsent, Withdraw, ConfirmWithdraw) per `contracts/donor.proto.md`
 - [ ] T004 [P] Create `proto/submitter.proto` with SubmitterService definition (6 RPCs: SubmitJob, GetJob, StreamJobLogs, CancelJob, ListJobs, FetchResult) per `contracts/submitter.proto.md`
@@ -33,7 +33,7 @@
 - [ ] T013 [P] Define TrustTier enum (T0–T4) with score thresholds and replication constraints in `src/verification/trust_score.rs` per data-model §3.16
 - [ ] T014 [P] Define CaliberClass enum (C0–C4) with NCU/hr rates and redemption matching rules in `src/credits/caliber.rs` per data-model §3.17
 - [ ] T015 [P] Define AcceptableUseClass enum and ShardCategory enum (`Public`, `OpaqueEncrypted`, `EuResident`, `UsResident`, `UkResident`, `JpResident`) in `src/acceptable_use/mod.rs` per data-model §3.21
-- [ ] T016 [P] Define PriorityClass enum (`DonorRedemption`, `PaidSponsored`, `PublicGood`, `SelfImprovement`), ConfidentialityLevel enum, and VerificationMethod enum in `src/scheduler/mod.rs` per data-model §3.5
+- [ ] T016 [P] Define JobCategory enum (`DonorRedemption`, `PaidSponsored`, `PublicGood`, `SelfImprovement`) for accounting labels (NOT rigid scheduling order — scheduling uses continuous multi-factor score per FR-032), ConfidentialityLevel enum, and VerificationMethod enum in `src/scheduler/mod.rs` per data-model §3.5
 - [ ] T017 [P] Define WorkloadType enum (`OciContainer`, `WasmModule`) and PreemptClass enum (`Yieldable`, `Checkpointable`, `Restartable`) in `src/scheduler/mod.rs`
 - [ ] T018 Implement Ed25519 key generation, PeerId derivation, and key persistence (load-or-create at enrollment) using ed25519-dalek in `src/agent/identity.rs`
 - [ ] T019 [P] Initialize OpenTelemetry tracing provider with structured logs, metrics, and traces (FR-105) in `src/telemetry/mod.rs`; configure span naming convention `v1.<ServiceName>/<MethodName>`
@@ -106,6 +106,10 @@
 
 - [ ] T050 [US1] Implement DonorService gRPC server (Enroll, Heartbeat, GetDonorStatus, UpdateConsent, Withdraw, ConfirmWithdraw handlers) using tonic in `src/agent/donor_service.rs` per `contracts/donor.proto.md`
 
+### P0 Incident Response
+
+- [ ] T051a [US1] Implement remote agent version disable: coordinator publishes version blocklist, agent checks blocklist on every heartbeat and self-halts if its version is blocked; cluster-wide dispatch halt for affected versions in `src/agent/version_gate.rs` per FR-014
+
 ### Integration Test
 
 - [ ] T051 [US1] Integration test: single donor joins, receives trivial job, earns NCU credits, yields on simulated keyboard activity, withdraws cleanly with no host residue in `tests/integration/test_donor_lifecycle.rs`
@@ -151,13 +155,18 @@
 ### Ledger
 
 - [ ] T065 [P] [US2] Implement CRDT OR-Map balance view (read balance, apply earn/spend/decay entries, merge replicas) in `src/ledger/crdt.rs` per FR-051
-- [ ] T066 [P] [US2] Implement threshold signing for ledger entries (t-of-n coordinator signatures, signature collection, verification) in `src/ledger/threshold_sig.rs` per FR-051
+- [ ] T066 [P] [US2] Implement threshold signing for ledger entries (t-of-n coordinator signatures, signature collection, verification) in `src/ledger/threshold_sig.rs` per FR-051. NOTE: Phase 4 uses a single-node stub coordinator (t=1, n=1) for threshold signing; full multi-coordinator Raft (T083-T084) lands in Phase 5
 - [ ] T067 [P] [US2] Implement transparency log anchoring: compute cross-shard MerkleRoot every 10 minutes, anchor to Sigstore Rekor in `src/ledger/transparency.rs` per FR-051
 
 ### Data Plane
 
 - [ ] T068 [P] [US2] Implement RS(10,18) erasure encoding and decoding with repair capability in `src/data_plane/erasure.rs` per FR-071
 - [ ] T069 [P] [US2] Implement geographic and AS-diverse shard placement (>=3 continents, <=2 shards/country, >=1 shard/AS) in `src/data_plane/placement.rs` per FR-071, FR-074
+
+### Confidential Compute
+
+- [ ] T069a [P] [US2] Implement job bundle encryption: client-side AES-256-GCM encryption of inputs/code with per-job ephemeral key, TPM-agent-attested key release for confidential-medium jobs in `src/data_plane/confidential.rs` per FR-072
+- [ ] T069b [US2] Implement SEV-SNP/TDX guest-measurement key wrapping for confidential-high jobs: key sealed to guest measurement, released only to attested T3+/T4 sandboxes in `src/data_plane/confidential.rs` per FR-072
 
 ### Submitter Entity
 
@@ -394,6 +403,22 @@
 
 - [ ] T141 [P] Update repository root README.md with project overview, architecture summary, quickstart instructions, and API reference links
 - [ ] T142 [P] Create evidence artifact JSON schema and directory structure (`evidence/phase0/`, `evidence/phase1/`) per quickstart §8
+
+### Storage Cap & GC
+
+- [ ] T144a [P] Implement per-donor storage cap enforcement and content GC for expired/withdrawn data in `src/data_plane/cid_store.rs` per FR-073
+
+### Energy & Carbon Reporting
+
+- [ ] T144b [P] Implement per-node energy/resource metering (CPU-time, GPU-time, estimated watts) and aggregate carbon footprint reporting endpoint in `src/telemetry/energy.rs` per SC-009, Constitution IV
+
+### Churn Simulator
+
+- [ ] T144c [P] Build churn simulator: random node kill/rejoin at configurable rate for SC-004 validation (80% completion at 30% churn over 72h) in `tests/integration/churn_simulator.rs`
+
+### Incident Disclosure
+
+- [ ] T144d [P] Create incident disclosure policy document and public disclosure page template in `docs/security/incident-disclosure-policy.md` per FR-082
 
 ### Quickstart Validation
 

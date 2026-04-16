@@ -50,7 +50,7 @@ Apple Silicon), Windows (x86_64). Browser (WASM, Phase 3). Mobile
 **Project Type**: Distributed system — daemon + CLI + GUI + adapters
 
 **Performance Goals**: sub-second preemption yield (FR-040, <10ms SIGSTOP +
-500ms full release), p95 <2h donor redemption queue (SC-007), >80% job
+500ms full release), p95 <30min donor redemption queue (SC-007), >80% job
 completion at 30% churn (SC-004), >90% completion over 30 days at GA
 (SC-005).
 
@@ -71,7 +71,7 @@ but v1 must work correctly at 3.
 |-|-|-|
 | I. Safety First | All workloads in VM-level sandbox; no host access; code-signed agent; attestation before dispatch; P0 incident halts cluster | **PASS** — FR-010–014, Firecracker/AppleVF/Hyper-V per platform |
 | II. Robustness | R=3 replication; checkpoint every 60s; resume from any node; heartbeat failure detection; sharded-Raft control plane; RS(10,18) storage | **PASS** — FR-023, FR-030–034, FR-071 |
-| III. Fairness | LOCAL_USER > all; SIGSTOP <10ms; same-caliber redemption; NCU credits; transparent auditable ledger; no pay-for-priority | **PASS** — FR-040–042, FR-050–054, FR-103 |
+| III. Fairness | LOCAL_USER > all; SIGSTOP <10ms; guaranteed same-caliber redemption (FR-042); open-access multi-factor priority (FR-032); NCU credits; transparent auditable ledger; no pay-for-priority | **PASS** — FR-032, FR-040–042, FR-050–059, FR-103 |
 | IV. Efficiency | 5–10% self-improvement slice; energy/carbon reporting; locality-aware scheduling; performance regressions block release | **PASS** — FR-033, SC-009 |
 | V. Direct Testing | No component ships without real-hardware direct-test evidence; adversarial tests mandatory; Phases 0–4 with kill gates | **PASS** — FR-110–112, quickstart.md |
 
