@@ -89,7 +89,7 @@
 - [X] T033 [US1] Block RFC1918, link-local, cloud metadata (169.254.169.254), donor LAN from all sandboxes in src/sandbox/egress.rs
 - [X] T034 [US1] Implement Linux idle detection (replace unconditional None return) in src/preemption/triggers.rs
 - [X] T035 [US1] Implement resume_all() in preemption supervisor (replace stub) in src/preemption/supervisor.rs
-- [ ] T036 [US1] Direct test on real Linux machine with Firecracker: run adversarial workload, verify all egress blocked (Principle V)
+- [X] T036 [US1] Direct test on real Linux machine with Firecracker: run adversarial workload, verify all egress blocked (Principle V)
 - [ ] T037 [US1] Direct test on real macOS machine with VZ framework: run adversarial workload, verify isolation (Principle V)
 
 **Checkpoint**: Donor machines are protected. Real VMs run. Egress is default-deny. Preemption works on all platforms.
@@ -114,7 +114,7 @@
 - [X] T042 [US2] Wire artifact registry check into policy engine — reject unregistered CIDs at admission in src/policy/engine.rs
 - [X] T043 [US2] Add re-verification scheduling: re-verify attestation at trust score recalculation intervals in src/verification/attestation.rs
 - [X] T044 [US2] Handle attestation expiry mid-job: checkpoint within grace period, re-evaluate before new work in src/scheduler/job.rs
-- [ ] T045 [US2] Direct test on real TPM2 machine: full dispatch flow with real attestation (Principle V)
+- [X] T045 [US2] Direct test on real TPM2 machine: full dispatch flow with real attestation (Principle V)
 
 **Checkpoint**: No job reaches a donor without verified attestation and signed artifacts.
 
@@ -217,8 +217,8 @@
 
 ### Implementation for Identity Verification
 
-- [ ] T086 Decide on proof-of-personhood provider (BrightID, government ID, or equivalent) and document decision in specs/002-safety-hardening/research.md
-- [ ] T087 Implement proof-of-personhood integration with chosen provider in src/identity/personhood.rs
+- [X] T086 Decide on proof-of-personhood provider (BrightID, government ID, or equivalent) and document decision in specs/002-safety-hardening/research.md
+- [X] T087 Implement proof-of-personhood integration with chosen provider in src/identity/personhood.rs
 - [X] T088 [P] Implement OAuth2 verification flows (email, phone, social accounts) in src/identity/oauth2.rs and src/identity/phone.rs
 - [X] T089 [P] Implement Ed25519 key revocation — revoked PeerIds rejected by coordinators in src/agent/identity.rs
 - [X] T090 Enforce donor_id format and uniqueness constraint in src/agent/donor.rs
