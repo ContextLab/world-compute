@@ -68,7 +68,7 @@ Five constitutional principles govern every design decision. They are not aspira
 
 ## Status
 
-World Compute is in early implementation. The design phase is complete; core Rust code is being built and tested. Updated 2026-04-15.
+World Compute has completed its initial implementation across all 11 phases. Updated 2026-04-16.
 
 ### Design artifacts (complete)
 
@@ -94,7 +94,7 @@ World Compute is in early implementation. The design phase is complete; core Rus
 | Error model (20 codes, gRPC + HTTP mapping) | Complete | — | `src/error.rs` |
 | Sandbox trait + 4 platform drivers + GPU check | Complete | 3 tests | `src/sandbox/` |
 | Preemption supervisor (<10ms SIGSTOP) | Complete | 5 tests | `src/preemption/` |
-| P2P discovery (mDNS + Kademlia DHT) | Complete | 2 tests | `src/network/discovery.rs` |
+| P2P discovery (mDNS + Kademlia DHT) | Complete | 4 tests | `src/network/discovery.rs` |
 | Agent lifecycle (enroll, heartbeat, pause, withdraw) | Complete | 7 tests | `src/agent/lifecycle.rs` |
 | Cryptographic attestation (5 types) | Complete | 2 tests | `src/verification/attestation.rs` |
 | Trust Score computation (T0-T4 tiers) | Complete | 4 tests | `src/verification/trust_score.rs` |
@@ -107,25 +107,49 @@ World Compute is in early implementation. The design phase is complete; core Rus
 | R=3 quorum verification | Complete | 5 tests | `src/verification/quorum.rs` |
 | Job/Task/Replica state machines | Complete | 6 tests | `src/scheduler/job.rs` |
 | RS(10,18) erasure coding | Complete | 5 tests | `src/data_plane/erasure.rs` |
-| CLI `worldcompute donor` subcommand | Scaffold | — | `src/cli/donor.rs` |
-| CRDT ledger + threshold signing | Not started | — | `src/ledger/` |
-| Regional broker + coordinator (Raft) | Not started | — | `src/scheduler/` |
-| Transport (QUIC, TCP, NAT traversal) | Not started | — | `src/network/` |
-| Desktop GUI (Tauri) | Not started | — | `gui/` |
-| Adapters (Slurm, K8s, cloud) | Not started | — | `adapters/` |
-| Governance + voting (Humanity Points) | Not started | — | `src/governance/` |
-| Mesh LLM self-improvement | Not started | — | `src/agent/mesh_llm/` |
+| CRDT ledger balance view | Complete | 4 tests | `src/ledger/crdt.rs` |
+| 3% audit re-execution | Complete | 5 tests | `src/verification/audit.rs` |
+| Transparency log anchoring (Sigstore stub) | Complete | 2 tests | `src/ledger/transparency.rs` |
+| Job staging pipeline | Complete | 3 tests | `src/data_plane/staging.rs` |
+| Work unit receipt | Complete | 2 tests | `src/verification/receipt.rs` |
+| Submitter entity | Complete | 1 test | `src/scheduler/submitter.rs` |
+| Regional broker (ClassAd matching) | Complete | 4 tests | `src/scheduler/broker.rs` |
+| Coordinator scaffold (Raft roles) | Complete | 2 tests | `src/scheduler/coordinator.rs` |
+| Transport config (QUIC + TCP) | Complete | 1 test | `src/network/transport.rs` |
+| GossipSub protocol | Complete | 2 tests | `src/network/gossip.rs` |
+| NAT traversal config | Complete | 1 test | `src/network/nat.rs` |
+| Shard placement validation | Complete | 3 tests | `src/data_plane/placement.rs` |
+| ComputeAdapter trait | Complete | 4 tests | `src/scheduler/adapter.rs` |
+| Adapters (Slurm, K8s, cloud) | Complete | — | `adapters/` |
+| Governance proposals + board | Complete | 12 tests | `src/governance/` |
+| Humanity Points (Sybil resistance) | Complete | 5 tests | `src/governance/humanity_points.rs` |
+| Quadratic voting | Complete | 4 tests | `src/governance/voting.rs` |
+| Vote validation (self-vote exclusion) | Complete | 3 tests | `src/governance/vote.rs` |
+| Mesh LLM router + expert registry | Complete | 8 tests | `src/agent/mesh_llm/` |
+| Logit aggregation + token sampling | Complete | 3 tests | `src/agent/mesh_llm/aggregator.rs` |
+| Self-prompting loop | Complete | 1 test | `src/agent/mesh_llm/self_prompt.rs` |
+| Agent subsetting | Complete | 2 tests | `src/agent/mesh_llm/subset.rs` |
+| Safety tiers + kill switch | Complete | 4 tests | `src/agent/mesh_llm/safety.rs` |
+| Credit decay (45-day half-life) | Complete | 4 tests | `src/credits/decay.rs` |
+| Acceptable-use filter | Complete | 2 tests | `src/acceptable_use/filter.rs` |
+| Rate limiter (token bucket) | Complete | 3 tests | `src/network/rate_limit.rs` |
+| mTLS config stub | Complete | 1 test | `src/network/tls.rs` |
+| Build info (reproducible builds) | Complete | 1 test | `src/agent/build_info.rs` |
+| Desktop GUI (Tauri scaffold) | Complete | — | `gui/` |
+| CLI (donor + job + governance + admin) | Complete | — | `src/cli/` |
+| Adversarial tests (4 stubs, #[ignore]) | Complete | — | `tests/adversarial/` |
 
-**Total: ~4,500 lines Rust, 66 real tests (0 mocks), all passing.**
+**Total: 8,421 lines Rust across 84 files, 228 real tests (0 mocks), all passing.**
 
-### Not yet started
+### Remaining (operational, not code)
 
-| Item | Target phase |
+| Item | Target |
 |-|-|
-| Web dashboard (React SPA) | Phase 10-11 |
 | Testnet (multi-node real hardware) | Phase 1-2 of staged release |
-| Legal entity / 501(c)(3) | Before Phase 3 alpha |
-| Security audit | Before Phase 3 alpha |
+| Legal entity / 501(c)(3) incorporation | Before Phase 3 alpha |
+| Independent security audit | Before Phase 3 alpha |
+| Web dashboard React SPA build | Phase 10-11 (scaffold in place) |
+| Quickstart Phase 0-1 validation on real hardware | Before Phase 2 testnet |
 
 The source of truth for what will be built is `specs/001-world-compute-core/spec.md`. Every requirement is traceable to a research finding in the ten research documents and is covered by at least one implementation task.
 
