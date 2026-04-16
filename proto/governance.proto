@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package worldcompute.v1;
+
+// GovernanceService — 4 RPCs per contracts/governance.proto.md
+service GovernanceService {
+  // List governance proposals with optional filters
+  rpc ListProposals(ListProposalsRequest) returns (ListProposalsResponse);
+  // Submit a new governance or compute proposal
+  rpc CreateProposal(CreateProposalRequest) returns (CreateProposalResponse);
+  // Cast a vote on an open proposal (requires HP >= 5)
+  rpc CastVote(CastVoteRequest) returns (CastVoteResponse);
+  // Get a financial or operational report for a period
+  rpc GetReport(GetReportRequest) returns (GetReportResponse);
+}
+
+message ListProposalsRequest {
+  ProposalState filter_state = 1;
+  ProposalType filter_type = 2;
+  uint32 limit = 3;
+  string page_token = 4;
+}
+
+message ListProposalsResponse {
+  repeated ProposalSummary proposals = 1;
+  string next_page_token = 2;
+}
+
+message ProposalSummary {
+  string proposal_id = 1;
+  string title = 2;
+  ProposalType proposal_type = 3;
+  ProposalState state = 4;
+  int64 net_votes = 5;
+  uint64 created_at = 6;
+  uint64 closes_at = 7;
+}
+
+message CreateProposalRequest {
+  string title = 1;
+  string body = 2;
+  ProposalType proposal_type = 3;
+  string submitter_id = 4;
+}
+
+message CreateProposalResponse {
+  string proposal_id = 1;
+  ProposalState state = 2;
+}
+
+message CastVoteRequest {
+  string proposal_id = 1;
+  string voter_id = 2;
+  VoteChoice choice = 3;
+  uint32 vote_weight = 4;
+  bytes voter_signature = 5;
+}
+
+message CastVoteResponse {
+  bool accepted = 1;
+  uint32 remaining_epoch_budget = 2;
+  string rejection_reason = 3;
+}
+
+message GetReportRequest {
+  string period = 1;
+}
+
+message GetReportResponse {
+  string period = 1;
+  bytes report_data = 2;
+  string report_cid = 3;
+}
+
+enum ProposalType {
+  PROPOSAL_TYPE_UNSPECIFIED = 0;
+  PROPOSAL_TYPE_COMPUTE = 1;
+  PROPOSAL_TYPE_POLICY_CHANGE = 2;
+  PROPOSAL_TYPE_ACCEPTABLE_USE_RULE = 3;
+  PROPOSAL_TYPE_PRIORITY_REBALANCE = 4;
+  PROPOSAL_TYPE_EMERGENCY_HALT = 5;
+  PROPOSAL_TYPE_CONSTITUTION_AMENDMENT = 6;
+}
+
+enum ProposalState {
+  PROPOSAL_STATE_UNSPECIFIED = 0;
+  PROPOSAL_STATE_DRAFT = 1;
+  PROPOSAL_STATE_OPEN = 2;
+  PROPOSAL_STATE_PASSED = 3;
+  PROPOSAL_STATE_REJECTED = 4;
+  PROPOSAL_STATE_WITHDRAWN = 5;
+  PROPOSAL_STATE_ENACTED = 6;
+}
+
+enum VoteChoice {
+  VOTE_CHOICE_UNSPECIFIED = 0;
+  VOTE_CHOICE_YES = 1;
+  VOTE_CHOICE_NO = 2;
+  VOTE_CHOICE_ABSTAIN = 3;
+}

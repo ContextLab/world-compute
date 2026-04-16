@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package worldcompute.v1;
+
+// AdminService — 4 RPCs per contracts/admin.proto.md
+// All methods require admin-role mTLS certificate.
+service AdminService {
+  // Halt all job dispatch cluster-wide (emergency or maintenance)
+  rpc HaltDispatch(HaltDispatchRequest) returns (HaltDispatchResponse);
+  // Resume job dispatch after a halt
+  rpc ResumeDispatch(ResumeDispatchRequest) returns (ResumeDispatchResponse);
+  // Ban a node from the cluster (quarantine + revoke leases)
+  rpc BanNode(BanNodeRequest) returns (BanNodeResponse);
+  // Rotate a coordinator's threshold signing key share
+  rpc RotateCoordinatorKey(RotateCoordinatorKeyRequest) returns (RotateCoordinatorKeyResponse);
+}
+
+message HaltDispatchRequest {
+  string reason = 1;
+  string admin_id = 2;
+}
+
+message HaltDispatchResponse {
+  bool halted = 1;
+  uint64 active_jobs_affected = 2;
+  string ledger_entry_id = 3;
+}
+
+message ResumeDispatchRequest {
+  string admin_id = 1;
+}
+
+message ResumeDispatchResponse {
+  bool resumed = 1;
+  string ledger_entry_id = 2;
+}
+
+message BanNodeRequest {
+  bytes peer_id = 1;
+  string reason = 2;
+  string admin_id = 3;
+}
+
+message BanNodeResponse {
+  bool banned = 1;
+  uint64 leases_revoked = 2;
+  string ledger_entry_id = 3;
+}
+
+message RotateCoordinatorKeyRequest {
+  string coordinator_id = 1;
+  bytes new_public_share = 2;
+  string admin_id = 3;
+}
+
+message RotateCoordinatorKeyResponse {
+  bool rotated = 1;
+  string ledger_entry_id = 2;
+}

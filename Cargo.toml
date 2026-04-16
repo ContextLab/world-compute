@@ -1,0 +1,94 @@
+[workspace]
+members = [
+    ".",
+    "gui/src-tauri",
+    "adapters/slurm",
+    "adapters/kubernetes",
+    "adapters/cloud",
+]
+resolver = "2"
+
+[package]
+name = "worldcompute"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "A decentralized, volunteer-built compute public good"
+repository = "https://github.com/ContextLab/world-compute"
+
+[[bin]]
+name = "worldcompute"
+path = "src/main.rs"
+
+[dependencies]
+# P2P networking
+libp2p = { version = "0.54", features = [
+    "tokio",
+    "quic",
+    "tcp",
+    "noise",
+    "yamux",
+    "mdns",
+    "kad",
+    "gossipsub",
+    "dcutr",
+    "relay",
+    "dns",
+    "identify",
+    "ping",
+    "ed25519",
+] }
+
+# gRPC
+tonic = "0.12"
+prost = "0.13"
+prost-types = "0.13"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+ciborium = "0.2"
+
+# Crypto
+ed25519-dalek = { version = "2", features = ["serde", "rand_core"] }
+sha2 = "0.10"
+rand = "0.8"
+
+# Content addressing
+cid = "0.11"
+multihash = "0.19"
+
+# Erasure coding
+reed-solomon-erasure = "6"
+
+# Consensus
+openraft = { version = "0.9", features = ["serde"] }
+
+# Observability (OpenTelemetry)
+opentelemetry = "0.27"
+opentelemetry_sdk = { version = "0.27", features = ["rt-tokio"] }
+opentelemetry-otlp = "0.27"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-opentelemetry = "0.28"
+
+# WASM runtime
+wasmtime = "27"
+
+# Misc
+thiserror = "2"
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+hex = "0.4"
+base64 = "0.22"
+
+[build-dependencies]
+tonic-build = "0.12"

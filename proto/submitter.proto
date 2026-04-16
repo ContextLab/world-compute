@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package worldcompute.v1;
+
+// SubmitterService — 6 RPCs per contracts/submitter.proto.md
+service SubmitterService {
+  // Submit a new job from a manifest
+  rpc SubmitJob(SubmitJobRequest) returns (SubmitJobResponse);
+  // Get current status of a job
+  rpc GetJob(GetJobRequest) returns (GetJobResponse);
+  // Stream log output from a running job
+  rpc StreamJobLogs(StreamJobLogsRequest) returns (stream LogEntry);
+  // Cancel a running or queued job
+  rpc CancelJob(CancelJobRequest) returns (CancelJobResponse);
+  // List jobs for the current submitter
+  rpc ListJobs(ListJobsRequest) returns (ListJobsResponse);
+  // Download result data for a completed job
+  rpc FetchResult(FetchResultRequest) returns (stream ResultChunk);
+}
+
+message SubmitJobRequest {
+  bytes manifest = 1;
+  bytes manifest_signature = 2;
+}
+
+message SubmitJobResponse {
+  string job_id = 1;
+  string manifest_cid = 2;
+  JobState state = 3;
+  double priority_score = 4;
+}
+
+message GetJobRequest {
+  string job_id = 1;
+}
+
+message GetJobResponse {
+  string job_id = 1;
+  JobState state = 2;
+  double priority_score = 3;
+  uint64 replicas_running = 4;
+  uint64 replicas_completed = 5;
+  string result_cid = 6;
+  bytes receipt = 7;
+}
+
+message StreamJobLogsRequest {
+  string job_id = 1;
+  bool follow = 2;
+}
+
+message LogEntry {
+  uint64 timestamp_us = 1;
+  string level = 2;
+  string message = 3;
+  string source = 4;
+}
+
+message CancelJobRequest {
+  string job_id = 1;
+}
+
+message CancelJobResponse {
+  bool cancelled = 1;
+  uint64 ncu_refunded = 2;
+}
+
+message ListJobsRequest {
+  string submitter_id = 1;
+  JobState filter_state = 2;
+  uint32 limit = 3;
+  string page_token = 4;
+}
+
+message ListJobsResponse {
+  repeated JobSummary jobs = 1;
+  string next_page_token = 2;
+}
+
+message JobSummary {
+  string job_id = 1;
+  string manifest_cid = 2;
+  JobState state = 3;
+  uint64 submitted_at = 4;
+  uint64 completed_at = 5;
+}
+
+message FetchResultRequest {
+  string job_id = 1;
+}
+
+message ResultChunk {
+  bytes data = 1;
+  uint64 offset = 2;
+  bool is_last = 3;
+}
+
+enum JobState {
+  JOB_STATE_UNSPECIFIED = 0;
+  JOB_STATE_QUEUED = 1;
+  JOB_STATE_DISPATCHING = 2;
+  JOB_STATE_RUNNING = 3;
+  JOB_STATE_VERIFYING = 4;
+  JOB_STATE_COMPLETED = 5;
+  JOB_STATE_FAILED = 6;
+  JOB_STATE_CANCELLED = 7;
+}

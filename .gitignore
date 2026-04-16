@@ -1,0 +1,27 @@
+# Rust
+target/
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# OMC local state
+.omc/
+
+# Claude local state
+.claude/
+
+# Evidence artifacts (generated, not committed)
+evidence/
