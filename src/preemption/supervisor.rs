@@ -88,10 +88,34 @@ impl PreemptionSupervisor {
     }
 
     /// Resume frozen sandboxes (user went idle again).
-    pub fn resume_all(&mut self) {
-        // TODO: Send SIGCONT to frozen sandbox processes.
-        // For now, the scheduler will re-dispatch work.
+    ///
+    /// Per FR-S004: sends resume signal to each frozen sandbox so workloads
+    /// can continue where they left off without rescheduling.
+    pub fn resume_all(&mut self) -> ResumeResult {
+        let start = std::time::Instant::now();
+        let mut sandboxes = self.sandboxes.lock().unwrap();
+        let mut resumed_count = 0;
+        let mut errors = Vec::new();
+
+        for sandbox in sandboxes.iter_mut() {
+            // Each sandbox's start() re-activates a paused VM.
+            // On Linux/Firecracker this sends SIGCONT, on macOS VZ.resume(),
+            // on Windows Resume-VM.
+            if let Err(e) = sandbox.start() {
+                errors.push(format!("{:?}: {e}", sandbox.capability()));
+            } else {
+                resumed_count += 1;
+            }
+        }
+
+        let elapsed = start.elapsed();
         self.frozen = false;
+
+        ResumeResult {
+            resumed_count,
+            resume_latency_us: elapsed.as_micros() as u64,
+            errors,
+        }
     }
 
     pub fn is_frozen(&self) -> bool {
@@ -112,6 +136,14 @@ impl PreemptionResult {
     pub fn within_budget(&self) -> bool {
         self.freeze_latency_us < 10_000 // 10ms = 10,000μs
     }
+}
+
+/// Result of a resume operation.
+#[derive(Debug)]
+pub struct ResumeResult {
+    pub resumed_count: usize,
+    pub resume_latency_us: u64,
+    pub errors: Vec<String>,
 }
 
 /// Result of a checkpoint operation on one sandbox.
@@ -150,6 +182,18 @@ mod tests {
         let mut sup = PreemptionSupervisor::new(rx);
         let results = sup.checkpoint_and_release();
         assert!(results.is_empty());
+        assert!(!sup.is_frozen());
+    }
+
+    #[test]
+    fn resume_all_with_no_sandboxes_is_instant() {
+        let (_tx, rx) = watch::channel(None);
+        let mut sup = PreemptionSupervisor::new(rx);
+        sup.freeze_all();
+        assert!(sup.is_frozen());
+        let result = sup.resume_all();
+        assert_eq!(result.resumed_count, 0);
+        assert!(result.errors.is_empty());
         assert!(!sup.is_frozen());
     }
 }

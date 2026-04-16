@@ -57,7 +57,7 @@
 - [X] T018 Add cryptographic signature verification to validate_manifest() — reject invalid/zero signatures in src/scheduler/manifest.rs
 - [X] T019 Implement ApprovedArtifact registry with CID-based lookup and approval/revocation in src/registry/mod.rs
 - [X] T020 Add known-good PCR measurement mapping (agent version → expected PCR values) in src/verification/attestation.rs
-- [ ] T021 Run attestation tests against software TPM (swtpm) to verify T011-T014 pass
+- [X] T021 Run attestation tests against software TPM (swtpm) to verify T011-T014 pass
 - [ ] T022 Direct test on real TPM2 hardware: verify real PCR quote accepted, forged quote rejected (Principle V)
 
 **Checkpoint**: Attestation verification is real. Trust tiers T0-T4 are enforced by cryptographic evidence.
@@ -81,14 +81,14 @@
 
 ### Implementation for User Story 1
 
-- [ ] T028 [US1] Implement real Firecracker microVM lifecycle (create rootfs from CID, launch VM, freeze, checkpoint, terminate, cleanup) in src/sandbox/firecracker.rs
-- [ ] T029 [P] [US1] Implement real Apple Virtualization.framework lifecycle (VZVirtualMachine config, start, pause, stop) in src/sandbox/apple_vf.rs
-- [ ] T030 [P] [US1] Implement real Hyper-V lifecycle in src/sandbox/hyperv.rs
-- [ ] T031 [US1] Implement network egress enforcement: per-sandbox firewall rules, default-deny all outbound in src/sandbox/egress.rs
-- [ ] T032 [US1] Add endpoint allowlist enforcement: only declared+approved endpoints pass firewall in src/sandbox/egress.rs
-- [ ] T033 [US1] Block RFC1918, link-local, cloud metadata (169.254.169.254), donor LAN from all sandboxes in src/sandbox/egress.rs
-- [ ] T034 [US1] Implement Linux idle detection (replace unconditional None return) in src/preemption/triggers.rs
-- [ ] T035 [US1] Implement resume_all() in preemption supervisor (replace stub) in src/preemption/supervisor.rs
+- [X] T028 [US1] Implement real Firecracker microVM lifecycle (create rootfs from CID, launch VM, freeze, checkpoint, terminate, cleanup) in src/sandbox/firecracker.rs
+- [X] T029 [P] [US1] Implement real Apple Virtualization.framework lifecycle (VZVirtualMachine config, start, pause, stop) in src/sandbox/apple_vf.rs
+- [X] T030 [P] [US1] Implement real Hyper-V lifecycle in src/sandbox/hyperv.rs
+- [X] T031 [US1] Implement network egress enforcement: per-sandbox firewall rules, default-deny all outbound in src/sandbox/egress.rs
+- [X] T032 [US1] Add endpoint allowlist enforcement: only declared+approved endpoints pass firewall in src/sandbox/egress.rs
+- [X] T033 [US1] Block RFC1918, link-local, cloud metadata (169.254.169.254), donor LAN from all sandboxes in src/sandbox/egress.rs
+- [X] T034 [US1] Implement Linux idle detection (replace unconditional None return) in src/preemption/triggers.rs
+- [X] T035 [US1] Implement resume_all() in preemption supervisor (replace stub) in src/preemption/supervisor.rs
 - [ ] T036 [US1] Direct test on real Linux machine with Firecracker: run adversarial workload, verify all egress blocked (Principle V)
 - [ ] T037 [US1] Direct test on real macOS machine with VZ framework: run adversarial workload, verify isolation (Principle V)
 
