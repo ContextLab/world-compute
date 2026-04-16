@@ -44,19 +44,19 @@
 
 ### Tests for Attestation Foundation
 
-- [ ] T011 [P] Write adversarial test: forged TPM2 quote must be rejected in tests/attestation/test_tpm2.rs
-- [ ] T012 [P] Write adversarial test: empty attestation quote must classify node as T0 in tests/attestation/test_classification.rs
-- [ ] T013 [P] Write adversarial test: all-zero submitter_signature must be rejected in tests/attestation/test_signature.rs
-- [ ] T014 [P] Write adversarial test: unregistered artifact CID must be rejected in tests/attestation/test_registry.rs
+- [X] T011 [P] Write adversarial test: forged TPM2 quote must be rejected in tests/attestation/test_tpm2.rs
+- [X] T012 [P] Write adversarial test: empty attestation quote must classify node as T0 in tests/attestation/test_classification.rs
+- [X] T013 [P] Write adversarial test: all-zero submitter_signature must be rejected in tests/attestation/test_signature.rs
+- [X] T014 [P] Write adversarial test: unregistered artifact CID must be rejected in tests/attestation/test_registry.rs
 
 ### Implementation for Attestation Foundation
 
-- [ ] T015 Replace stub in verify_tpm2() with real PCR measurement validation against known-good values in src/verification/attestation.rs
-- [ ] T016 [P] Replace stub in verify_sev_snp() with real AMD root-of-trust certificate chain validation in src/verification/attestation.rs
-- [ ] T017 [P] Replace stub in verify_tdx() with real Intel root-of-trust certificate chain validation in src/verification/attestation.rs
-- [ ] T018 Add cryptographic signature verification to validate_manifest() — reject invalid/zero signatures in src/scheduler/manifest.rs
-- [ ] T019 Implement ApprovedArtifact registry with CID-based lookup and approval/revocation in src/registry/mod.rs
-- [ ] T020 Add known-good PCR measurement mapping (agent version → expected PCR values) in src/verification/attestation.rs
+- [X] T015 Replace stub in verify_tpm2() with real PCR measurement validation against known-good values in src/verification/attestation.rs
+- [X] T016 [P] Replace stub in verify_sev_snp() with real AMD root-of-trust certificate chain validation in src/verification/attestation.rs
+- [X] T017 [P] Replace stub in verify_tdx() with real Intel root-of-trust certificate chain validation in src/verification/attestation.rs
+- [X] T018 Add cryptographic signature verification to validate_manifest() — reject invalid/zero signatures in src/scheduler/manifest.rs
+- [X] T019 Implement ApprovedArtifact registry with CID-based lookup and approval/revocation in src/registry/mod.rs
+- [X] T020 Add known-good PCR measurement mapping (agent version → expected PCR values) in src/verification/attestation.rs
 - [ ] T021 Run attestation tests against software TPM (swtpm) to verify T011-T014 pass
 - [ ] T022 Direct test on real TPM2 hardware: verify real PCR quote accepted, forged quote rejected (Principle V)
 

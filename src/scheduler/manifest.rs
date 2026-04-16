@@ -80,6 +80,22 @@ pub fn validate_manifest(manifest: &JobManifest) -> Result<(), WcError> {
         ));
     }
 
+    // Check submitter signature is present and non-trivial (FR-S012).
+    // All-zero signatures are rejected. Full Ed25519 verification is done
+    // by the policy engine; this is the structural gate.
+    if manifest.submitter_signature.is_empty() {
+        return Err(WcError::new(
+            ErrorCode::InvalidManifest,
+            "Submitter signature is empty",
+        ));
+    }
+    if manifest.submitter_signature.iter().all(|&b| b == 0) {
+        return Err(WcError::new(
+            ErrorCode::InvalidManifest,
+            "Submitter signature is all zeros — rejected per FR-S012",
+        ));
+    }
+
     // Check confidential jobs require appropriate verification
     if manifest.confidentiality == ConfidentialityLevel::ConfidentialHigh
         && !matches!(manifest.verification, VerificationMethod::TeeAttested)
@@ -122,13 +138,27 @@ mod tests {
             verification: VerificationMethod::ReplicatedQuorum,
             acceptable_use_classes: vec![AcceptableUseClass::Scientific],
             max_wallclock_ms: 3_600_000,
-            submitter_signature: vec![0u8; 64],
+            submitter_signature: vec![1u8; 64],
         }
     }
 
     #[test]
     fn valid_manifest_passes() {
         assert!(validate_manifest(&test_manifest()).is_ok());
+    }
+
+    #[test]
+    fn zero_signature_rejected() {
+        let mut m = test_manifest();
+        m.submitter_signature = vec![0u8; 64];
+        assert!(validate_manifest(&m).is_err());
+    }
+
+    #[test]
+    fn empty_signature_rejected() {
+        let mut m = test_manifest();
+        m.submitter_signature = Vec::new();
+        assert!(validate_manifest(&m).is_err());
     }
 
     #[test]

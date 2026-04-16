@@ -5,7 +5,7 @@
 //! on first rejection.
 
 use crate::error::WcResult;
-use crate::policy::decision::{PolicyCheck, PolicyDecision, Verdict};
+use crate::policy::decision::{PolicyCheck, PolicyDecision};
 use crate::policy::rules;
 use crate::scheduler::manifest::{self, JobManifest};
 use crate::types::Timestamp;
@@ -188,6 +188,7 @@ pub fn evaluate(manifest: &JobManifest, ctx: &SubmissionContext) -> WcResult<Pol
 mod tests {
     use super::*;
     use crate::data_plane::cid_store::compute_cid;
+    use crate::policy::decision::Verdict;
     use crate::scheduler::{
         ConfidentialityLevel, JobCategory, ResourceEnvelope, VerificationMethod, WorkloadType,
     };
@@ -268,6 +269,10 @@ mod tests {
         let ctx = test_context();
         let decision = evaluate(&manifest, &ctx).unwrap();
         assert_eq!(decision.verdict, Verdict::Reject);
-        assert!(decision.reject_reason.unwrap().contains("Signature"));
+        let reason = decision.reject_reason.unwrap();
+        assert!(
+            reason.contains("signature") || reason.contains("Signature"),
+            "Expected signature-related rejection, got: {reason}"
+        );
     }
 }
