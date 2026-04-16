@@ -72,12 +72,12 @@
 
 ### Tests for User Story 1
 
-- [ ] T023 [P] [US1] Write test: outbound connection from sandbox must be refused in tests/egress/test_default_deny.rs
-- [ ] T024 [P] [US1] Write test: host filesystem invisible from guest in tests/sandbox/test_isolation.rs
-- [ ] T025 [P] [US1] Write test: scratch space fully reclaimed after job termination in tests/sandbox/test_cleanup.rs
-- [ ] T026 [P] [US1] Write test: ARP/mDNS discovery packets blocked in tests/egress/test_lan_block.rs
-- [ ] T027 [P] [US1] Write test: RFC1918/link-local/metadata endpoints blocked in tests/egress/test_private_ranges.rs
-- [ ] T027a [P] [US1] Write adversarial test: attempt pip install, curl, and secondary payload download from within sandbox — all must fail per FR-S023 in tests/egress/test_runtime_fetch.rs
+- [X] T023 [P] [US1] Write test: outbound connection from sandbox must be refused in tests/egress/test_default_deny.rs
+- [X] T024 [P] [US1] Write test: host filesystem invisible from guest in tests/sandbox/test_isolation.rs
+- [X] T025 [P] [US1] Write test: scratch space fully reclaimed after job termination in tests/sandbox/test_cleanup.rs
+- [X] T026 [P] [US1] Write test: ARP/mDNS discovery packets blocked in tests/egress/test_lan_block.rs
+- [X] T027 [P] [US1] Write test: RFC1918/link-local/metadata endpoints blocked in tests/egress/test_private_ranges.rs
+- [X] T027a [P] [US1] Write adversarial test: attempt pip install, curl, and secondary payload download from within sandbox — all must fail per FR-S023 in tests/egress/test_runtime_fetch.rs
 
 ### Implementation for User Story 1
 
@@ -104,9 +104,9 @@
 
 ### Tests for User Story 2
 
-- [ ] T038 [P] [US2] Write integration test: forged TPM2 quote rejected at dispatch time in tests/policy/test_dispatch_attestation.rs
-- [ ] T039 [P] [US2] Write integration test: unsigned workload artifact rejected at admission in tests/policy/test_artifact_check.rs
-- [ ] T040 [P] [US2] Write integration test: valid attestation + valid signature = job admitted in tests/policy/test_happy_path.rs
+- [X] T038 [P] [US2] Write integration test: forged TPM2 quote rejected at dispatch time in tests/policy/test_dispatch_attestation.rs
+- [X] T039 [P] [US2] Write integration test: unsigned workload artifact rejected at admission in tests/policy/test_artifact_check.rs
+- [X] T040 [P] [US2] Write integration test: valid attestation + valid signature = job admitted in tests/policy/test_happy_path.rs
 
 ### Implementation for User Story 2
 
@@ -128,10 +128,10 @@
 
 ### Tests for User Story 3
 
-- [ ] T046 [P] [US3] Write test: single actor cannot hold WorkloadApprover + ArtifactSigner in tests/governance/test_separation.rs
-- [ ] T047 [P] [US3] Write test: EmergencyHalt requires elevated quorum threshold in tests/governance/test_quorum.rs
-- [ ] T048 [P] [US3] Write test: ConstitutionAmendment enforces 7-day review period in tests/governance/test_timelock.rs
-- [ ] T049 [P] [US3] Write test: unauthorized halt() call is rejected in tests/governance/test_admin_auth.rs
+- [X] T046 [P] [US3] Write test: single actor cannot hold WorkloadApprover + ArtifactSigner in tests/governance/test_separation.rs
+- [X] T047 [P] [US3] Write test: EmergencyHalt requires elevated quorum threshold in tests/governance/test_quorum.rs
+- [X] T048 [P] [US3] Write test: ConstitutionAmendment enforces 7-day review period in tests/governance/test_timelock.rs
+- [X] T049 [P] [US3] Write test: unauthorized halt() call is rejected in tests/governance/test_admin_auth.rs
 
 ### Implementation for User Story 3
 
@@ -154,11 +154,11 @@
 
 ### Tests for User Story 4
 
-- [ ] T056 [P] [US4] Write test: revoked submitter identity rejected in tests/policy/test_identity_check.rs
-- [ ] T057 [P] [US4] Write test: quarantined workload class rejected in tests/policy/test_quarantine.rs
-- [ ] T058 [P] [US4] Write test: egress request without approved allowlist rejected in tests/policy/test_egress_policy.rs
-- [ ] T059 [P] [US4] Write test: quota-exceeded submitter rejected in tests/policy/test_quota.rs
-- [ ] T060 [P] [US4] Write test: LLM advisory flag logged but does not override deterministic verdict in tests/policy/test_llm_advisory.rs
+- [X] T056 [P] [US4] Write test: revoked submitter identity rejected in tests/policy/test_identity_check.rs
+- [X] T057 [P] [US4] Write test: quarantined workload class rejected in tests/policy/test_quarantine.rs
+- [X] T058 [P] [US4] Write test: egress request without approved allowlist rejected in tests/policy/test_egress_policy.rs
+- [X] T059 [P] [US4] Write test: quota-exceeded submitter rejected in tests/policy/test_quota.rs
+- [X] T060 [P] [US4] Write test: LLM advisory flag logged but does not override deterministic verdict in tests/policy/test_llm_advisory.rs
 
 ### Implementation for User Story 4
 
@@ -186,10 +186,10 @@
 
 ### Tests for User Story 5
 
-- [ ] T072 [P] [US5] Write test: FreezeHost removes host from scheduling pool in tests/incident/test_freeze.rs
-- [ ] T073 [P] [US5] Write test: QuarantineWorkloadClass causes policy engine rejection in tests/incident/test_quarantine.rs
-- [ ] T074 [P] [US5] Write test: containment action produces complete IncidentRecord in tests/incident/test_audit.rs
-- [ ] T075 [P] [US5] Write test: unauthorized containment action rejected in tests/incident/test_auth.rs
+- [X] T072 [P] [US5] Write test: FreezeHost removes host from scheduling pool in tests/incident/test_freeze.rs
+- [X] T073 [P] [US5] Write test: QuarantineWorkloadClass causes policy engine rejection in tests/incident/test_quarantine.rs
+- [X] T074 [P] [US5] Write test: containment action produces complete IncidentRecord in tests/incident/test_audit.rs
+- [X] T075 [P] [US5] Write test: unauthorized containment action rejected in tests/incident/test_auth.rs
 
 ### Implementation for User Story 5
 
@@ -210,10 +210,10 @@
 
 ### Tests for Identity Verification
 
-- [ ] T082 [P] Write test: proof-of-personhood verification connects to real provider in tests/identity/test_personhood.rs
-- [ ] T083 [P] Write test: OAuth2 email verification flow in tests/identity/test_oauth2.rs
-- [ ] T084 [P] Write test: Ed25519 key revocation propagates to coordinators in tests/identity/test_revocation.rs
-- [ ] T085 [P] Write test: duplicate donor_id rejected in tests/identity/test_uniqueness.rs
+- [X] T082 [P] Write test: proof-of-personhood verification connects to real provider in tests/identity/test_personhood.rs
+- [X] T083 [P] Write test: OAuth2 email verification flow in tests/identity/test_oauth2.rs
+- [X] T084 [P] Write test: Ed25519 key revocation propagates to coordinators in tests/identity/test_revocation.rs
+- [X] T085 [P] Write test: duplicate donor_id rejected in tests/identity/test_uniqueness.rs
 
 ### Implementation for Identity Verification
 
