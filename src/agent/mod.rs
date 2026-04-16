@@ -1,5 +1,6 @@
 //! Agent module — per-host background process lifecycle.
 
+pub mod build_info;
 pub mod config;
 pub mod donor;
 pub mod identity;
