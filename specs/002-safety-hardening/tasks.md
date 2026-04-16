@@ -135,12 +135,12 @@
 
 ### Implementation for User Story 3
 
-- [ ] T050 [US3] Implement GovernanceRole assignment and validation logic in src/governance/roles.rs
-- [ ] T051 [US3] Implement separation-of-duties enforcement: validate no single PeerId in prohibited role combinations in src/governance/board.rs
-- [ ] T052 [US3] Add differentiated quorum thresholds for EmergencyHalt and ConstitutionAmendment in src/governance/voting.rs
-- [ ] T053 [US3] Add minimum HP score requirement for safety-critical proposal voters in src/governance/voting.rs
-- [ ] T054 [US3] Add mandatory 7-day review period for ConstitutionAmendment proposals in src/governance/proposal.rs
-- [ ] T055 [US3] Add cryptographic auth check to AdminServiceHandler.halt() — require OnCallResponder role in src/governance/admin_service.rs
+- [X] T050 [US3] Implement GovernanceRole assignment and validation logic in src/governance/roles.rs
+- [X] T051 [US3] Implement separation-of-duties enforcement: validate no single PeerId in prohibited role combinations in src/governance/board.rs
+- [X] T052 [US3] Add differentiated quorum thresholds for EmergencyHalt and ConstitutionAmendment in src/governance/voting.rs
+- [X] T053 [US3] Add minimum HP score requirement for safety-critical proposal voters in src/governance/voting.rs
+- [X] T054 [US3] Add mandatory 7-day review period for ConstitutionAmendment proposals in src/governance/proposal.rs
+- [X] T055 [US3] Add cryptographic auth check to AdminServiceHandler.halt() — require OnCallResponder role in src/governance/admin_service.rs
 
 **Checkpoint**: Governance separation enforced. Safety-critical paths require elevated authorization.
 
