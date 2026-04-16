@@ -11,7 +11,23 @@
 
 > **Honesty notice — please read before going further.**
 >
-> This repository contains a ratified governing constitution, a full seven-stage research package (~28,600 words), a detailed feature specification, and this README. It does not contain any runnable code, compiled binaries, testnet infrastructure, or deployable agent. World Compute is a pre-implementation project as of 2026-04-15. Every CLI example and installation instruction in this document is aspirational and labeled accordingly. The design described here is complete and serious; the implementation has not started.
+> This repository contains a ratified governing constitution, a full research package (~28,600 words), detailed feature specifications, and substantial library code (391 tests passing across safety-critical modules). **However, there is no runnable agent, no working CLI, no testnet, and no deployable binary.** The CLI compiles but all commands print "not yet implemented." The library modules (policy engine, attestation verification, governance, incident response, egress enforcement) work as tested Rust code but are not wired into a running daemon.
+>
+> **What exists and works (as of 2026-04-16):**
+> - Library crate with 391 passing tests covering safety-critical paths
+> - Deterministic policy engine (10-step evaluation pipeline)
+> - Attestation verification (TPM2/SEV-SNP/TDX with real crypto, not stubs)
+> - Governance separation of duties, quorum thresholds, time-locks
+> - Network egress blocking (RFC1918, link-local, cloud metadata)
+> - Incident response containment primitives with audit trails
+> - CI on Linux/macOS/Windows via GitHub Actions
+>
+> **What does NOT exist yet:**
+> - A running agent daemon
+> - Working CLI subcommands (all print "not yet implemented")
+> - P2P networking between nodes
+> - Actual job execution inside sandboxes
+> - Any form of testnet or multi-node deployment
 >
 > If you want to help build it, see [Contributing](#contributing). If you want to be notified when it becomes installable, watch this repository.
 
@@ -68,7 +84,7 @@ Five constitutional principles govern every design decision. They are not aspira
 
 ## Status
 
-World Compute has completed its initial implementation across all 11 phases. Updated 2026-04-16.
+World Compute has completed library-level implementation across core and safety modules. The CLI and agent daemon are scaffolded but not yet functional. Updated 2026-04-16.
 
 ### Design artifacts (complete)
 
@@ -953,7 +969,7 @@ There is no donation channel today. When the legal entity is incorporated, a don
 
 ## Roadmap
 
-All phases are targets. None are completed as of 2026-04-15.
+Current status: **Pre-Phase 0.** Library modules are tested but the agent daemon is not yet functional. Phase 0 requires a working single-machine agent.
 
 | Phase | Label | Key milestones |
 |-|-|-|
