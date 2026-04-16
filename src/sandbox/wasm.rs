@@ -24,13 +24,7 @@ impl WasmSandbox {
         let engine = Engine::new(&config).map_err(|e| {
             WcError::new(ErrorCode::SandboxUnavailable, format!("WASM engine init: {e}"))
         })?;
-        Ok(Self {
-            engine,
-            workload_cid: None,
-            module: None,
-            running: false,
-            work_dir,
-        })
+        Ok(Self { engine, workload_cid: None, module: None, running: false, work_dir })
     }
 }
 
@@ -77,9 +71,8 @@ impl Sandbox for WasmSandbox {
 
     fn cleanup(&mut self) -> Result<(), WcError> {
         if self.work_dir.exists() {
-            std::fs::remove_dir_all(&self.work_dir).map_err(|e| {
-                WcError::new(ErrorCode::Internal, format!("Cleanup failed: {e}"))
-            })?;
+            std::fs::remove_dir_all(&self.work_dir)
+                .map_err(|e| WcError::new(ErrorCode::Internal, format!("Cleanup failed: {e}")))?;
         }
         tracing::info!("WASM sandbox cleaned up");
         Ok(())
@@ -100,14 +93,14 @@ pub fn compile_module(engine: &Engine, wasm_bytes: &[u8]) -> Result<Module, WcEr
 /// Run a WASM module with fuel-limited execution and return stdout bytes.
 pub fn run_module(engine: &Engine, module: &Module, fuel: u64) -> Result<Vec<u8>, WcError> {
     let mut store = Store::new(engine, ());
-    store.set_fuel(fuel).map_err(|e| {
-        WcError::new(ErrorCode::Internal, format!("Fuel setup: {e}"))
-    })?;
+    store
+        .set_fuel(fuel)
+        .map_err(|e| WcError::new(ErrorCode::Internal, format!("Fuel setup: {e}")))?;
 
     let linker = Linker::new(engine);
-    let _instance = linker.instantiate(&mut store, module).map_err(|e| {
-        WcError::new(ErrorCode::Internal, format!("WASM instantiation: {e}"))
-    })?;
+    let _instance = linker
+        .instantiate(&mut store, module)
+        .map_err(|e| WcError::new(ErrorCode::Internal, format!("WASM instantiation: {e}")))?;
 
     // TODO: Call _start or main, capture output via WASI stdout.
     Ok(Vec::new())
@@ -125,8 +118,8 @@ mod tests {
 
     #[test]
     fn wasm_sandbox_lifecycle() {
-        let mut sandbox = WasmSandbox::new(std::path::PathBuf::from("/tmp/wc-test-wasm-lc"))
-            .unwrap();
+        let mut sandbox =
+            WasmSandbox::new(std::path::PathBuf::from("/tmp/wc-test-wasm-lc")).unwrap();
         let cid = crate::data_plane::cid_store::compute_cid(b"test wasm module").unwrap();
         assert!(sandbox.create(&cid).is_ok());
         assert!(sandbox.start().is_ok());

@@ -15,9 +15,7 @@ pub fn init(otel_endpoint: Option<&str>) {
 
     let fmt_layer = fmt::layer().json().with_target(true).with_thread_ids(true);
 
-    let subscriber = tracing_subscriber::registry()
-        .with(env_filter)
-        .with(fmt_layer);
+    let subscriber = tracing_subscriber::registry().with(env_filter).with(fmt_layer);
 
     // TODO: When otel_endpoint is Some, add OTLP exporter layer for traces + metrics.
     // For now, structured JSON logging is the baseline.

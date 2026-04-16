@@ -20,12 +20,7 @@ pub struct FirecrackerSandbox {
 
 impl FirecrackerSandbox {
     pub fn new(work_dir: std::path::PathBuf) -> Self {
-        Self {
-            workload_cid: None,
-            running: false,
-            frozen: false,
-            work_dir,
-        }
+        Self { workload_cid: None, running: false, frozen: false, work_dir }
     }
 
     /// Check if KVM is available on this host.
@@ -82,10 +77,7 @@ impl Sandbox for FirecrackerSandbox {
         // compute CID of snapshot, store to CID store.
         let _ = budget;
         tracing::info!("Firecracker checkpoint (stub)");
-        Err(WcError::new(
-            ErrorCode::Internal,
-            "Firecracker checkpoint not yet implemented",
-        ))
+        Err(WcError::new(ErrorCode::Internal, "Firecracker checkpoint not yet implemented"))
     }
 
     fn terminate(&mut self) -> Result<(), WcError> {
@@ -99,9 +91,8 @@ impl Sandbox for FirecrackerSandbox {
     fn cleanup(&mut self) -> Result<(), WcError> {
         // TODO: Remove scoped working directory, verify no host residue.
         if self.work_dir.exists() {
-            std::fs::remove_dir_all(&self.work_dir).map_err(|e| {
-                WcError::new(ErrorCode::Internal, format!("Cleanup failed: {e}"))
-            })?;
+            std::fs::remove_dir_all(&self.work_dir)
+                .map_err(|e| WcError::new(ErrorCode::Internal, format!("Cleanup failed: {e}")))?;
         }
         tracing::info!("Firecracker sandbox cleaned up — no host residue");
         Ok(())

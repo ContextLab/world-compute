@@ -66,7 +66,9 @@ pub trait Sandbox: Send + Sync {
     /// Clean up all sandbox artifacts. Must leave no host residue.
     fn cleanup(&mut self) -> Result<(), crate::error::WcError>;
     /// Check if GPU passthrough is available and safe (singleton IOMMU group).
-    fn gpu_available(&self) -> bool { false }
+    fn gpu_available(&self) -> bool {
+        false
+    }
     /// Return the sandbox capability type.
     fn capability(&self) -> SandboxCapability;
 }

@@ -5,11 +5,7 @@
 //! Both run simultaneously — the agent is always discovering peers on all
 //! available channels.
 
-use libp2p::{
-    kad, mdns,
-    swarm::NetworkBehaviour,
-    PeerId,
-};
+use libp2p::{kad, mdns, swarm::NetworkBehaviour, PeerId};
 use std::time::Duration;
 
 /// Combined network behaviour for peer discovery.
@@ -55,10 +51,7 @@ pub fn build_discovery_behaviour(
 ) -> Result<DiscoveryBehaviour, Box<dyn std::error::Error>> {
     // mDNS: discovers peers on the local network via multicast DNS.
     // Fires DiscoveredEvent within ~1-2 seconds on most platforms.
-    let mdns = mdns::tokio::Behaviour::new(
-        mdns::Config::default(),
-        local_peer_id,
-    )?;
+    let mdns = mdns::tokio::Behaviour::new(mdns::Config::default(), local_peer_id)?;
 
     // Kademlia: distributed hash table for WAN peer routing.
     // Nodes self-organize into a DHT; queries find peers by ID.

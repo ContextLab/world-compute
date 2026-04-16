@@ -43,10 +43,7 @@ impl HyperVSandbox {
 impl Sandbox for HyperVSandbox {
     fn create(&mut self, workload_cid: &Cid) -> Result<(), WcError> {
         if Self::detect().is_none() {
-            return Err(WcError::new(
-                ErrorCode::SandboxUnavailable,
-                "Hyper-V requires Windows",
-            ));
+            return Err(WcError::new(ErrorCode::SandboxUnavailable, "Hyper-V requires Windows"));
         }
         self.workload_cid = Some(*workload_cid);
         // TODO: Create Hyper-V VM via COM/WMI API or windows-rs,
@@ -70,10 +67,7 @@ impl Sandbox for HyperVSandbox {
 
     fn checkpoint(&mut self, budget: DurationMs) -> Result<Cid, WcError> {
         let _ = budget;
-        Err(WcError::new(
-            ErrorCode::Internal,
-            "Hyper-V checkpoint not yet implemented",
-        ))
+        Err(WcError::new(ErrorCode::Internal, "Hyper-V checkpoint not yet implemented"))
     }
 
     fn terminate(&mut self) -> Result<(), WcError> {
@@ -85,9 +79,8 @@ impl Sandbox for HyperVSandbox {
 
     fn cleanup(&mut self) -> Result<(), WcError> {
         if self.work_dir.exists() {
-            std::fs::remove_dir_all(&self.work_dir).map_err(|e| {
-                WcError::new(ErrorCode::Internal, format!("Cleanup failed: {e}"))
-            })?;
+            std::fs::remove_dir_all(&self.work_dir)
+                .map_err(|e| WcError::new(ErrorCode::Internal, format!("Cleanup failed: {e}")))?;
         }
         tracing::info!("Hyper-V sandbox cleaned up");
         Ok(())

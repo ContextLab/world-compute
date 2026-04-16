@@ -23,11 +23,7 @@ pub struct PreemptionSupervisor {
 
 impl PreemptionSupervisor {
     pub fn new(event_rx: watch::Receiver<Option<SovereigntyEvent>>) -> Self {
-        Self {
-            sandboxes: Arc::new(Mutex::new(Vec::new())),
-            event_rx,
-            frozen: false,
-        }
+        Self { sandboxes: Arc::new(Mutex::new(Vec::new())), event_rx, frozen: false }
     }
 
     /// Register a sandbox to be managed by this supervisor.
@@ -60,11 +56,7 @@ impl PreemptionSupervisor {
         let elapsed = start.elapsed();
         self.frozen = true;
 
-        PreemptionResult {
-            frozen_count,
-            freeze_latency_us: elapsed.as_micros() as u64,
-            errors,
-        }
+        PreemptionResult { frozen_count, freeze_latency_us: elapsed.as_micros() as u64, errors }
     }
 
     /// Checkpoint all frozen sandboxes, then terminate. Target: <500ms.

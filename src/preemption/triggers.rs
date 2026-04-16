@@ -40,11 +40,7 @@ impl IdleDetector {
         idle_threshold: Duration,
         event_tx: watch::Sender<Option<SovereigntyEvent>>,
     ) -> Self {
-        Self {
-            idle_threshold,
-            last_activity: Instant::now(),
-            event_tx,
-        }
+        Self { idle_threshold, last_activity: Instant::now(), event_tx }
     }
 
     /// Check if the system is currently idle (no user activity within threshold).
@@ -81,10 +77,7 @@ impl IdleDetector {
 fn macos_idle_ms() -> Option<u64> {
     use std::process::Command;
     // Use ioreg to read HIDIdleTime (in nanoseconds)
-    let output = Command::new("ioreg")
-        .args(["-c", "IOHIDSystem", "-d", "4"])
-        .output()
-        .ok()?;
+    let output = Command::new("ioreg").args(["-c", "IOHIDSystem", "-d", "4"]).output().ok()?;
     let stdout = String::from_utf8_lossy(&output.stdout);
     for line in stdout.lines() {
         if line.contains("HIDIdleTime") {

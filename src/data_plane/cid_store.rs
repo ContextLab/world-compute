@@ -22,9 +22,7 @@ pub struct CidStore {
 
 impl CidStore {
     pub fn new() -> Self {
-        Self {
-            objects: Arc::new(RwLock::new(HashMap::new())),
-        }
+        Self { objects: Arc::new(RwLock::new(HashMap::new())) }
     }
 
     /// Store data and return its CID.

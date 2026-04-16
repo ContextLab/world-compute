@@ -7,13 +7,13 @@ use crate::acceptable_use::AcceptableUseClass;
 use crate::agent::config::AgentConfig;
 use crate::agent::donor::Donor;
 use crate::agent::node::{Node, NodeState};
-use crate::agent::{AgentState};
+use crate::agent::AgentState;
 use crate::credits::caliber::CaliberClass;
 use crate::error::{ErrorCode, WcError};
 use crate::sandbox::{detect_capability, SandboxCapability};
+use crate::scheduler::ResourceEnvelope;
 use crate::types::{NcuAmount, PeerIdStr, Timestamp, TrustScore};
 use crate::verification::trust_score::{classify_trust_tier, TrustTier};
-use crate::scheduler::ResourceEnvelope;
 
 /// The running agent instance — owns all local state.
 pub struct AgentInstance {
@@ -43,10 +43,7 @@ impl AgentInstance {
         consent_classes: Vec<AcceptableUseClass>,
     ) -> Result<EnrollmentResult, WcError> {
         if self.state != AgentState::Enrolling {
-            return Err(WcError::new(
-                ErrorCode::AlreadyExists,
-                "Agent is already enrolled",
-            ));
+            return Err(WcError::new(ErrorCode::AlreadyExists, "Agent is already enrolled"));
         }
 
         // Generate or load Ed25519 identity
@@ -119,9 +116,8 @@ impl AgentInstance {
 
     /// T040: Heartbeat — report state, receive lease offers.
     pub fn heartbeat(&mut self) -> Result<(), WcError> {
-        let node = self.node.as_mut().ok_or_else(|| {
-            WcError::new(ErrorCode::NotFound, "Not enrolled")
-        })?;
+        let node =
+            self.node.as_mut().ok_or_else(|| WcError::new(ErrorCode::NotFound, "Not enrolled"))?;
         node.last_heartbeat = Timestamp::now();
         // TODO: Send heartbeat to broker/coordinator, receive lease offers,
         // check version blocklist for P0 incidents (FR-014).
@@ -150,10 +146,7 @@ impl AgentInstance {
     /// T041: Resume — start advertising capacity again.
     pub fn resume(&mut self) -> Result<(), WcError> {
         if self.state != AgentState::Paused {
-            return Err(WcError::new(
-                ErrorCode::Internal,
-                "Agent is not paused",
-            ));
+            return Err(WcError::new(ErrorCode::Internal, "Agent is not paused"));
         }
         self.state = AgentState::Idle;
         if let Some(node) = &mut self.node {
@@ -171,16 +164,14 @@ impl AgentInstance {
         // TODO: Checkpoint and terminate all active sandboxes.
         // TODO: Notify broker/coordinator of withdrawal.
 
-        let credits_remaining = self.donor.as_ref()
-            .map(|d| d.credit_balance)
-            .unwrap_or(NcuAmount::ZERO);
+        let credits_remaining =
+            self.donor.as_ref().map(|d| d.credit_balance).unwrap_or(NcuAmount::ZERO);
 
         // Wipe scoped working directory (FR-004)
         let work_dir = &self.config.work_dir;
         if work_dir.exists() {
-            std::fs::remove_dir_all(work_dir).map_err(|e| {
-                WcError::new(ErrorCode::Internal, format!("Cleanup failed: {e}"))
-            })?;
+            std::fs::remove_dir_all(work_dir)
+                .map_err(|e| WcError::new(ErrorCode::Internal, format!("Cleanup failed: {e}")))?;
         }
 
         // Remove key file
@@ -196,10 +187,7 @@ impl AgentInstance {
         self.donor = None;
         self.node = None;
 
-        Ok(WithdrawalResult {
-            credits_remaining,
-            clean: true,
-        })
+        Ok(WithdrawalResult { credits_remaining, clean: true })
     }
 
     /// T043: Update consent — change which workload classes are accepted.
@@ -207,9 +195,8 @@ impl AgentInstance {
         &mut self,
         consent_classes: Vec<AcceptableUseClass>,
     ) -> Result<(), WcError> {
-        let donor = self.donor.as_mut().ok_or_else(|| {
-            WcError::new(ErrorCode::NotFound, "Not enrolled")
-        })?;
+        let donor =
+            self.donor.as_mut().ok_or_else(|| WcError::new(ErrorCode::NotFound, "Not enrolled"))?;
         donor.consent_classes = consent_classes;
         tracing::info!(
             classes = ?donor.consent_classes,
@@ -266,9 +253,7 @@ fn detect_capacity() -> ResourceEnvelope {
 }
 
 fn num_cpus() -> usize {
-    std::thread::available_parallelism()
-        .map(|n| n.get())
-        .unwrap_or(1)
+    std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1)
 }
 
 fn ram_gb() -> usize {
@@ -370,10 +355,9 @@ mod tests {
         let config = test_config();
         let mut agent = AgentInstance::new(config);
         agent.enroll(vec![AcceptableUseClass::Scientific]).unwrap();
-        agent.update_consent(vec![
-            AcceptableUseClass::Scientific,
-            AcceptableUseClass::PublicGoodMl,
-        ]).unwrap();
+        agent
+            .update_consent(vec![AcceptableUseClass::Scientific, AcceptableUseClass::PublicGoodMl])
+            .unwrap();
         assert_eq!(agent.donor.as_ref().unwrap().consent_classes.len(), 2);
         let _ = agent.withdraw();
     }

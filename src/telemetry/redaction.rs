@@ -9,9 +9,7 @@ pub fn redact(input: &str) -> String {
     let mut output = input.to_string();
 
     // Redact MAC addresses (XX:XX:XX:XX:XX:XX)
-    let mac_re = regex_lite::Regex::new(
-        r"[0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5}"
-    ).unwrap();
+    let mac_re = regex_lite::Regex::new(r"[0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5}").unwrap();
     output = mac_re.replace_all(&output, "[REDACTED_MAC]").to_string();
 
     // Redact IPv4 private addresses
@@ -21,9 +19,7 @@ pub fn redact(input: &str) -> String {
     output = ipv4_private_re.replace_all(&output, "[REDACTED_IP]").to_string();
 
     // Redact Unix-style usernames in paths (/home/username/, /Users/username/)
-    let user_path_re = regex_lite::Regex::new(
-        r"/(home|Users)/[a-zA-Z0-9_.-]+"
-    ).unwrap();
+    let user_path_re = regex_lite::Regex::new(r"/(home|Users)/[a-zA-Z0-9_.-]+").unwrap();
     output = user_path_re.replace_all(&output, "/$1/[REDACTED_USER]").to_string();
 
     output

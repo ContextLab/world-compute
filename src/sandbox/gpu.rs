@@ -61,7 +61,8 @@ fn check_linux_gpu() -> GpuPassthroughResult {
         eligible: false,
         gpu_model: None,
         iommu_group: None,
-        reason: "GPU passthrough check not yet fully implemented — defaulting to ineligible (safe)".into(),
+        reason: "GPU passthrough check not yet fully implemented — defaulting to ineligible (safe)"
+            .into(),
     }
 }
 

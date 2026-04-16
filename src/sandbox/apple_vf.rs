@@ -17,12 +17,7 @@ pub struct AppleVfSandbox {
 
 impl AppleVfSandbox {
     pub fn new(work_dir: std::path::PathBuf) -> Self {
-        Self {
-            workload_cid: None,
-            running: false,
-            frozen: false,
-            work_dir,
-        }
+        Self { workload_cid: None, running: false, frozen: false, work_dir }
     }
 
     /// Check if Virtualization.framework is available.
@@ -67,10 +62,7 @@ impl Sandbox for AppleVfSandbox {
     fn checkpoint(&mut self, budget: DurationMs) -> Result<Cid, WcError> {
         // TODO: VZVirtualMachine.saveMachineStateTo, snapshot to CID.
         let _ = budget;
-        Err(WcError::new(
-            ErrorCode::Internal,
-            "Apple VF checkpoint not yet implemented",
-        ))
+        Err(WcError::new(ErrorCode::Internal, "Apple VF checkpoint not yet implemented"))
     }
 
     fn terminate(&mut self) -> Result<(), WcError> {
@@ -83,9 +75,8 @@ impl Sandbox for AppleVfSandbox {
 
     fn cleanup(&mut self) -> Result<(), WcError> {
         if self.work_dir.exists() {
-            std::fs::remove_dir_all(&self.work_dir).map_err(|e| {
-                WcError::new(ErrorCode::Internal, format!("Cleanup failed: {e}"))
-            })?;
+            std::fs::remove_dir_all(&self.work_dir)
+                .map_err(|e| WcError::new(ErrorCode::Internal, format!("Cleanup failed: {e}")))?;
         }
         tracing::info!("Apple VF sandbox cleaned up");
         Ok(())

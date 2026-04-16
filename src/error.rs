@@ -36,26 +36,26 @@ impl ErrorCode {
     /// gRPC status code mapping.
     pub fn grpc_code(self) -> i32 {
         match self {
-            Self::InvalidManifest => 3,        // INVALID_ARGUMENT
-            Self::InsufficientCredits => 9,    // FAILED_PRECONDITION
-            Self::AcceptableUseViolation => 9,  // FAILED_PRECONDITION
-            Self::NoEligibleNodes => 9,         // FAILED_PRECONDITION
-            Self::QuorumFailure => 10,          // ABORTED
-            Self::TrustTierMismatch => 9,       // FAILED_PRECONDITION
-            Self::SandboxUnavailable => 14,     // UNAVAILABLE
-            Self::PreemptionTimeout => 4,       // DEADLINE_EXCEEDED
-            Self::LedgerVerificationFailed => 10, // ABORTED
-            Self::CoordinatorUnreachable => 14, // UNAVAILABLE
+            Self::InvalidManifest => 3,              // INVALID_ARGUMENT
+            Self::InsufficientCredits => 9,          // FAILED_PRECONDITION
+            Self::AcceptableUseViolation => 9,       // FAILED_PRECONDITION
+            Self::NoEligibleNodes => 9,              // FAILED_PRECONDITION
+            Self::QuorumFailure => 10,               // ABORTED
+            Self::TrustTierMismatch => 9,            // FAILED_PRECONDITION
+            Self::SandboxUnavailable => 14,          // UNAVAILABLE
+            Self::PreemptionTimeout => 4,            // DEADLINE_EXCEEDED
+            Self::LedgerVerificationFailed => 10,    // ABORTED
+            Self::CoordinatorUnreachable => 14,      // UNAVAILABLE
             Self::ResidencyConstraintViolation => 9, // FAILED_PRECONDITION
-            Self::AttestationFailed => 16,      // UNAUTHENTICATED
-            Self::RateLimited => 8,             // RESOURCE_EXHAUSTED
-            Self::Unauthorized => 16,           // UNAUTHENTICATED
-            Self::Internal => 13,               // INTERNAL
-            Self::Unavailable => 14,            // UNAVAILABLE
-            Self::DeadlineExceeded => 4,        // DEADLINE_EXCEEDED
-            Self::NotFound => 5,                // NOT_FOUND
-            Self::AlreadyExists => 6,           // ALREADY_EXISTS
-            Self::PermissionDenied => 7,        // PERMISSION_DENIED
+            Self::AttestationFailed => 16,           // UNAUTHENTICATED
+            Self::RateLimited => 8,                  // RESOURCE_EXHAUSTED
+            Self::Unauthorized => 16,                // UNAUTHENTICATED
+            Self::Internal => 13,                    // INTERNAL
+            Self::Unavailable => 14,                 // UNAVAILABLE
+            Self::DeadlineExceeded => 4,             // DEADLINE_EXCEEDED
+            Self::NotFound => 5,                     // NOT_FOUND
+            Self::AlreadyExists => 6,                // ALREADY_EXISTS
+            Self::PermissionDenied => 7,             // PERMISSION_DENIED
         }
     }
 
@@ -90,10 +90,7 @@ impl ErrorCode {
 #[derive(Debug, Error)]
 pub enum WcError {
     #[error("WC-{:03}: {message}", *code as u16)]
-    Application {
-        code: ErrorCode,
-        message: String,
-    },
+    Application { code: ErrorCode, message: String },
 
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
@@ -107,10 +104,7 @@ pub enum WcError {
 
 impl WcError {
     pub fn new(code: ErrorCode, message: impl Into<String>) -> Self {
-        Self::Application {
-            code,
-            message: message.into(),
-        }
+        Self::Application { code, message: message.into() }
     }
 
     pub fn code(&self) -> Option<ErrorCode> {

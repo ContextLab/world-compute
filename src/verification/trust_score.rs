@@ -54,18 +54,12 @@ pub struct TrustScoreInputs {
 /// Compute the Trust Score from inputs.
 pub fn compute_trust_score(inputs: &TrustScoreInputs) -> TrustScore {
     let r_age = (inputs.age_days / 30.0).min(1.0);
-    let raw = 0.5 * inputs.result_consistency
-        + 0.3 * inputs.attestation_score
-        + 0.2 * r_age;
+    let raw = 0.5 * inputs.result_consistency + 0.3 * inputs.attestation_score + 0.2 * r_age;
     let penalized = raw * (1.0 - inputs.recent_failure_rate);
     let clamped = penalized.clamp(0.0, 1.0);
 
     // Cap at 0.5 for first 7 days
-    let capped = if inputs.age_days < 7.0 {
-        clamped.min(0.5)
-    } else {
-        clamped
-    };
+    let capped = if inputs.age_days < 7.0 { clamped.min(0.5) } else { clamped };
 
     TrustScore::from_f64(capped)
 }
@@ -133,10 +127,7 @@ mod tests {
             age_days: 30.0,
             recent_failure_rate: 0.0,
         };
-        let penalized = TrustScoreInputs {
-            recent_failure_rate: 0.5,
-            ..base
-        };
+        let penalized = TrustScoreInputs { recent_failure_rate: 0.5, ..base };
         let s1 = compute_trust_score(&base);
         let s2 = compute_trust_score(&penalized);
         assert!(s2.as_f64() < s1.as_f64() * 0.6);
@@ -144,25 +135,10 @@ mod tests {
 
     #[test]
     fn trust_tier_classification() {
-        assert_eq!(
-            classify_trust_tier(false, false, false, false, false, true),
-            TrustTier::T0
-        );
-        assert_eq!(
-            classify_trust_tier(true, false, false, false, false, false),
-            TrustTier::T1
-        );
-        assert_eq!(
-            classify_trust_tier(true, false, false, false, true, false),
-            TrustTier::T2
-        );
-        assert_eq!(
-            classify_trust_tier(true, true, false, false, true, false),
-            TrustTier::T3
-        );
-        assert_eq!(
-            classify_trust_tier(true, false, false, true, true, false),
-            TrustTier::T4
-        );
+        assert_eq!(classify_trust_tier(false, false, false, false, false, true), TrustTier::T0);
+        assert_eq!(classify_trust_tier(true, false, false, false, false, false), TrustTier::T1);
+        assert_eq!(classify_trust_tier(true, false, false, false, true, false), TrustTier::T2);
+        assert_eq!(classify_trust_tier(true, true, false, false, true, false), TrustTier::T3);
+        assert_eq!(classify_trust_tier(true, false, false, true, true, false), TrustTier::T4);
     }
 }
