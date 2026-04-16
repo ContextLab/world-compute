@@ -193,11 +193,11 @@
 
 ### Implementation for User Story 5
 
-- [ ] T076 [US5] Implement containment action primitives (FreezeHost, QuarantineWorkloadClass, BlockSubmitter, RevokeArtifact, DrainHostPool) in src/incident/containment.rs per contracts/incident.md
-- [ ] T077 [US5] Implement IncidentRecord audit logging with actor, timestamp, justification, reversibility in src/incident/audit.rs
-- [ ] T078 [US5] Wire quarantine status into policy engine — quarantined classes rejected at FR-S040 evaluation in src/policy/rules.rs
-- [ ] T079 [US5] Implement automated anomaly triggers (denied syscalls, unexpected connections, crash loops) in src/incident/mod.rs
-- [ ] T080 [US5] Implement containment reversal actions (LiftFreeze, LiftQuarantine, UnblockSubmitter) with authorization in src/incident/containment.rs
+- [X] T076 [US5] Implement containment action primitives (FreezeHost, QuarantineWorkloadClass, BlockSubmitter, RevokeArtifact, DrainHostPool) in src/incident/containment.rs per contracts/incident.md
+- [X] T077 [US5] Implement IncidentRecord audit logging with actor, timestamp, justification, reversibility in src/incident/audit.rs
+- [X] T078 [US5] Wire quarantine status into policy engine — quarantined classes rejected at FR-S040 evaluation in src/policy/rules.rs
+- [X] T079 [US5] Implement automated anomaly triggers (denied syscalls, unexpected connections, crash loops) in src/incident/mod.rs
+- [X] T080 [US5] Implement containment reversal actions (LiftFreeze, LiftQuarantine, UnblockSubmitter) with authorization in src/incident/containment.rs
 - [ ] T081 [US5] Direct test: simulate sandbox anomaly, verify full containment cascade completes within 60 seconds (Principle V)
 
 **Checkpoint**: Incident response operational. Containment < 60s. Full audit trails. Quarantine enforced by policy engine.

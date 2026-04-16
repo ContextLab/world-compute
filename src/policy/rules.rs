@@ -88,9 +88,18 @@ pub fn check_artifact_registry(manifest: &JobManifest) -> PolicyCheck {
 }
 
 /// Step 5: Check workload class is approved and not quarantined.
+///
+/// Per FR-S062: quarantined workload classes MUST be rejected.
+/// The quarantine set is maintained by the incident response module.
 pub fn check_workload_class(manifest: &JobManifest) -> PolicyCheck {
-    // Quarantine status will be wired in Phase 7 (T078).
-    // For now, all non-empty acceptable_use_classes pass.
+    check_workload_class_with_quarantine(manifest, &[])
+}
+
+/// Step 5 (with quarantine): Check workload class against quarantine list.
+pub fn check_workload_class_with_quarantine(
+    manifest: &JobManifest,
+    quarantined_classes: &[String],
+) -> PolicyCheck {
     if manifest.acceptable_use_classes.is_empty() {
         return PolicyCheck {
             check_name: "workload_class".into(),
@@ -98,13 +107,23 @@ pub fn check_workload_class(manifest: &JobManifest) -> PolicyCheck {
             detail: "No acceptable use classes declared".into(),
         };
     }
+
+    // Check if any of the job's classes are quarantined
+    for class in &manifest.acceptable_use_classes {
+        let class_name = format!("{class:?}");
+        if quarantined_classes.contains(&class_name) {
+            return PolicyCheck {
+                check_name: "workload_class".into(),
+                passed: false,
+                detail: format!("Workload class {class_name} is quarantined — rejected per FR-S062"),
+            };
+        }
+    }
+
     PolicyCheck {
         check_name: "workload_class".into(),
         passed: true,
-        detail: format!(
-            "Workload class {:?} approved (quarantine check pending T078)",
-            manifest.acceptable_use_classes
-        ),
+        detail: format!("Workload class {:?} approved", manifest.acceptable_use_classes),
     }
 }
 
@@ -301,5 +320,29 @@ mod tests {
         ctx.submitter_hp_score = 0;
         let check = check_submitter_identity(&ctx);
         assert!(!check.passed);
+    }
+
+    #[test]
+    fn quarantined_class_rejected() {
+        let m = test_manifest();
+        let quarantined = vec!["Scientific".to_string()];
+        let check = check_workload_class_with_quarantine(&m, &quarantined);
+        assert!(!check.passed);
+        assert!(check.detail.contains("quarantined"));
+    }
+
+    #[test]
+    fn non_quarantined_class_passes() {
+        let m = test_manifest();
+        let quarantined = vec!["MlTraining".to_string()];
+        let check = check_workload_class_with_quarantine(&m, &quarantined);
+        assert!(check.passed);
+    }
+
+    #[test]
+    fn data_classification_public_passes() {
+        let m = test_manifest();
+        let check = check_data_classification(&m);
+        assert!(check.passed);
     }
 }
