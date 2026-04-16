@@ -42,7 +42,9 @@ World Compute is a SETI@home-style volunteer compute federation. Anyone who opts
 
 The cluster is fractal by design. A two-laptop home network becomes a functioning micro-cluster the moment both agents start — no configuration, no central registry, no account required. That same LAN cluster is also a sub-cluster of the global federation once an internet connection is available. The topology spans personal PCs, institutional HPC clusters, Kubernetes deployments, cloud tenants, edge devices, and eventually browser tabs, all in one continuously self-healing mesh. There is no "size at which it breaks" in the design; the architecture was explicitly derived from the operational lessons of BOINC, Kubernetes, libp2p, and HTCondor.
 
-The fundamental exchange is straightforward: donate idle hardware, earn Normalized Compute Units (NCU), redeem NCU for your own compute at a guaranteed minimum caliber at least as good as what you donated. No money changes hands in the credit system. No token is traded on any exchange. Financial support for the project flows through a separate, publicly-audited nonprofit entity whose income and expenditure are reported quarterly. The compute economy and the funding model are deliberately kept separate so that financial donation never buys scheduling priority.
+Anyone can submit jobs to World Compute for free. No hardware donation is required to get started. Donors earn Normalized Compute Units (NCU) by contributing hardware; those NCU boost their scheduling priority. Job priority is computed from a continuous multi-factor score — NCU balance, public community votes, job size, queue age, and recent usage — so donors get faster service while non-donors' jobs still run, and no job waits forever. A public proposal board lets verified humans vote on which work deserves priority, giving the community a direct voice in how shared capacity is allocated.
+
+No money changes hands in the credit system. No token is traded on any exchange. Financial support for the project flows through a separate, publicly-audited nonprofit entity whose income and expenditure are reported quarterly. The compute economy and the funding model are deliberately kept separate so that financial donation never buys scheduling priority.
 
 ---
 
@@ -56,9 +58,9 @@ Five constitutional principles govern every design decision. They are not aspira
 
 **Principle II — Robustness.** Every node is treated as fundamentally unreliable and capable of disappearing mid-job. The scheduler is declarative and self-healing. Storage is erasure-coded across geographically independent donors. Every long-running task checkpoints to the data plane so that any replica can resume on any eligible node from the latest checkpoint, without restarting from zero. Network partitions, high churn, and Byzantine donors are the assumed normal condition, not edge cases.
 
-**Principle III — Fairness and Donor Sovereignty.** The local human user takes absolute priority over cluster workloads on their own machine, always, without exception. When the user returns — keyboard, mouse, thermal threshold, AC disconnect — all cluster jobs freeze within 10 milliseconds and release all interactive resources within 500 milliseconds. Donors are entitled to redeem compute of at least the same caliber as what they donated. Paying institutional users cannot preempt donor-redemption jobs. Accounting is transparent and auditable by every donor at any time.
+**Principle III — Fairness and Donor Sovereignty.** The local human user takes absolute priority over cluster workloads on their own machine, always, without exception. When the user returns — keyboard, mouse, thermal threshold, AC disconnect — all cluster jobs freeze within 10 milliseconds and release all interactive resources within 500 milliseconds. Access to the cluster is open: anyone can submit jobs for free. Donors earn scheduling priority through their NCU balance — a priority boost, not an access gate. Job scheduling uses a continuous multi-factor score (NCU, public votes, job size, queue age, recent usage) that guarantees no job waits forever and that donors are served faster without locking out non-donors. Accounting is transparent and auditable by every participant at any time.
 
-**Principle IV — Efficiency and Self-Improvement.** A public-good cluster that squanders donated hardware and donated power is not a public good. At planetary scale, inefficiency is measured in gigawatts. A permanently reserved fraction of cluster capacity (5–10%) is dedicated to continuously improving the cluster itself — scheduler quality, sandbox hardening, storage efficiency, protocol evolution. Energy and carbon footprint are published. Joules-per-useful-result must improve year over year; failure to improve is a governance event, not an optimization target.
+**Principle IV — Efficiency and Self-Improvement.** A public-good cluster that squanders donated hardware and donated power is not a public good. At planetary scale, inefficiency is measured in gigawatts. A permanently reserved fraction of cluster capacity (5–10%) is dedicated to continuously improving the cluster itself — scheduler quality, sandbox hardening, storage efficiency, protocol evolution. This self-improvement capacity is realized as a distributed mesh LLM: each GPU-capable donor node runs a complete small language model; a lightweight router selects K-of-N models per inference step and aggregates their outputs. The mesh runs autonomous self-prompting agents that analyze cluster metrics, propose policy changes, and submit validated improvements through a tiered review and governance process. A governance kill switch can halt all mesh LLM activity instantly. Energy and carbon footprint are published. Joules-per-useful-result must improve year over year; failure to improve is a governance event, not an optimization target.
 
 **Principle V — Direct Testing (Non-Negotiable).** No component ships until it has been directly tested by running real jobs on real representative hardware and verifying the results against known-correct answers. Mocks and simulators may supplement testing but cannot replace it. Safety-critical paths — sandboxing, preemption latency, data durability, attestation — must be tested adversarially on every release. A failing direct test blocks deployment. There are no exceptions for Principles I, II, III, or V.
 
@@ -79,6 +81,9 @@ World Compute is a pre-code project. The table below shows what exists and what 
 | Research: discovery and bootstrap | Yes | `specs/001-world-compute-core/research/05-discovery-and-bootstrap.md` |
 | Research: fairness and credits | Yes | `specs/001-world-compute-core/research/06-fairness-and-credits.md` |
 | Research: governance, testing, UX | Yes | `specs/001-world-compute-core/research/07-governance-testing-ux.md` |
+| Research: priority redesign (open access + multi-factor score) | Yes | `specs/001-world-compute-core/research/08-priority-redesign.md` |
+| Research: distributed mesh LLM self-improvement | Yes | `specs/001-world-compute-core/research/09-mesh-llm.md` |
+| Research: prior art — distributed inference | Yes | `specs/001-world-compute-core/research/10-prior-art-distributed-inference.md` |
 | Architecture overview design doc | Planned | `specs/001-world-compute-core/design/architecture-overview.md` |
 | Public whitepaper | Planned | `specs/001-world-compute-core/whitepaper.md` |
 | This README | Yes | `README.md` |
@@ -122,17 +127,19 @@ Uptime:        14d 6h 32m
 Jobs run:      847 tasks / 841 verified / 6 disputed (quorum resolved)
 ```
 
-### Submitting a job (Phase 2, not yet available)
+### Submitting a job without being a donor (Phase 2, not yet available)
+
+Anyone can submit jobs for free. Non-donors receive lower initial priority but the age signal ensures every job eventually runs.
 
 ```
 $ worldcompute submit hello.yaml
 Validating manifest...  ok
 Staging inputs (3 CIDs)...  ok
 Job ID:    job_8f9c2a4b1e...
-Priority:  PUBLIC_GOOD
+Priority score: 0.34  (S_ncu=0.00, S_vote=0.50, S_size=0.93, S_age=0.00, S_cool=1.00)
 Replicas:  R=3 (disjoint autonomous systems)
 
-State: queued
+State: queued (position: 47 — free tier, lower priority than NCU holders)
 State: leased  (nodes: eu-west-1, us-east-2, ap-south-1)
 State: running (checkpoint interval: 60s)
 State: verifying (2-of-3 quorum reached)
@@ -140,7 +147,51 @@ State: verified
 
 Result CID:  bafybeig3k7resultcid...
 Receipt:     sha256:e3b0c44298...  (anchored to Sigstore Rekor at 14:22:07 UTC)
+NCU charged: 0.00  (no NCU balance; free submission)
+```
+
+### Submitting a donor job with NCU priority (Phase 2, not yet available)
+
+Donors with an NCU balance automatically receive a higher priority score. No separate redemption command is needed.
+
+```
+$ worldcompute submit hello.yaml
+Validating manifest...  ok
+Staging inputs (3 CIDs)...  ok
+Job ID:    job_8f9c2a4b1e...
+Priority score: 0.63  (S_ncu=0.75, S_vote=0.50, S_size=0.93, S_age=0.00, S_cool=1.00)
+Replicas:  R=3 (disjoint autonomous systems)
+
+State: queued (position: 1 — donor priority lane)
+State: leased  (1m 14s from submission)
+State: running (checkpoint interval: 60s)
+State: verifying (2-of-3 quorum reached)
+State: verified
+
+Result CID:  bafybeig3k7resultcid...
+Receipt:     sha256:e3b0c44298...  (anchored to Sigstore Rekor at 14:22:07 UTC)
 NCU charged: 0.42
+```
+
+### Submitting a compute proposal and checking votes (Phase 2, not yet available)
+
+Any verified user can post a compute proposal for public voting. Votes boost the job's priority score.
+
+```
+$ worldcompute proposal submit --title "Protein folding for open-access drug discovery" \
+    --description "Run AlphaFold2 on 50,000 candidate sequences; results published CC0." \
+    --manifest ml-train.yaml
+Proposal ID:  prop_7a3f9c2d...
+Status:       open (voting window: 30 days)
+Vote URL:     https://worldcompute.org/proposals/prop_7a3f9c2d
+
+$ worldcompute proposal status prop_7a3f9c2d
+Proposal:     Protein folding for open-access drug discovery
+Status:       open
+Upvotes:      1,284
+Downvotes:    17
+Net votes:    1,267  (out of ~12,000 verified voters this epoch)
+S_vote score: 0.94
 ```
 
 ### Checking and verifying credits (Phase 2, not yet available)
@@ -161,6 +212,22 @@ Last 5 events:
   2026-04-15 00:32  +14.1 NCU  job_2d9a... (public-good-ml, verified 3/3)
   2026-04-15 01:55   -0.4 NCU  job_8f9c... (redemption, hello.yaml)
   2026-04-15 02:18  +13.7 NCU  job_5e6b... (scientific, verified 3/3)
+```
+
+### Checking mesh LLM status (Phase 3, not yet available)
+
+```
+$ worldcompute mesh status
+Mesh LLM:     active
+Phase:        2 (local ensemble — centralized router fallback available)
+Active nodes: 312 GPU experts  /  841 CPU experts
+Router:       replicated (3 coordinator nodes)
+Streams:      3 active agent streams
+  Stream A:   scheduler-optimization  (running: "Analyze last 24h latency metrics")
+  Stream B:   security-analysis       (idle)
+  Stream C:   storage-efficiency      (running: "Propose RS(10,18) compaction schedule")
+Throughput:   3.1 tok/s per stream
+Kill switch:  armed (governance: 3-of-5 quorum to halt)
 ```
 
 ### Redeeming credits for your own job (Phase 2, not yet available)
@@ -204,7 +271,14 @@ spec:
     cpu: "1"
     memory: "512Mi"
 
-  priority_class: PUBLIC_GOOD     # PUBLIC_GOOD | DONOR_REDEMPTION | PAID_SPONSORED
+  # priority_class is optional. Omit it and the scheduler computes a continuous
+  # priority score automatically from five signals: NCU balance (auto-applied from
+  # your account), public votes on any linked proposal, job size, queue age, and
+  # recent usage. You do not need an NCU balance to submit; you will simply queue
+  # at lower initial priority and rise over time via the age signal.
+  priority_class: PUBLIC_GOOD     # PUBLIC_GOOD | SELF_IMPROVEMENT (DONOR_REDEMPTION
+                                  # is no longer a separate class; NCU balance boosts
+                                  # priority automatically)
   replica_count: 3                # R=3 default; 2-of-3 quorum decides accepted result
   verification: hash-quorum
   checkpoint_interval_s: 0        # short job; checkpointing not needed
@@ -226,6 +300,11 @@ World Compute uses a three-tier hierarchical scheduler. No tier is on the critic
 |  ~100-1,000 elected coordinator nodes                    |
 |  Sharded Raft (job catalog, credit ledger, governance)   |
 |  Threshold-signed | Merkle-chained | Sigstore-anchored   |
+|                                                          |
+|  Priority subsystem: multi-factor score per job          |
+|  P = 0.35·S_ncu + 0.25·S_vote + 0.15·S_size              |
+|      + 0.15·S_age + 0.10·S_cool                          |
+|  Proposal board: public voting, HP-verified humans       |
 +---------------------+------------------------------------+
                        |
              libp2p GossipSub + Kademlia DHT
@@ -251,15 +330,25 @@ World Compute uses a three-tier hierarchical scheduler. No tier is on the critic
                | Preemption    |  SIGSTOP < 10ms, autonomous
                | Attestation   |  TPM 2.0 / SEV-SNP / signing
                | Checkpointing |  -> RS(10,18) storage plane
+               | Mesh LLM      |  complete small model per GPU
+               |   expert      |  node (LLaMA-3 tokenizer)
                +---------------+
 
 Data plane:  all artifacts addressed by CIDv1 (SHA-256)
 Storage:     Reed-Solomon RS(10,18), >=3 continents, <=2 shards/country
 Encryption:  ChaCha20-Poly1305 per chunk; X25519 key wrap
 P2P stack:   libp2p (QUIC primary, TCP fallback, WebRTC for browser)
+
+Mesh LLM (5-10% of cluster capacity, self-improvement):
+  Each GPU donor node runs a complete quantized small model.
+  A replicated router selects K-of-N experts per inference step
+  and aggregates sparse output distributions. Self-prompting
+  agent streams analyze cluster metrics and propose improvements
+  through a tiered review process; a governance kill switch can
+  halt all mesh activity instantly.
 ```
 
-The three tiers interact as follows. The global control plane is the durable system of record for the job catalog, credit ledger, and governance actions. It is never on the critical path of a single task execution. Regional brokers own task queues for a geographic shard; they match tasks to nearby agents using ClassAd-style capability expressions and manage leases and speculative re-execution. Local agents are the only entities that touch donor hardware. They enforce donor sovereignty — preemption, throttling, quiet hours — entirely autonomously, without consulting any remote service.
+The three tiers interact as follows. The global control plane is the durable system of record for the job catalog, credit ledger, governance actions, and the priority scoring subsystem. It is never on the critical path of a single task execution. Regional brokers own task queues for a geographic shard; they match tasks to nearby agents using ClassAd-style capability expressions and manage leases and speculative re-execution. Local agents are the only entities that touch donor hardware. They enforce donor sovereignty — preemption, throttling, quiet hours — entirely autonomously, without consulting any remote service. GPU-capable agents additionally run a complete small language model as a mesh LLM expert, contributing to the self-improvement capacity slice.
 
 A three-machine isolated LAN functions as a self-contained cluster via mDNS peer discovery, electing one agent as a transient regional broker. When the LAN gains internet connectivity it merges into the global DHT transparently, with no configuration and no loss of in-flight work or credit history.
 
@@ -394,6 +483,31 @@ Read-only visibility into the cluster's current state, ledger, and peer topology
 
 ---
 
+### ComputeProposalService
+
+Public compute proposals and voting. Any verified user can submit a proposal; any human with HP >= 5 can vote. Vote tallies feed the `S_vote` priority signal for jobs submitted under the proposal.
+
+| Method | Request | Response | Description |
+|-|-|-|-|
+| `CreateComputeProposal` | `ComputeProposalBody` | `ComputeProposal` | Submit a compute proposal: title, description, estimated resource needs, openness declaration. Returns a proposal ID. |
+| `GetComputeProposal` | `ProposalId` | `ComputeProposal` | Retrieve a proposal including current upvote/downvote counts, net vote score, and computed `S_vote`. |
+| `CastComputeVote` | `ComputeVoteRequest` | `VoteReceipt` | Cast an upvote or downvote on an open proposal. Requires caller HP >= 5. Vote is ledger-recorded with verifiable witness. |
+| `ListComputeProposals` | `ProposalFilter` | `ProposalList` | List proposals filtered by status (open/closed), sort order, and date range. |
+
+---
+
+### MeshLLMService
+
+Read-only visibility into the mesh LLM self-improvement subsystem. Configuration changes require governance approval; the kill switch is in AdminService.
+
+| Method | Request | Response | Description |
+|-|-|-|-|
+| `GetMeshStatus` | _(empty)_ | `MeshStatus` | Current mesh health: active expert count, active agent streams, tokens/second per stream, router phase, kill-switch state. |
+| `ListMeshAgents` | `AgentFilter` | `AgentList` | List running self-improvement agent streams with their current task and progress. |
+| `GetMeshAgentOutput` | `AgentId` | `AgentOutput` | Retrieve the latest analysis or proposal text generated by a specific agent stream. |
+
+---
+
 ### GovernanceService
 
 Proposal creation, voting, and financial reporting. All records are written to the same append-only ledger as compute provenance.
@@ -517,6 +631,107 @@ Response `200 OK`:
 }
 ```
 
+#### Submit a compute proposal
+
+```
+POST /v1/proposals
+Content-Type: application/json
+
+{
+  "title": "Protein folding for open-access drug discovery",
+  "description": "Run AlphaFold2 on 50,000 candidate sequences; results published CC0.",
+  "estimated_ncu_hours": 500,
+  "results_public": true
+}
+```
+
+Response `201 Created`:
+
+```json
+{
+  "proposal_id": "prop_7a3f9c2d",
+  "status": "open",
+  "voting_closes_at": "2026-05-15T14:21:53Z",
+  "vote_url": "https://worldcompute.org/proposals/prop_7a3f9c2d"
+}
+```
+
+#### Get a proposal with vote count
+
+```
+GET /v1/proposals/prop_7a3f9c2d
+```
+
+Response `200 OK`:
+
+```json
+{
+  "proposal_id": "prop_7a3f9c2d",
+  "title": "Protein folding for open-access drug discovery",
+  "status": "open",
+  "upvotes": 1284,
+  "downvotes": 17,
+  "net_votes": 1267,
+  "total_epoch_voters": 12000,
+  "s_vote": 0.94,
+  "submitted_at": "2026-04-15T14:21:53Z",
+  "voting_closes_at": "2026-05-15T14:21:53Z"
+}
+```
+
+#### Cast a vote on a proposal
+
+Requires HP >= 5. Callers below that threshold receive a `403 Forbidden` with `"code": "INSUFFICIENT_HP"`.
+
+```
+POST /v1/proposals/prop_7a3f9c2d/vote
+Content-Type: application/json
+
+{
+  "direction": "up"
+}
+```
+
+Response `200 OK`:
+
+```json
+{
+  "receipt_id": "vote_rcpt_b1c2d3",
+  "proposal_id": "prop_7a3f9c2d",
+  "direction": "up",
+  "voter_hp": 8,
+  "vote_weight": 1.0,
+  "recorded_at": "2026-04-15T15:03:22Z",
+  "ledger_entry": "sha256:f7a1b2c3..."
+}
+```
+
+#### Get mesh LLM status
+
+```
+GET /v1/mesh/status
+```
+
+Response `200 OK`:
+
+```json
+{
+  "mesh_active": true,
+  "phase": 2,
+  "active_experts": 312,
+  "active_cpu_experts": 841,
+  "active_streams": 3,
+  "tokens_per_second_per_stream": 3.1,
+  "router_mode": "local-ensemble",
+  "kill_switch_armed": true,
+  "streams": [
+    {"id": "stream_A", "domain": "scheduler-optimization", "status": "running"},
+    {"id": "stream_B", "domain": "security-analysis",      "status": "idle"},
+    {"id": "stream_C", "domain": "storage-efficiency",     "status": "running"}
+  ]
+}
+```
+
 ---
 
 ### Full Job Manifest Reference (YAML)
@@ -559,7 +774,10 @@ spec:
       optional: true            # job runs on CPU-only donors if no GPU available
 
   # Scheduling policy
-  priority_class: PUBLIC_GOOD   # PUBLIC_GOOD | DONOR_REDEMPTION | PAID_SPONSORED | SELF_IMPROVEMENT
+  # priority_class is optional. When omitted, the scheduler computes a continuous
+  # priority score from five signals (NCU balance, public votes, size, age, cooldown).
+  # NCU from your account is applied automatically — no separate redemption step needed.
+  priority_class: PUBLIC_GOOD   # PUBLIC_GOOD | SELF_IMPROVEMENT (omit for auto-scored)
   replica_count: 3              # R=3 default; R=5 for high-value; R=1 + TEE for confidential
   verification: hash-quorum     # hash-quorum | range-check | tee-attestation
   preempt_class: checkpointable # yieldable | checkpointable | restartable
@@ -594,12 +812,11 @@ All API surfaces return errors in a structured envelope with a canonical code, a
 | Code | Meaning |
 |-|-|
 | `INVALID_MANIFEST` | Job manifest fails schema validation or signature verification. |
-| `INSUFFICIENT_CREDITS` | Submitter NCU balance is below what the requested priority class requires. |
+| `INSUFFICIENT_HP` | Caller's humanity-point score is below the minimum required for this operation (e.g., casting a vote requires HP >= 5). |
 | `ACCEPTABLE_USE_VIOLATION` | Job matches a prohibited category: unauthorized scanning, malware, illegal content, or targeted surveillance. |
 | `NO_ELIGIBLE_NODES` | No nodes match the job's resource requirements, trust tier, caliber class, or geographic constraints. |
 | `QUORUM_FAILURE` | Replicas returned inconsistent results; no quorum established after re-execution attempts. |
 | `TRUST_TIER_MISMATCH` | Job requires a higher trust tier than any available node can satisfy (e.g., `confidential-high` requires T3). |
-| `CALIBER_CLASS_UNAVAILABLE` | Donor-redemption job cannot be matched to a node of the required caliber class within the SLA window; triggers escalation to `EMERGENCY_DONOR`. |
 | `ATTESTATION_REJECTED` | Agent binary or workload image failed cryptographic attestation; node is quarantined. |
 | `JOB_NOT_FOUND` | Requested job ID does not exist or does not belong to this account. |
 | `RATE_LIMITED` | Account has exceeded the per-period rate limit for this operation; see `Retry-After` header. |
@@ -679,6 +896,22 @@ A `LICENSE` file exists in this repository reserving rights pending the formal l
 
 ## FAQ
 
+**Do I need to donate hardware to use World Compute?**
+
+No. Anyone can submit jobs for free. No NCU balance is required to submit a job. Non-donors start with a lower priority score but their jobs rise in priority over time via the queue-age signal, and the system guarantees no job waits forever. Donors earn NCU by contributing hardware, which boosts their scheduling priority — but NCU is a priority boost, not an access gate.
+
+**How does job priority work?**
+
+Priority is a continuous score computed from five signals: `P = 0.35·S_ncu + 0.25·S_vote + 0.15·S_size + 0.15·S_age + 0.10·S_cool`. S_ncu reflects your NCU balance (saturating exponential — more NCU helps, but returns diminish). S_vote reflects public community votes on a linked compute proposal. S_size favors smaller jobs. S_age grows as a job waits, guaranteeing eventual scheduling. S_cool penalizes recent heavy users to prevent monopolization. The weights are governance-configurable and published transparently. There is no separate "donor redemption" queue; donors submit normally and their NCU balance is applied automatically.
+
+**What is the mesh LLM?**
+
+The mesh LLM is a distributed ensemble-of-experts language model that uses 5–10% of cluster capacity to improve the cluster itself. Each GPU-capable donor node runs a complete small quantized model (LLaMA-3 family). A lightweight router selects K-of-N experts per inference step and aggregates their sparse output distributions. The resulting system runs autonomous self-prompting agent streams that analyze cluster metrics, draft policy improvements, and run sandboxed experiments. It operates on timescales of minutes to hours, not real-time conversation. The minimum viable mesh requires approximately 280 cluster nodes. A phased rollout starts with a centralized small model and graduates to full distributed operation at 5,000+ nodes.
+
+**Can the mesh LLM break things?**
+
+The mesh LLM's proposed changes are never applied directly to production. Every proposed change passes through a staged pipeline: simulation against the last 24 hours of cluster traffic, then a 1% canary deployment, then the required governance approval tier. High-impact changes require a full governance vote and 24-hour review period. Any governance participant can issue a kill-switch command that immediately halts all mesh LLM inference streams and reverts the last several applied changes. The kill switch cannot be overridden by the mesh LLM itself.
+
 **Is this a cryptocurrency?**
 
 No. The Normalized Compute Unit (NCU) is an internal accounting unit that tracks the exchange between donated compute and redeemable compute. It is not traded on any exchange, has no monetary value, cannot be sold, and is not a financial instrument. The research explicitly rejected token-based designs because speculation creates incentives incompatible with the "donors are sovereign citizens" model in Principle III.
@@ -740,7 +973,10 @@ Nowhere yet. No donation channel has been established because the legal entity h
 | `specs/001-world-compute-core/research/03-sandboxing.md` | Sandbox architecture per platform (Firecracker/KVM, Apple Virtualization.framework, Hyper-V/WSL2, WASM), GPU passthrough via VFIO+IOMMU, TPM attestation, red-team test plan. |
 | `specs/001-world-compute-core/research/04-storage.md` | Reed-Solomon RS(10,18) erasure coding, CIDv1 content addressing, geographic placement constraints, ChaCha20-Poly1305 encryption, CRDT metadata plane design. |
 | `specs/001-world-compute-core/research/05-discovery-and-bootstrap.md` | libp2p stack selection and rationale, mDNS LAN auto-discovery, Kademlia DHT WAN routing, DNS bootstrap, NAT traversal (DCUtR + Circuit Relay v2), adapter architecture for HPC/K8s/cloud/browser. |
-| `specs/001-world-compute-core/research/06-fairness-and-credits.md` | NCU credit model and hardware normalization, five-tier priority hierarchy, preemption mechanics, credit decay and inflation control, Public Good Review Board governance, direct-test plan for fairness properties. |
+| `specs/001-world-compute-core/research/06-fairness-and-credits.md` | NCU credit model and hardware normalization, original priority hierarchy (superseded in part by research/08), preemption mechanics, credit decay and inflation control, Public Good Review Board governance, direct-test plan for fairness properties. |
 | `specs/001-world-compute-core/research/07-governance-testing-ux.md` | 501(c)(3) structure and funding model, comparative nonprofit analysis, five-phase staged testing with pass/kill gates, CLI (Rust+clap) and GUI (Tauri) framework selection, API design. |
+| `specs/001-world-compute-core/research/08-priority-redesign.md` | Open-access multi-factor scheduling: composite priority formula, public voting with Sybil-resistant HP verification, starvation-freedom proof, fairness analysis. Supersedes the five-class priority hierarchy from research/06. |
+| `specs/001-world-compute-core/research/09-mesh-llm.md` | Distributed mesh LLM for self-improvement: ensemble-of-experts architecture, router design, tokenizer standardization (LLaMA-3), safety tiers, phased rollout, resource budget, and prior art survey. |
+| `specs/001-world-compute-core/research/10-prior-art-distributed-inference.md` | Prior art survey for distributed inference systems (Petals, Hivemind, Together.ai, Swarm, FriendliAI, and others). |
 | `specs/001-world-compute-core/design/architecture-overview.md` | _(planned)_ Consolidated architecture design document. |
 | `specs/001-world-compute-core/whitepaper.md` | _(planned)_ Public-facing whitepaper covering design rationale and prior art in full. |

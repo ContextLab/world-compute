@@ -2,7 +2,10 @@
 
 **The World Compute Project**
 **Date**: 2026-04-15
-**Version**: Draft v0.1
+**Version**: Draft v0.2
+
+**Changelog**:
+- v0.2 (2026-04-15): Replaced rigid priority hierarchy with open-access multi-factor scheduling (research/08-priority-redesign.md). Added "Democratic Access and Public Voting" section. Replaced vague self-improvement language with concrete mesh LLM architecture (research/09-mesh-llm.md, research/10-prior-art-distributed-inference.md). Updated "What We Are Not Doing" and FAQ accordingly.
 
 ---
 
@@ -20,7 +23,7 @@ These projects plateau for understandable reasons. Each runs its own centralized
 
 A 2026 redesign can address each of these. The libp2p networking stack, battle-tested at the scale of the Ethereum Beacon Chain (500,000+ nodes), provides zero-configuration LAN discovery and NAT traversal as primitives. Firecracker microVMs, Apple Virtualization.framework, and Hyper-V provide hardware-enforced VM isolation at near-native performance — the same technology AWS Lambda uses to run untrusted code safely. Reed-Solomon erasure coding with content-addressed storage (CIDv1) provides durable data storage across unreliable, churning donors. Threshold-signed, hash-chained append-only ledgers with external transparency anchors provide tamper-evident accounting without a blockchain. Modern CPU and GPU hardware increasingly includes hardware attestation roots (TPM 2.0, AMD SEV-SNP, Intel TDX) that let the system prove what code is running on a donor's machine.
 
-World Compute assembles these components into a single coherent system, governed by five constitutional principles that are binding on every design decision.
+World Compute assembles these components into a coherent system governed by five constitutional principles that are binding on every design decision.
 
 ---
 
@@ -32,13 +35,13 @@ The World Compute Constitution (`.specify/memory/constitution.md`, version 1.0.0
 
 **Robustness** reflects the reality that a cluster of the general public's machines experiences churn rates orders of magnitude higher than a datacenter. Every node is assumed unreliable. Every job checkpoints to erasure-coded storage. Every in-flight task has pre-warmed replicas elsewhere. The control plane survives the loss of any region or coordinator. Network partitions are the normal operating condition, not an edge case.
 
-**Fairness and Donor Sovereignty** is what keeps donors participating. Donors are not a resource to be exploited; they are sovereign owners generously sharing. Their local user always takes absolute priority over cluster workloads. If a donor touches their keyboard, cluster jobs freeze within 10 milliseconds. In exchange, donors earn credits they can redeem for compute of at least the same caliber class as what they donated — a hard contractual guarantee, not a hope. Paying sponsors never preempt donor-redemption jobs.
+**Fairness and Donor Sovereignty** is what keeps donors participating. Donors are not a resource to be exploited; they are sovereign owners generously sharing. Their local user always takes absolute priority over cluster workloads. If a donor touches their keyboard, cluster jobs freeze within 10 milliseconds. In exchange, donors earn credits they can redeem for compute of at least the same caliber class as what they donated — a hard contractual guarantee, not a hope. Paying sponsors never preempt donor-redemption jobs. Critically, the cluster is open: anyone on Earth can submit jobs, and donated hardware boosts scheduling priority rather than gating access. This makes the system a public good rather than a private club.
 
-**Efficiency and Self-Improvement** recognizes that wasted cycles on donor machines are a real cost — to donors and to the planet. The scheduler is locality- and energy-aware. A permanently reserved 5–10% of cluster capacity runs self-improvement workloads: scheduler optimization, sandbox hardening, storage efficiency, and research into making the system cheaper and safer. At planetary scale, the system publishes its aggregate energy and carbon footprint and is required to reduce joules-per-useful-result year over year.
+**Efficiency and Self-Improvement** recognizes that wasted cycles on donor machines are a real cost — to donors and to the planet. The scheduler is locality- and energy-aware. A permanently reserved 5–10% of cluster capacity runs self-improvement workloads: scheduling optimization, sandbox hardening, storage efficiency, and cluster governance. This capacity powers a distributed mesh LLM — an ensemble of small language models running across GPU donor nodes — that observes cluster metrics, proposes improvements, and validates changes before deployment. At planetary scale, the system publishes its aggregate energy and carbon footprint and is required to reduce joules-per-useful-result year over year.
 
 **Direct Testing** is non-negotiable. No component ships until it has been tested on real hardware, with real sandboxes, returning real correct answers. Mocks may be used for regression speed but cannot be the sole evidence of correctness for any component entering production. Every release produces a published evidence artifact: the jobs that ran, the systems they ran on, the expected outputs, and the observed outputs. A failing direct test blocks deployment. There is no "we'll fix it next release" exception for Principles I, II, III, or V.
 
-These principles are not aspirational. They are load-bearing for every requirement in the system. When a design decision appears later in this paper, it traces back to one or more of them.
+These principles are not aspirational. They are load-bearing for every requirement in the system.
 
 ---
 
@@ -104,17 +107,19 @@ The most common question about a decentralized compute system is: "Why don't you
 
 A blockchain — whether proof-of-work or proof-of-stake — requires global consensus on the ordering of every event. That consensus has a cost: latency, energy, and complexity. For a system governed by Principle IV (efficiency as a core obligation), burning donor cycles and kilowatt-hours on consensus coordination is unacceptable. Proof-of-work is explicitly an energy waste by design. Proof-of-stake requires financial collateral, which Principle III forbids — a small donor with a spare laptop should be able to participate without posting economic stake.
 
-The blockchain ecosystem's primitives, however, are valuable and are used throughout World Compute: Ed25519 signatures, Merkle DAGs, hash-chained logs, threshold signatures, and transparency logs. The chain itself is not needed.
+The blockchain ecosystem's primitives are valuable and used throughout World Compute: Ed25519 signatures, Merkle DAGs, hash-chained logs, threshold signatures, and transparency logs. The chain itself is not needed.
 
 ### The Ledger Architecture
 
 The credit ledger is a **CRDT-replicated, hash-chained, threshold-signed append-only log with periodic Merkle-root anchors to external transparency logs**.
 
-Each ledger event (credit earned, credit spent, job result accepted, governance action taken) is a record containing: the hash of the preceding record, the event type, the node and job identifiers, the NCU amount, a timestamp, and a threshold-signed witness from at least 3 of the coordinator quorum. Records form a Merkle chain per coordinator, equivalent in structure to IETF Certificate Transparency (RFC 6962). The chain is content-addressed with CIDv1, giving it the same durability as the storage plane.
+Each ledger event (credit earned, credit spent, job result accepted, governance action taken, public vote cast) is a record containing: the hash of the preceding record, the event type, the node and job identifiers, the NCU amount, a timestamp, and a threshold-signed witness from at least 3 of the coordinator quorum. Records form a Merkle chain per coordinator, equivalent in structure to IETF Certificate Transparency (RFC 6962). The chain is content-addressed with CIDv1, giving it the same durability as the storage plane.
 
 Every 10 minutes, the coordinator quorum computes the Merkle root of all per-coordinator log heads and anchors it to two external transparency logs: Sigstore Rekor (already operated for open-source supply-chain transparency) and a World Compute-operated CT-style log mirrored to a third-party operator. These anchors are public, permanent, and independent of the project. A compromised coordinator cannot rewrite history without producing a Merkle root that contradicts the already-published external anchors. Third parties can verify any credit event with no trusted intermediary.
 
 Donor-facing balance views are derived from the append-only log via a CRDT OR-Map index. Reads are local and instant. Writes propagate via GossipSub across the coordinator quorum and are replicated with the same RS(10,18) durability as other cold data.
+
+The same ledger records public vote tallies from the democratic scheduling system (described in the next section), giving voting history the same tamper-evidence guarantees as credit history.
 
 ### Comparison to Blockchain Alternatives
 
@@ -128,9 +133,7 @@ Donor-facing balance views are derived from the append-only log via a CRDT OR-Ma
 | Donor can verify their own balance | Yes | Yes (local verification, `worldcompute donor credits --verify`) |
 | Global consensus on every event | Yes (block inclusion) | No (coordinator quorum, not global) |
 
-The ledger gives every property that matters — tamper evidence, public auditability, cryptographic non-repudiation of every event — at a fraction of the coordination cost. A donor can verify their own credit history locally in O(log n) time without trusting any server.
-
-For further detail, see `research/02-trust-and-verification.md`.
+The ledger gives every property that matters — tamper evidence, public auditability, cryptographic non-repudiation — at a fraction of the coordination cost. A donor can verify their own credit history locally in O(log n) time without trusting any server. For further detail, see `research/02-trust-and-verification.md`.
 
 ---
 
@@ -138,17 +141,51 @@ For further detail, see `research/02-trust-and-verification.md`.
 
 Principle III is the commitment that makes donors willing to participate at all. It has concrete, measurable, testable requirements.
 
-**Sub-second preemption.** The agent runs a sovereignty monitor observing keyboard and mouse activity, foreground application changes, thermal state, battery level, memory pressure, and user-defined triggers. When any trigger fires, the agent sends SIGSTOP to all running workload processes within 10 milliseconds. CPU and GPU timeslices yield immediately — the donor's interactive experience is unaffected. Within 500 milliseconds, the agent attempts a checkpoint: the job flushes its state to the local scratch directory and notifies the broker. If the checkpoint completes, the broker reschedules the job from that checkpoint on another available node. If it does not complete in time, the agent sends SIGKILL and the broker reschedules from the last committed checkpoint stored in the RS(10,18) data plane.
+**Sub-second preemption.** The agent monitors keyboard and mouse activity, foreground app changes, thermal state, battery level, and memory pressure. When any trigger fires, SIGSTOP reaches all workload processes within 10 milliseconds. Within 500 milliseconds, the agent attempts a checkpoint; if that completes, the broker reschedules from it on another node. If not, SIGKILL fires and the broker reschedules from the last committed checkpoint in the RS(10,18) data plane.
 
-GPU preemption is a known hard problem. In-flight CUDA kernels do not respond to SIGSTOP instantaneously. In v1, GPU donors run workloads with kernel windows targeted at 200 milliseconds or less, and GPU certification requires passing a real-hardware preemption-latency test. This is an honest limitation, documented as an open question rather than glossed over.
+In-flight CUDA kernels do not respond to SIGSTOP. In v1, GPU donors run workloads with kernel windows targeted at 200 milliseconds or less; GPU certification requires a real-hardware preemption-latency test. This is a documented limitation, not a glossed-over one.
 
-**Same-caliber redemption guarantee.** Credits are tagged with the **caliber class** of the hardware that earned them: 0 (Raspberry Pi), 1 (consumer CPU laptop), 2 (consumer GPU workstation), 3 (prosumer GPU), 4 (data center GPU). When a donor redeems credits, the scheduler is required to place that job on hardware of caliber class at or above the earned class. The 95th-percentile queue time for a same-caliber redemption job is under 2 hours. If a donor is willing to accept a lower-caliber node, they receive a compensation credit multiplier on the consumed credits.
+**Same-caliber redemption guarantee.** Credits are tagged with the caliber class of the hardware that earned them: 0 (Raspberry Pi) through 4 (data center GPU). The scheduler places redemption jobs on hardware at or above the earned class. A high NCU balance provides strong scheduling priority (via S_ncu), ensuring fast placement. Donors willing to accept lower-caliber nodes receive a compensation credit multiplier.
 
-**No "pay for priority."** Paying sponsors occupy a scheduling class explicitly below donor-redemption jobs. A sponsor cannot pay to preempt a donor's redemption allocation. This is a bylaw-level commitment, not merely a scheduler policy.
+**No "pay for priority."** Financial donations to the project do not purchase scheduling priority. Paying organizations that need compute can acquire NCU credits, which feeds into the same priority formula as any other submitter — they compete on equal terms. This is a bylaw-level commitment, not merely a scheduler policy.
 
-**NCU credits.** The Normalized Compute Unit (NCU) is defined as 1 TFLOP/s of FP32 throughput for 1 second on a reference platform (NVIDIA A10G). Credit is multi-dimensional using Dominant Resource Fairness: compute, memory, storage, and network are each measured, and the dominant dimension determines the credit earned and consumed. This prevents donors from over-claiming credit on dimensions they minimally stress, and prevents submitters from under-declaring resource usage.
+**NCU credits.** One Normalized Compute Unit is 1 TFLOP/s of FP32 throughput for 1 second on a reference platform (NVIDIA A10G). Credit is multi-dimensional via Dominant Resource Fairness — compute, memory, storage, and network are each measured, with the dominant dimension determining credit earned and consumed. Credits decay with a 45-day half-life to prevent hoarding; if outstanding credits exceed 110% of trailing redemption demand, the decay rate increases automatically. This is the lesson of BOINC's credit inflation problem, applied concretely.
 
-Credits decay with a 45-day half-life to prevent hoarding. A minimum balance floor protects donors who take a brief break. Supply is monitored weekly; if outstanding credits exceed 110% of trailing redemption demand, the decay rate increases automatically until the ratio normalizes. This is the lesson of BOINC's credit inflation problem, applied concretely.
+---
+
+## Democratic Access and Public Voting
+
+### Open Access
+
+World Compute is not a members-only club. Anyone with a verified identity can submit jobs — no hardware donation required. Donating hardware earns NCU credits that provide a significant scheduling priority advantage, but NCU is a boost, not a gate. A non-donor's job is deprioritized, not blocked.
+
+This is not charity toward non-donors. It is a Pareto improvement. A donor who contributes X NCU and consumes Y NCU (where Y < X due to quorum/replication overhead) experiences a net compute loss in a closed donor-only system. In an open system, that surplus capacity serves non-donor jobs, converting overhead into public benefit. The donor's individual experience is unchanged; the social outcome is strictly better.
+
+### Multi-Factor Priority Score
+
+Scheduling priority is a continuous composite score, not a rigid class hierarchy. Every job — regardless of submitter — competes via:
+
+```
+P = 0.35·S_ncu + 0.25·S_vote + 0.15·S_size + 0.15·S_age + 0.10·S_cool
+```
+
+Each signal is normalized to [0, 1]:
+
+- **S_ncu** — saturating function of the submitter's NCU balance. Deliberately sublinear: a donor with 10× more NCU gains only ~2× the priority score, not 10×, preventing plutocratic dominance.
+- **S_vote** — public importance signal from human-verified voting. No votes gives 0.5 (neutral); strong support approaches 1.0. Normalized by sqrt(voter population) so significance scales with electorate size.
+- **S_size** — decaying function of job size. Small jobs score near 1.0; large jobs score lower, enabling backfill scheduling.
+- **S_age** — monotonically increasing with time in queue. The starvation-prevention signal. Under default parameters, any job — regardless of NCU, votes, or size — reaches competitive priority within approximately 7 hours.
+- **S_cool** — penalty for heavy recent consumption. Resets naturally as the 24-hour trailing window slides forward.
+
+LOCAL_USER preemption remains an absolute override outside the formula — donor activity freezes all workloads within 10 milliseconds regardless of priority score.
+
+Example: a donor with 200 NCU submitting a 1-hour job scores approximately P = 0.628. A non-donor submitting a large 100-hour job with strong community support after waiting 8 hours scores approximately P = 0.463. The donor's job runs first, but the non-donor's job runs too — its priority keeps climbing until it does. Weights are governance-configurable. For worked examples and the starvation-freedom proof, see `research/08-priority-redesign.md`.
+
+### Human-Verified Voting and Sybil Resistance
+
+The voting system uses a layered "humanity points" (HP) composite score. Tier 1 (email, phone, social account binding) provides a baseline; Tier 2 adds web-of-trust vouching and proof-of-personhood ceremonies; Tier 3 — active World Compute donor status — is the strongest signal, because a fake donor identity requires real hardware ($50+ per node), making it 3–4 orders of magnitude more expensive to fabricate than a fake email. A voter with 5 HP casts a full-weight vote; below that, vote weight scales proportionally.
+
+Anti-gaming measures include quadratic vote budgets (3 votes on one proposal costs 9 budget units), a 20-vote cap per 30-day epoch, time-weighted voting, and automated detection of accounts voting in lockstep. Vote tallies and HP scores (not identities) are publicly auditable on the tamper-evident ledger. For the full Sybil resistance analysis, see `research/08-priority-redesign.md`.
 
 ---
 
@@ -218,11 +255,68 @@ Governance is two-body. A **Technical Steering Committee** (TSC) of 5–7 member
 
 Financial donations are accepted in fiat currency. Cryptocurrency donations are accepted and converted to fiat immediately; no treasury assets are held in cryptocurrency. Funding is diversified across individual donations, tiered corporate sponsorships (structured as charitable donations, not membership dues), and grants from science and technology foundations. Quarterly financial reports are published within 30 days of quarter close, in both machine-readable and human-readable form. IRS Form 990 is published immediately upon filing.
 
-**Financial donations do not confer compute scheduling priority.** This is a bylaw-level commitment stated in every major-donor agreement. A sponsor can submit jobs through the same submitter pathway as any other user, at the PAID_SPONSORED priority class that explicitly sits below DONOR_REDEMPTION. The scheduler is governed by the constitution, not by donor-relations commitments.
+**Financial donations do not confer compute scheduling priority** — a bylaw-level commitment in every major-donor agreement. Organizations that need compute acquire NCU credits and compete via the same multi-factor priority formula as all other submitters.
 
-Governance proposals — policy changes, acceptable-use rule amendments, emergency halts — are submitted via the CLI or web dashboard, discussed publicly, and voted on per the published rules. The outcome is recorded on the same tamper-evident ledger as compute provenance. TSC meeting minutes are published within 7 days.
+Governance proposals are submitted via CLI or web dashboard, discussed publicly, and voted on per the published rules. Outcomes are recorded on the tamper-evident ledger. TSC meeting minutes are published within 7 days.
 
-A Public Good Review Board approves workloads for the PUBLIC_GOOD scheduling class: open-access results, non-harmful purpose, scientific validity review, and alignment with donor opt-in classes. Standard approval requires a 14-day public comment period and 60% weighted vote. Humanitarian emergencies use a 7-day emergency track.
+A Public Good Review Board approves proposals for the public voting board: open-access results, non-harmful purpose, scientific validity, and alignment with donor opt-in classes. Standard approval requires a 14-day public comment period and 60% weighted vote; humanitarian emergencies use a 7-day track.
+
+---
+
+## Mesh LLM: Distributed Self-Improvement
+
+Principle IV reserves 5–10% of cluster capacity for self-improvement workloads. The concrete mechanism for this reservation is a **distributed ensemble-of-experts language model** — the mesh LLM — that observes the cluster's own operation and proposes improvements to scheduling, security, governance, and infrastructure.
+
+### Why a Distributed LLM
+
+The self-improvement function requires open-ended reasoning: analyzing scheduling anomalies, drafting configuration changes, evaluating security findings, proposing governance motions. These tasks suit a language model operating as an autonomous agent. Running that model on a centralized server contradicts the project's decentralized architecture and creates a single point of failure. The mesh LLM distributes inference across GPU donors who already participate in the cluster.
+
+### Ensemble-of-Experts Architecture
+
+The mesh LLM is an **inter-model Mixture-of-Experts** system. Each participating GPU donor node runs a complete small language model locally — LLaMA-3-8B at 4-bit quantization requires approximately 4–6 GB of VRAM. A lightweight distributed router selects K-of-N expert nodes per output token, dispatches the input in parallel, receives sparse probability distributions back, and aggregates them to produce the next token.
+
+This is architecturally distinct from pipeline-parallel distributed inference (as used by Petals), where tokens flow sequentially through layer-shards on different nodes. Pipeline parallelism compounds latency multiplicatively and requires all nodes to run the same model architecture — eliminating heterogeneous hardware participation. The ensemble approach needs only one parallel network round-trip per token and tolerates nodes running different model sizes and fine-tunes, provided they share the same tokenizer vocabulary.
+
+At K=4 experts and 100ms inter-node latency, the system achieves approximately **3.2 tokens per second** — too slow for interactive chat, adequate for autonomous agents generating scheduling analyses and governance proposals on minute-to-hour timescales. Bandwidth is negligible: each expert returns its top-256 (token\_id, logit) pairs (1.5 KB) rather than a full 128K-vocab distribution (250 KB), a 99%+ reduction with under 0.1% quality loss.
+
+### Tokenizer Standardization
+
+For logit distributions to be aggregated across heterogeneous models, all experts must share a vocabulary. The mesh LLM standardizes on the **LLaMA-3 tokenizer** (128,256 tokens), covering the LLaMA-3/3.1/3.2 families and the largest actively developed open-source ecosystem. Cross-tokenizer support via vocabulary mapping is a future research direction. See `research/09-mesh-llm.md` for the full survey.
+
+### The Self-Prompting Loop
+
+The mesh LLM operates as an autonomous agent on a slow, deliberate cadence: observe cluster metrics → analyze → propose improvement actions → validate against a simulation harness → human review for non-trivial changes → apply → measure and repeat. Cycle time is 1–24 hours depending on action class.
+
+At sufficient scale (1,000+ nodes, yielding 3–7 parallel streams within the 5–10% SI budget), the mesh partitions into independent domain agents — scheduler efficiency, sandbox auditing, storage compaction, network topology — each running its own router and sharing results via GossipSub.
+
+### Safety Architecture
+
+All mesh LLM outputs are classified into action tiers:
+
+| Tier | Examples | Approval required |
+|-|-|-|
+| Read-only | Analyze metrics, generate reports | None |
+| Suggest | Draft config changes, governance motions | Human review |
+| Sandbox-test | A/B experiment on 1% of traffic | Automated validation + spot-check |
+| Deploy-minor | Update non-critical config within pre-approved bounds | 2-of-3 governance quorum |
+| Deploy-major | Change scheduler algorithm, modify sandbox policy | Full governance vote + 24h review |
+
+Proposed changes never touch the production cluster directly. They go through a staging environment, a simulation harness replaying the last 24 hours of traffic, and a 1% canary deployment before promotion.
+
+A **governance kill switch** — a signed GossipSub message from any governance participant — immediately halts all inference streams, reverts the last N applied changes (default N=3), and enters read-only mode. The kill switch cannot be disabled or overridden by the mesh LLM itself.
+
+### Phased Rollout
+
+The minimum viable distributed mesh requires approximately 280 nodes (at 5% SI budget, 30% GPU donors) for one inference stream. Each phase transition requires demonstrated stability and a governance vote — no phase unlocks autonomously.
+
+| Phase | Node count | Capability |
+|-|-|-|
+| 0–1 | 0–500 | Centralized project-operated model; read-only + suggest tiers only |
+| 2 | ~280–1,000 | Distributed ensemble enabled; sandbox-test tier after 30-day stability |
+| 3 | ~1,000 | 3–7 parallel domain streams; deploy-minor under governance quorum |
+| 4 | ~5,000+ | 37+ parallel streams; deploy-major under full governance vote |
+
+For the full architecture, latency model, heterogeneous node compatibility, router design, and prior art survey (Petals, Hivemind, SWARM, MoE literature), see `research/09-mesh-llm.md` and `research/10-prior-art-distributed-inference.md`.
 
 ---
 
@@ -260,43 +354,45 @@ Explicit scope clarity prevents scope creep and sets honest expectations.
 
 **No private federated learning coordinator.** Federated learning over private donor data may be a future workload class; it is not v1 scope.
 
+**No fully autonomous mesh LLM in v1.** The mesh LLM's higher-tier action capabilities (deploy-minor, deploy-major) are phase-gated and require explicit governance votes at each phase transition. The system cannot self-authorize expanded autonomy. In Phase 0–1, the self-improvement function runs on a centralized project-operated model with read-only and suggest tiers only.
+
 ---
 
 ## Open Questions and Honest Limitations
 
 A whitepaper that does not acknowledge hard problems is a sales document. These are the genuinely difficult open questions:
 
-**GPU kernel preemption.** The 10-millisecond SIGSTOP target applies to CPU resources. CUDA and ROCm kernels already in flight do not respond to SIGSTOP; they run to completion. For small kernels (under 200 milliseconds) this is tolerable. For large training kernels, it is not. CUDA MPS and GPU time-slicing APIs exist but are not universally available across GPU generations and driver versions. This requires a dedicated investigation before GPU donation can be broadly certified. The v1 approach — short kernel windows, explicit GPU certification with real hardware preemption-latency testing — is honest about the constraint rather than hiding it.
+**GPU kernel preemption.** The 10-millisecond SIGSTOP target applies to CPU resources. CUDA and ROCm kernels in flight do not respond to SIGSTOP; they run to completion. For kernels under 200 milliseconds this is tolerable. For large training kernels, it is not. CUDA MPS and GPU time-slicing APIs are not universally available. The v1 approach — short kernel windows, real-hardware preemption-latency certification — is honest about the constraint.
 
-**Coordinator election.** Who exactly elects the 100–1,000 coordinator nodes that form the global control plane? A proof-of-uptime-plus-attestation mechanism is the leading candidate, but the detailed protocol — including rotation, slashing for misbehavior, and handling of coordinators that go offline — is not yet specified. This is a follow-on research stage.
+**Coordinator election.** The protocol for electing the 100–1,000 global control-plane coordinators — including rotation, slashing, and offline handling — is not yet fully specified. A proof-of-uptime-plus-attestation mechanism is the leading candidate.
 
-**Empirical credit calibration.** The NCU benchmarks are defined against a reference platform (A10G), but the real-world normalization factors for heterogeneous hardware require empirical measurement. The ±15% tolerance for benchmark cross-validation is a design target, not a measured threshold. Phase 2 testnet is the first opportunity to calibrate against a realistic donor population.
+**Empirical credit calibration.** NCU normalization factors for heterogeneous hardware require empirical measurement. The ±15% benchmark cross-validation tolerance is a design target; Phase 2 testnet is the first opportunity to calibrate it.
 
-**Sybil resistance at scale.** The network-layer Sybil resistance (IP diversity constraints in Kademlia routing tables, GossipSub peer scoring) is necessary but not sufficient against a well-resourced adversary with a large botnet spanning many /24 subnets. Full Sybil resistance without economic collateral is an open research problem. The 3% audit layer and Trust Score system provide probabilistic deterrence; they do not provide cryptographic guarantees against a determined state-level attacker.
+**Priority weight tuning.** The composite formula's initial weights are estimates requiring empirical tuning against real queue dynamics and governance input.
 
-**Supply chain.** The agent binary is reproducibly built and code-signed, but the build toolchain, the signing key infrastructure, and the reproducibility attestation pipeline are themselves attack surfaces. This requires a formal supply-chain security plan, ongoing transparency log monitoring, and an independent audit before Phase 3.
+**Sybil resistance at scale.** The layered humanity-points model raises the cost of fake identities substantially but does not eliminate the risk. A well-resourced adversary spanning many /24 subnets can threaten both network routing and voting. Full Sybil resistance without economic collateral remains an open research problem.
 
-**Relay bandwidth at scale.** If 15–20% of donors are behind symmetric NAT (a realistic estimate from WebRTC production data), and average job data transfer is substantial, relay bandwidth becomes a real cost. The model — well-connected donors earning compute credits for relay bandwidth — needs empirical validation at scale.
+**Mesh LLM cold start and quality.** The distributed mesh requires approximately 280 nodes; below that threshold, self-improvement runs on centralized project infrastructure. An ensemble of quantized 7–8B models will not match frontier reasoning — tasks requiring deep novel analysis will need human expert involvement.
 
-**Long-running job key management.** Session keys for multi-day training runs need a rotation and escrow strategy. The current architecture specifies per-chunk keys wrapped by the submitter's public key; the handoff for a job that checkpoints and resumes across multiple sessions is not yet fully designed.
+**Supply chain, relay bandwidth, and key management.** The build toolchain and signing infrastructure require a formal supply-chain security plan and independent audit before Phase 3. Relay bandwidth costs for the ~15–20% of donors behind symmetric NAT need empirical validation. Session key rotation and escrow for multi-day checkpointing jobs is not yet fully designed.
 
 ---
 
 ## Call to Action
 
-World Compute is at the design and early prototype stage. Every contribution matters.
+World Compute is at the design and early prototype stage.
 
-**Individuals with hardware to donate:** Install the agent when Phase 1 testing begins (announcement at [worldcompute.org]). A laptop that sits idle at night contributes meaningfully. A machine with a consumer GPU contributes substantially. You will earn NCU credits redeemable for compute you need, and you will see exactly what ran on your machine and what it produced.
+**Individuals with hardware to donate:** Install the agent when Phase 1 testing begins (announcement at [worldcompute.org]). A laptop that sits idle at night contributes meaningfully; a consumer GPU contributes substantially. You will earn NCU credits redeemable for compute you need and see exactly what ran on your machine.
 
-**Researchers and scientists:** If you run computations that are embarrassingly parallel, checkpointable, and represent a public good — protein folding, climate modeling, signal processing, machine learning research — contact the project. Public-good jobs run on donated capacity with no credit cost after PGRB approval. Your participation in the Phase 2 testnet shapes the workload taxonomy.
+**Researchers and scientists:** If you run embarrassingly parallel, checkpointable workloads that represent a public good — protein folding, climate modeling, ML research — contact the project. Public-good jobs run on donated capacity with no credit cost after review board approval.
 
-**Security researchers:** The most important work we need is adversarial. If you find a sandbox escape, a protocol weakness, or a credit fraud mechanism we haven't anticipated, we want to hear about it before GA, not after. A responsible disclosure program will be in place before Phase 3.
+**Security researchers:** The most valuable work is adversarial. A responsible disclosure program will be in place before Phase 3. Sandbox escapes, protocol weaknesses, and credit fraud vectors are the findings we most need before general availability.
 
-**HPC centers and universities with idle cluster capacity:** The Slurm pilot-job adapter and Kubernetes operator described in `research/05-discovery-and-bootstrap.md` allow an existing cluster to contribute idle capacity as a first-class World Compute node. The adapter presents your entire allocation as a single logical peer. Your policies, quotas, and local priorities are respected. The contribution is auditable and credited.
+**HPC centers and universities:** The Slurm pilot-job adapter and Kubernetes operator in `research/05-discovery-and-bootstrap.md` let an existing cluster contribute idle capacity as a first-class node. Your policies, quotas, and local priorities are respected.
 
-**Philanthropists and foundations:** The project needs funding for security audits (minimum 20% of annual budget), core developer compensation, and the hardware required for Principle V's real-hardware test requirements. Financial donations are accepted as 501(c)(3) charitable contributions. A donation does not buy compute priority; it buys the project's independence to serve all of humanity's compute needs equitably. The quarterly financial reports are public. The spending is auditable.
+**Philanthropists and foundations:** The project needs funding for security audits (minimum 20% of annual budget), core developer compensation, and real-hardware test infrastructure. Financial donations are accepted as 501(c)(3) charitable contributions and do not purchase scheduling priority.
 
-**Engineers:** The full specification is public. The constitution governs contributions. If you want to build a component — the Rust agent, the Firecracker sandbox driver, the libp2p integration, the CLI, the Tauri GUI, the erasure-coding data plane, the credit ledger — start with `specs/001-world-compute-core/spec.md` and the research documents under `research/`. The code-review gates are explicit and tied directly to the five principles.
+**Engineers:** The full specification is public. Start with `specs/001-world-compute-core/spec.md` and the research documents under `research/`. The code-review gates are explicit and tied directly to the five principles.
 
 The largest compute cluster in history need not be owned by anyone. It can be a commons — built by anyone who opts in, governed by principles that protect everyone who participates, and operated permanently as a public good. The design is ready. The work begins now.
 
@@ -317,7 +413,10 @@ The following research documents provide full technical depth for each section o
 - `research/03-sandboxing.md` — Per-platform VM sandboxing, GPU passthrough, attestation, red-team test plan
 - `research/04-storage.md` — RS(10,18) erasure coding, CIDv1 addressing, geographic placement, encryption
 - `research/05-discovery-and-bootstrap.md` — libp2p stack, mDNS, Kademlia, DCUtR, Circuit Relay, adapter architecture
-- `research/06-fairness-and-credits.md` — NCU credits, scheduling hierarchy, preemption mechanics, credit decay
+- `research/06-fairness-and-credits.md` — NCU credits, preemption mechanics, credit decay
 - `research/07-governance-testing-ux.md` — 501(c)(3) governance, staged release plan, CLI/GUI, public API
+- `research/08-priority-redesign.md` — Open-access multi-factor priority formula, public voting, Sybil resistance, starvation-freedom proof
+- `research/09-mesh-llm.md` — Distributed ensemble-of-experts mesh LLM, router design, safety architecture, phased rollout
+- `research/10-prior-art-distributed-inference.md` — Prior art survey: Petals, Hivemind, Exo, SWARM, MoE literature, federated learning
 - `specs/001-world-compute-core/spec.md` — Full v1 feature specification, functional requirements, success criteria
 - `.specify/memory/constitution.md` — The five ratified principles governing every design decision
