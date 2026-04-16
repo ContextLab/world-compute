@@ -35,32 +35,56 @@
   "hotPaths": [
     {
       "path": "specs/001-world-compute-core/spec.md",
-      "accessCount": 61,
-      "lastAccessed": 1776307960110,
+      "accessCount": 68,
+      "lastAccessed": 1776341725756,
       "type": "file"
     },
     {
       "path": "README.md",
-      "accessCount": 34,
-      "lastAccessed": 1776310984774,
+      "accessCount": 45,
+      "lastAccessed": 1776359969370,
       "type": "file"
     },
     {
       "path": "specs/001-world-compute-core/whitepaper.md",
-      "accessCount": 30,
-      "lastAccessed": 1776308140339,
+      "accessCount": 34,
+      "lastAccessed": 1776351079527,
       "type": "file"
     },
     {
       "path": ".specify/memory/constitution.md",
-      "accessCount": 19,
-      "lastAccessed": 1776307322154,
+      "accessCount": 23,
+      "lastAccessed": 1776341713356,
       "type": "file"
     },
     {
       "path": "src/error.rs",
+      "accessCount": 12,
+      "lastAccessed": 1776347614572,
+      "type": "file"
+    },
+    {
+      "path": "src/verification/attestation.rs",
+      "accessCount": 11,
+      "lastAccessed": 1776348408827,
+      "type": "file"
+    },
+    {
+      "path": "Cargo.toml",
       "accessCount": 10,
-      "lastAccessed": 1776340601353,
+      "lastAccessed": 1776348242954,
+      "type": "file"
+    },
+    {
+      "path": "src/types.rs",
+      "accessCount": 9,
+      "lastAccessed": 1776347613606,
+      "type": "file"
+    },
+    {
+      "path": "src/lib.rs",
+      "accessCount": 9,
+      "lastAccessed": 1776347845474,
       "type": "file"
     },
     {
@@ -70,33 +94,15 @@
       "type": "file"
     },
     {
-      "path": "src/verification/attestation.rs",
-      "accessCount": 8,
-      "lastAccessed": 1776310426600,
-      "type": "file"
-    },
-    {
       "path": "specs/001-world-compute-core/design/architecture-overview.md",
       "accessCount": 7,
       "lastAccessed": 1776307945259,
       "type": "file"
     },
     {
-      "path": "src/types.rs",
+      "path": "specs/001-world-compute-core/research/09-mesh-llm.md",
       "accessCount": 7,
-      "lastAccessed": 1776340119004,
-      "type": "file"
-    },
-    {
-      "path": "Cargo.toml",
-      "accessCount": 7,
-      "lastAccessed": 1776340125199,
-      "type": "file"
-    },
-    {
-      "path": "src/lib.rs",
-      "accessCount": 7,
-      "lastAccessed": 1776340608973,
+      "lastAccessed": 1776341708509,
       "type": "file"
     },
     {
@@ -115,12 +121,6 @@
       "path": "specs/001-world-compute-core/research/01-job-management.md",
       "accessCount": 6,
       "lastAccessed": 1776304692961,
-      "type": "file"
-    },
-    {
-      "path": "specs/001-world-compute-core/research/09-mesh-llm.md",
-      "accessCount": 6,
-      "lastAccessed": 1776306081135,
       "type": "file"
     },
     {
@@ -202,15 +202,21 @@
       "type": "file"
     },
     {
-      "path": "specs/001-world-compute-core/research/08-priority-redesign.md",
-      "accessCount": 2,
-      "lastAccessed": 1776306062709,
+      "path": "src/verification/trust_score.rs",
+      "accessCount": 3,
+      "lastAccessed": 1776341670619,
       "type": "file"
     },
     {
       "path": ".specify/templates/tasks-template.md",
+      "accessCount": 3,
+      "lastAccessed": 1776346877405,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/research/08-priority-redesign.md",
       "accessCount": 2,
-      "lastAccessed": 1776306892652,
+      "lastAccessed": 1776306062709,
       "type": "file"
     },
     {
@@ -239,20 +245,26 @@
     },
     {
       "path": ".specify/extensions.yml",
-      "accessCount": 1,
-      "lastAccessed": 1776259612462,
+      "accessCount": 2,
+      "lastAccessed": 1776341583176,
+      "type": "file"
+    },
+    {
+      "path": ".specify/templates/spec-template.md",
+      "accessCount": 2,
+      "lastAccessed": 1776341583523,
+      "type": "file"
+    },
+    {
+      "path": "src/main.rs",
+      "accessCount": 2,
+      "lastAccessed": 1776359918377,
       "type": "file"
     },
     {
       "path": ".specify/templates/plan-template.md",
       "accessCount": 1,
       "lastAccessed": 1776259612847,
-      "type": "file"
-    },
-    {
-      "path": ".specify/templates/spec-template.md",
-      "accessCount": 1,
-      "lastAccessed": 1776259613350,
       "type": "file"
     },
     {
@@ -298,12 +310,6 @@
       "type": "file"
     },
     {
-      "path": "src/main.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776308306296,
-      "type": "file"
-    },
-    {
       "path": "proto/donor.proto",
       "accessCount": 1,
       "lastAccessed": 1776308537384,
@@ -325,12 +331,6 @@
       "path": "proto/admin.proto",
       "accessCount": 1,
       "lastAccessed": 1776308572151,
-      "type": "file"
-    },
-    {
-      "path": "src/verification/trust_score.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776308798515,
       "type": "file"
     }
   ],
