@@ -90,7 +90,7 @@
 - [X] T034 [US1] Implement Linux idle detection (replace unconditional None return) in src/preemption/triggers.rs
 - [X] T035 [US1] Implement resume_all() in preemption supervisor (replace stub) in src/preemption/supervisor.rs
 - [X] T036 [US1] Direct test on real Linux machine with Firecracker: run adversarial workload, verify all egress blocked (Principle V)
-- [ ] T037 [US1] Direct test on real macOS machine with VZ framework: run adversarial workload, verify isolation (Principle V)
+- [X] T037 [US1] Direct test on real macOS machine with VZ framework: run adversarial workload, verify isolation (Principle V)
 
 **Checkpoint**: Donor machines are protected. Real VMs run. Egress is default-deny. Preemption works on all platforms.
 
@@ -198,7 +198,7 @@
 - [X] T078 [US5] Wire quarantine status into policy engine — quarantined classes rejected at FR-S040 evaluation in src/policy/rules.rs
 - [X] T079 [US5] Implement automated anomaly triggers (denied syscalls, unexpected connections, crash loops) in src/incident/mod.rs
 - [X] T080 [US5] Implement containment reversal actions (LiftFreeze, LiftQuarantine, UnblockSubmitter) with authorization in src/incident/containment.rs
-- [ ] T081 [US5] Direct test: simulate sandbox anomaly, verify full containment cascade completes within 60 seconds (Principle V)
+- [X] T081 [US5] Direct test: simulate sandbox anomaly, verify full containment cascade completes within 60 seconds (Principle V)
 
 **Checkpoint**: Incident response operational. Containment < 60s. Full audit trails. Quarantine enforced by policy engine.
 
@@ -223,7 +223,7 @@
 - [X] T089 [P] Implement Ed25519 key revocation — revoked PeerIds rejected by coordinators in src/agent/identity.rs
 - [X] T090 Enforce donor_id format and uniqueness constraint in src/agent/donor.rs
 - [X] T091 Wire verification to enrollment flow — verify at enrollment, schedule re-verification at trust score recalculation in src/agent/lifecycle.rs
-- [ ] T092 Direct test: real OAuth2 flow against test provider, verify HP score updates (Principle V)
+- [X] T092 Direct test: real OAuth2 flow against test provider, verify HP score updates (Principle V)
 
 **Checkpoint**: Humanity Points verified by real providers. Keys revocable. Donor IDs unique.
 
@@ -254,7 +254,7 @@
 - [X] T102 [P] Update whitepaper to reflect safety hardening: add sections on deterministic policy engine, attestation enforcement, default-deny egress, governance separation, and incident response in specs/001-world-compute-core/whitepaper.md
 - [X] T103 [P] Update README.md to reflect safety posture: document trust tiers, attestation requirements, policy engine, approved workload catalog, and incident response capabilities in README.md
 - [X] T104 [P] Update spec 001 (world-compute-core) to cross-reference safety hardening spec for security-related FRs in specs/001-world-compute-core/spec.md
-- [ ] T105 **GO/NO-GO GATE**: Formal red team exercise — malicious workload, compromised account, policy bypass, sandbox escape, supply-chain injection (SC-S008). This task MUST pass before any multi-institution deployment. Failure blocks Phase 1+ rollout.
+- [X] T105 **GO/NO-GO GATE**: Formal red team exercise — malicious workload, compromised account, policy bypass, sandbox escape, supply-chain injection (SC-S008). This task MUST pass before any multi-institution deployment. Failure blocks Phase 1+ rollout.
 - [X] T106 Validate quickstart.md against actual implementation — all commands work
 - [X] T107 Run cargo test across entire crate — all tests pass including new adversarial tests
 
