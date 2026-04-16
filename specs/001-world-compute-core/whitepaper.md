@@ -285,7 +285,7 @@ For logit distributions to be aggregated across heterogeneous models, all expert
 
 ### The Self-Prompting Loop
 
-The mesh LLM operates as an autonomous agent on a slow, deliberate cadence: observe cluster metrics → analyze → propose improvement actions → validate against a simulation harness → human review for non-trivial changes → apply → measure and repeat. Cycle time is 1–24 hours depending on action class.
+The mesh LLM operates as an autonomous agent on a slow, deliberate cadence: observe cluster metrics, analyze, propose improvement actions, validate against a simulation harness, human-review non-trivial changes, apply, measure, and repeat. Cycle time is 1–24 hours depending on action class.
 
 At sufficient scale (1,000+ nodes, yielding 3–7 parallel streams within the 5–10% SI budget), the mesh partitions into independent domain agents — scheduler efficiency, sandbox auditing, storage compaction, network topology — each running its own router and sharing results via GossipSub.
 
