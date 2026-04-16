@@ -110,10 +110,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T041 [US2] Wire attestation verification into coordinator dispatch path — verify donor attestation before assigning jobs in src/scheduler/job.rs
-- [ ] T042 [US2] Wire artifact registry check into policy engine — reject unregistered CIDs at admission in src/policy/engine.rs
-- [ ] T043 [US2] Add re-verification scheduling: re-verify attestation at trust score recalculation intervals in src/verification/attestation.rs
-- [ ] T044 [US2] Handle attestation expiry mid-job: checkpoint within grace period, re-evaluate before new work in src/scheduler/job.rs
+- [X] T041 [US2] Wire attestation verification into coordinator dispatch path — verify donor attestation before assigning jobs in src/scheduler/job.rs
+- [X] T042 [US2] Wire artifact registry check into policy engine — reject unregistered CIDs at admission in src/policy/engine.rs
+- [X] T043 [US2] Add re-verification scheduling: re-verify attestation at trust score recalculation intervals in src/verification/attestation.rs
+- [X] T044 [US2] Handle attestation expiry mid-job: checkpoint within grace period, re-evaluate before new work in src/scheduler/job.rs
 - [ ] T045 [US2] Direct test on real TPM2 machine: full dispatch flow with real attestation (Principle V)
 
 **Checkpoint**: No job reaches a donor without verified attestation and signed artifacts.
