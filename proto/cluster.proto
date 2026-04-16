@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package worldcompute.v1;
+
+// ClusterService — 4 RPCs per contracts/cluster.proto.md
+service ClusterService {
+  // Get overall cluster health and statistics
+  rpc GetClusterStatus(GetClusterStatusRequest) returns (GetClusterStatusResponse);
+  // List known peers with optional filters
+  rpc ListPeers(ListPeersRequest) returns (ListPeersResponse);
+  // Get the current ledger head (latest Merkle root)
+  rpc GetLedgerHead(GetLedgerHeadRequest) returns (GetLedgerHeadResponse);
+  // Verify a work unit receipt against the ledger
+  rpc VerifyReceipt(VerifyReceiptRequest) returns (VerifyReceiptResponse);
+}
+
+message GetClusterStatusRequest {}
+
+message GetClusterStatusResponse {
+  string cluster_id = 1;
+  uint64 total_nodes = 2;
+  uint64 active_nodes = 3;
+  uint64 total_ncu_capacity = 4;
+  uint64 jobs_running = 5;
+  uint64 jobs_queued = 6;
+  uint64 coordinators = 7;
+  uint64 brokers = 8;
+}
+
+message ListPeersRequest {
+  uint32 limit = 1;
+  string page_token = 2;
+  uint64 min_trust_tier = 3;
+  uint64 min_caliber_class = 4;
+}
+
+message ListPeersResponse {
+  repeated PeerInfo peers = 1;
+  string next_page_token = 2;
+}
+
+message PeerInfo {
+  bytes peer_id = 1;
+  uint64 trust_tier = 2;
+  uint64 caliber_class = 3;
+  double trust_score = 4;
+  string platform = 5;
+  uint64 uptime_seconds = 6;
+}
+
+message GetLedgerHeadRequest {}
+
+message GetLedgerHeadResponse {
+  bytes merkle_root = 1;
+  uint64 height = 2;
+  uint64 timestamp_us = 3;
+  bytes coordinator_signature = 4;
+  string rekor_entry_id = 5;
+}
+
+message VerifyReceiptRequest {
+  string receipt_id = 1;
+}
+
+message VerifyReceiptResponse {
+  bool valid = 1;
+  bytes merkle_proof = 2;
+  string error_detail = 3;
+}
