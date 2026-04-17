@@ -144,21 +144,27 @@
   },
   "hotPaths": [
     {
-      "path": "src/verification/attestation.rs",
-      "accessCount": 18,
-      "lastAccessed": 1776400483980,
-      "type": "file"
-    },
-    {
       "path": "Cargo.toml",
-      "accessCount": 18,
-      "lastAccessed": 1776401120097,
+      "accessCount": 25,
+      "lastAccessed": 1776401732509,
       "type": "file"
     },
     {
       "path": "src/sandbox/firecracker.rs",
+      "accessCount": 19,
+      "lastAccessed": 1776401523623,
+      "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 19,
+      "lastAccessed": 1776401790376,
+      "type": "directory"
+    },
+    {
+      "path": "src/verification/attestation.rs",
       "accessCount": 18,
-      "lastAccessed": 1776401294877,
+      "lastAccessed": 1776400483980,
       "type": "file"
     },
     {
@@ -174,27 +180,21 @@
       "type": "file"
     },
     {
+      "path": "",
+      "accessCount": 13,
+      "lastAccessed": 1776401712951,
+      "type": "directory"
+    },
+    {
       "path": "src/policy/rules.rs",
       "accessCount": 12,
       "lastAccessed": 1776401364582,
       "type": "file"
     },
     {
-      "path": "src",
-      "accessCount": 11,
-      "lastAccessed": 1776401009197,
-      "type": "directory"
-    },
-    {
-      "path": "",
-      "accessCount": 11,
-      "lastAccessed": 1776401231433,
-      "type": "directory"
-    },
-    {
       "path": "tests",
-      "accessCount": 10,
-      "lastAccessed": 1776400497152,
+      "accessCount": 12,
+      "lastAccessed": 1776401741759,
       "type": "directory"
     },
     {
@@ -216,6 +216,12 @@
       "type": "file"
     },
     {
+      "path": "src/error.rs",
+      "accessCount": 5,
+      "lastAccessed": 1776401546442,
+      "type": "file"
+    },
+    {
       "path": "specs/001-world-compute-core/tasks.md",
       "accessCount": 4,
       "lastAccessed": 1776395605951,
@@ -231,6 +237,12 @@
       "path": "src/sandbox/gpu.rs",
       "accessCount": 4,
       "lastAccessed": 1776401294387,
+      "type": "file"
+    },
+    {
+      "path": "tests/egress.rs",
+      "accessCount": 4,
+      "lastAccessed": 1776401736691,
       "type": "file"
     },
     {
@@ -252,6 +264,18 @@
       "type": "file"
     },
     {
+      "path": "src/scheduler/coordinator.rs",
+      "accessCount": 3,
+      "lastAccessed": 1776401524681,
+      "type": "file"
+    },
+    {
+      "path": "tests/adversarial/test_flood_resilience.rs",
+      "accessCount": 3,
+      "lastAccessed": 1776401579827,
+      "type": "file"
+    },
+    {
       "path": "specs/001-world-compute-core/whitepaper.md",
       "accessCount": 2,
       "lastAccessed": 1776395592680,
@@ -261,12 +285,6 @@
       "path": "notes/session-2026-04-16-implement.md",
       "accessCount": 2,
       "lastAccessed": 1776395611697,
-      "type": "file"
-    },
-    {
-      "path": "src/scheduler/coordinator.rs",
-      "accessCount": 2,
-      "lastAccessed": 1776396556822,
       "type": "file"
     },
     {
@@ -297,12 +315,6 @@
       "path": "specs/002-safety-hardening/tasks.md",
       "accessCount": 1,
       "lastAccessed": 1776395507463,
-      "type": "file"
-    },
-    {
-      "path": "src/error.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395509588,
       "type": "file"
     },
     {
@@ -366,12 +378,6 @@
       "type": "file"
     },
     {
-      "path": "tests/adversarial/test_flood_resilience.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395515283,
-      "type": "file"
-    },
-    {
       "path": "tests/identity/test_personhood.rs",
       "accessCount": 1,
       "lastAccessed": 1776395515357,
@@ -393,12 +399,6 @@
       "path": "gui/src-tauri/Cargo.toml",
       "accessCount": 1,
       "lastAccessed": 1776395517488,
-      "type": "file"
-    },
-    {
-      "path": "tests/egress.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395523833,
       "type": "file"
     },
     {

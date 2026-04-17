@@ -173,40 +173,40 @@
 
 ### Adversarial Tests (#35)
 
-- [ ] T075 [P] [US5] Implement `malformed_peer_flood` test in tests/adversarial/test_flood_resilience.rs: inject malformed gossipsub messages for 60s, verify cluster remains operational
-- [ ] T076 [P] [US5] Implement `job_submit_flood_rate_limited` test in tests/adversarial/test_flood_resilience.rs: submit 1000 jobs in 1s, verify rate limiting activates
-- [ ] T077 [P] [US5] Implement `sandbox_escape_via_ptrace` test in tests/adversarial/test_sandbox_escape.rs: attempt ptrace from inside Firecracker VM, verify blocked
-- [ ] T078 [P] [US5] Implement `sandbox_escape_via_container_runtime` test in tests/adversarial/test_sandbox_escape.rs: attempt container breakout, verify blocked
-- [ ] T079 [P] [US5] Implement `network_escape_via_host_bridge` test in tests/adversarial/test_network_isolation.rs: attempt to reach host bridge from sandbox, verify blocked
-- [ ] T080 [P] [US5] Implement `network_escape_via_dns_intercept` test in tests/adversarial/test_network_isolation.rs: attempt DNS hijacking from sandbox, verify blocked
-- [ ] T081 [P] [US5] Implement `byzantine_data_corruption` test in tests/adversarial/test_byzantine_donor.rs: inject corrupted result, verify detection within 100 audited tasks
-- [ ] T082 [P] [US5] Implement `byzantine_quorum_bypass` test in tests/adversarial/test_byzantine_donor.rs: attempt to bypass quorum with colluding nodes, verify detected
-- [ ] T083 [US5] Remove all `#[ignore]` and `unimplemented!()` from tests/adversarial/
+- [x] T075 [P] [US5] Implement `malformed_peer_flood` test in tests/adversarial/test_flood_resilience.rs: inject malformed gossipsub messages for 60s, verify cluster remains operational
+- [x] T076 [P] [US5] Implement `job_submit_flood_rate_limited` test in tests/adversarial/test_flood_resilience.rs: submit 1000 jobs in 1s, verify rate limiting activates
+- [x] T077 [P] [US5] Implement `sandbox_escape_via_ptrace` test in tests/adversarial/test_sandbox_escape.rs: attempt ptrace from inside Firecracker VM, verify blocked
+- [x] T078 [P] [US5] Implement `sandbox_escape_via_container_runtime` test in tests/adversarial/test_sandbox_escape.rs: attempt container breakout, verify blocked
+- [x] T079 [P] [US5] Implement `network_escape_via_host_bridge` test in tests/adversarial/test_network_isolation.rs: attempt to reach host bridge from sandbox, verify blocked
+- [x] T080 [P] [US5] Implement `network_escape_via_dns_intercept` test in tests/adversarial/test_network_isolation.rs: attempt DNS hijacking from sandbox, verify blocked
+- [x] T081 [P] [US5] Implement `byzantine_data_corruption` test in tests/adversarial/test_byzantine_donor.rs: inject corrupted result, verify detection within 100 audited tasks
+- [x] T082 [P] [US5] Implement `byzantine_quorum_bypass` test in tests/adversarial/test_byzantine_donor.rs: attempt to bypass quorum with colluding nodes, verify detected
+- [x] T083 [US5] Remove all `#[ignore]` and `unimplemented!()` from tests/adversarial/
 
 ### Confidential Compute (#46)
 
-- [ ] T084 [P] [US5] Implement client-side AES-256-GCM encryption in src/data_plane/confidential.rs: generate ephemeral 256-bit key via OsRng, encrypt job inputs, store ciphertext in CID store
-- [ ] T085 [US5] Implement key wrapping in src/data_plane/confidential.rs: wrap ephemeral key with submitter's public key via X25519 key agreement (x25519-dalek), store wrapped key in ConfidentialBundle
-- [ ] T086 [US5] Implement TPM-attested key release for confidential-medium in src/data_plane/confidential.rs: verify node attestation before releasing wrapped key
-- [ ] T087 [US5] Implement guest-measurement sealed key for confidential-high in src/data_plane/confidential.rs: key released only to sandbox matching expected guest measurement hash
-- [ ] T088 [US5] Add integration test: encrypt → store → execute on attested node → decrypt → verify correct result in tests/data_plane/test_confidential.rs
-- [ ] T089 [US5] Add integration test: attempt key release without attestation → denied in tests/data_plane/test_confidential.rs
+- [x] T084 [P] [US5] Implement client-side AES-256-GCM encryption in src/data_plane/confidential.rs: generate ephemeral 256-bit key via OsRng, encrypt job inputs, store ciphertext in CID store
+- [x] T085 [US5] Implement key wrapping in src/data_plane/confidential.rs: wrap ephemeral key with submitter's public key via X25519 key agreement (x25519-dalek), store wrapped key in ConfidentialBundle
+- [x] T086 [US5] Implement TPM-attested key release for confidential-medium in src/data_plane/confidential.rs: verify node attestation before releasing wrapped key
+- [x] T087 [US5] Implement guest-measurement sealed key for confidential-high in src/data_plane/confidential.rs: key released only to sandbox matching expected guest measurement hash
+- [x] T088 [US5] Add integration test: encrypt → store → execute on attested node → decrypt → verify correct result in tests/data_plane/test_confidential.rs
+- [x] T089 [US5] Add integration test: attempt key release without attestation → denied in tests/data_plane/test_confidential.rs
 
 ### mTLS and Rate Limiting (#47)
 
-- [ ] T090 [P] [US5] Implement Ed25519 certificate issuance in src/network/tls.rs: generate self-signed CA, issue per-account certificates using rcgen
-- [ ] T091 [US5] Implement 90-day auto-rotation in src/network/tls.rs: check cert expiry on heartbeat, trigger renewal when < 7 days remaining
-- [ ] T092 [US5] Implement token bucket rate limiter in src/network/rate_limit.rs: DONOR_HEARTBEAT 120/min, JOB_SUBMIT 10/min, GOVERNANCE 5/min, CLUSTER_STATUS 30/min with Retry-After header
-- [ ] T093 [US5] Add integration test: mTLS handshake succeeds with valid cert, fails without in tests/network/test_tls.rs
-- [ ] T094 [US5] Add integration test: exceed rate limit → verify 429 with Retry-After in tests/network/test_rate_limit.rs
+- [x] T090 [P] [US5] Implement Ed25519 certificate issuance in src/network/tls.rs: generate self-signed CA, issue per-account certificates using rcgen
+- [x] T091 [US5] Implement 90-day auto-rotation in src/network/tls.rs: check cert expiry on heartbeat, trigger renewal when < 7 days remaining
+- [x] T092 [US5] Implement token bucket rate limiter in src/network/rate_limit.rs: DONOR_HEARTBEAT 120/min, JOB_SUBMIT 10/min, GOVERNANCE 5/min, CLUSTER_STATUS 30/min with Retry-After header
+- [x] T093 [US5] Add integration test: mTLS handshake succeeds with valid cert, fails without in tests/network/test_tls.rs
+- [x] T094 [US5] Add integration test: exceed rate limit → verify 429 with Retry-After in tests/network/test_rate_limit.rs
 
 ### Supply Chain (#53)
 
-- [ ] T095 [P] [US5] Implement reproducible build configuration in build.rs: set deterministic flags (RUSTFLAGS=-Cdebuginfo=0, source date epoch)
-- [ ] T096 [US5] Implement Ed25519 binary signing in src/agent/mod.rs: sign release binary with project key, verify signature on agent startup
-- [ ] T097 [US5] Implement agent version verification in src/agent/lifecycle.rs: on heartbeat, check peer's agent version against known-good list, reject unknown versions
-- [ ] T098 [US5] Add integration test: two builds from same commit → identical binary in tests/test_reproducible_build.rs
-- [ ] T099 [US5] Run `cargo test` to verify zero regressions
+- [x] T095 [P] [US5] Implement reproducible build configuration in build.rs: set deterministic flags (RUSTFLAGS=-Cdebuginfo=0, source date epoch)
+- [x] T096 [US5] Implement Ed25519 binary signing in src/agent/mod.rs: sign release binary with project key, verify signature on agent startup
+- [x] T097 [US5] Implement agent version verification in src/agent/lifecycle.rs: on heartbeat, check peer's agent version against known-good list, reject unknown versions
+- [x] T098 [US5] Add integration test: two builds from same commit → identical binary in tests/test_reproducible_build.rs
+- [x] T099 [US5] Run `cargo test` to verify zero regressions
 
 **Checkpoint**: FR-011 through FR-017 satisfied. SC-002 (zero ignored tests).
 

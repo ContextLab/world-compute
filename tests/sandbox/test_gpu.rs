@@ -39,7 +39,7 @@ fn iommu_singleton_group_allows_passthrough() {
     let dev = tmp.join("0000:03:00.0");
     let iommu_devs = dev.join("iommu_group").join("devices");
     std::fs::create_dir_all(&iommu_devs).unwrap();
-    std::fs::create_dir(iommu_devs.join("0000:03:00.0")).unwrap();
+    std::fs::create_dir_all(iommu_devs.join("0000:03:00.0")).unwrap();
 
     assert!(gpu::check_iommu_singleton(&dev).unwrap());
     let _ = std::fs::remove_dir_all(&tmp);
