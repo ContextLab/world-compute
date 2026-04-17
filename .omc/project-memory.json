@@ -150,21 +150,45 @@
       "type": "file"
     },
     {
+      "path": "Cargo.toml",
+      "accessCount": 18,
+      "lastAccessed": 1776401120097,
+      "type": "file"
+    },
+    {
+      "path": "src/sandbox/firecracker.rs",
+      "accessCount": 18,
+      "lastAccessed": 1776401294877,
+      "type": "file"
+    },
+    {
+      "path": "src/agent/lifecycle.rs",
+      "accessCount": 15,
+      "lastAccessed": 1776401287403,
+      "type": "file"
+    },
+    {
       "path": "src/ledger/transparency.rs",
       "accessCount": 13,
       "lastAccessed": 1776400485039,
       "type": "file"
     },
     {
-      "path": "Cargo.toml",
+      "path": "src/policy/rules.rs",
       "accessCount": 12,
-      "lastAccessed": 1776400588363,
+      "lastAccessed": 1776401364582,
       "type": "file"
     },
     {
       "path": "src",
-      "accessCount": 10,
-      "lastAccessed": 1776400491845,
+      "accessCount": 11,
+      "lastAccessed": 1776401009197,
+      "type": "directory"
+    },
+    {
+      "path": "",
+      "accessCount": 11,
+      "lastAccessed": 1776401231433,
       "type": "directory"
     },
     {
@@ -174,15 +198,21 @@
       "type": "directory"
     },
     {
-      "path": "",
-      "accessCount": 7,
-      "lastAccessed": 1776395506387,
-      "type": "directory"
+      "path": "src/policy/engine.rs",
+      "accessCount": 5,
+      "lastAccessed": 1776400970139,
+      "type": "file"
     },
     {
-      "path": "src/policy/rules.rs",
-      "accessCount": 7,
-      "lastAccessed": 1776400128761,
+      "path": "src/preemption/supervisor.rs",
+      "accessCount": 5,
+      "lastAccessed": 1776401200479,
+      "type": "file"
+    },
+    {
+      "path": "src/incident/containment.rs",
+      "accessCount": 5,
+      "lastAccessed": 1776401295403,
       "type": "file"
     },
     {
@@ -198,6 +228,12 @@
       "type": "file"
     },
     {
+      "path": "src/sandbox/gpu.rs",
+      "accessCount": 4,
+      "lastAccessed": 1776401294387,
+      "type": "file"
+    },
+    {
       "path": "specs/003-stub-replacement/tasks.md",
       "accessCount": 3,
       "lastAccessed": 1776395619465,
@@ -210,9 +246,9 @@
       "type": "file"
     },
     {
-      "path": "src/policy/engine.rs",
+      "path": "tests/sandbox.rs",
       "accessCount": 3,
-      "lastAccessed": 1776399843556,
+      "lastAccessed": 1776401244930,
       "type": "file"
     },
     {
@@ -234,9 +270,21 @@
       "type": "file"
     },
     {
-      "path": "src/incident/containment.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395506380,
+      "path": "tests/identity.rs",
+      "accessCount": 2,
+      "lastAccessed": 1776401099661,
+      "type": "file"
+    },
+    {
+      "path": "tests/sandbox/test_firecracker_vm.rs",
+      "accessCount": 2,
+      "lastAccessed": 1776401240101,
+      "type": "file"
+    },
+    {
+      "path": "tests/incident.rs",
+      "accessCount": 2,
+      "lastAccessed": 1776401250128,
       "type": "file"
     },
     {
@@ -246,39 +294,15 @@
       "type": "file"
     },
     {
-      "path": "src/agent/lifecycle.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395506694,
-      "type": "file"
-    },
-    {
-      "path": "src/sandbox/firecracker.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395506928,
-      "type": "file"
-    },
-    {
       "path": "specs/002-safety-hardening/tasks.md",
       "accessCount": 1,
       "lastAccessed": 1776395507463,
       "type": "file"
     },
     {
-      "path": "src/preemption/supervisor.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395509363,
-      "type": "file"
-    },
-    {
       "path": "src/error.rs",
       "accessCount": 1,
       "lastAccessed": 1776395509588,
-      "type": "file"
-    },
-    {
-      "path": "src/sandbox/gpu.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395509797,
       "type": "file"
     },
     {
@@ -372,12 +396,6 @@
       "type": "file"
     },
     {
-      "path": "tests/sandbox.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395523647,
-      "type": "file"
-    },
-    {
       "path": "tests/egress.rs",
       "accessCount": 1,
       "lastAccessed": 1776395523833,
@@ -387,18 +405,6 @@
       "path": "tests/governance.rs",
       "accessCount": 1,
       "lastAccessed": 1776395524153,
-      "type": "file"
-    },
-    {
-      "path": "tests/identity.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395524275,
-      "type": "file"
-    },
-    {
-      "path": "tests/incident.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395524531,
       "type": "file"
     },
     {
@@ -429,12 +435,6 @@
       "path": "adapters/cloud/src/main.rs",
       "accessCount": 1,
       "lastAccessed": 1776395536800,
-      "type": "file"
-    },
-    {
-      "path": "tests/sandbox/test_firecracker_vm.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395546530,
       "type": "file"
     },
     {

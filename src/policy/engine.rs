@@ -193,7 +193,8 @@ pub fn evaluate(manifest: &JobManifest, ctx: &SubmissionContext) -> WcResult<Pol
     // deploy updates. It MAY flag submissions for human review.
     // If the LLM disagrees with the deterministic verdict, we log it but
     // NEVER override.
-    decision.llm_advisory_flag = None; // TODO: Wire LLM advisory when mesh LLM is available
+    // LLM advisory is unconditionally disabled until mesh LLM is available (Phase G).
+    decision.llm_advisory_flag = None;
     decision.llm_disagrees = false;
 
     Ok(decision)

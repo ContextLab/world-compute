@@ -1,7 +1,12 @@
-//! T039 [US2]: Unsigned workload artifact rejected at admission.
+//! T039/T053-T055: Artifact registry policy checks.
 
+use worldcompute::data_plane::cid_store::compute_cid;
 use worldcompute::policy::decision::Verdict;
 use worldcompute::policy::engine::{evaluate, SubmissionContext};
+use worldcompute::policy::rules::{
+    check_artifact_registry, check_artifact_registry_with, ApprovedArtifact, ArtifactRegistry,
+    ReleaseChannel,
+};
 use worldcompute::scheduler::manifest::JobManifest;
 use worldcompute::scheduler::{
     ConfidentialityLevel, JobCategory, ResourceEnvelope, VerificationMethod, WorkloadType,
@@ -19,7 +24,7 @@ fn test_ctx() -> SubmissionContext {
 }
 
 fn test_manifest() -> JobManifest {
-    let cid = worldcompute::data_plane::cid_store::compute_cid(b"test artifact").unwrap();
+    let cid = compute_cid(b"test artifact").unwrap();
     JobManifest {
         manifest_cid: None,
         name: "test".into(),
@@ -54,4 +59,65 @@ fn unsigned_artifact_rejected() {
     let ctx = test_ctx();
     let decision = evaluate(&manifest, &ctx).unwrap();
     assert_eq!(decision.verdict, Verdict::Reject);
+}
+
+// T053: Valid CID in approved registry → accepted
+#[test]
+fn artifact_valid_cid_in_registry_accepted() {
+    let manifest = test_manifest();
+    let cid_str = manifest.workload_cid.to_string();
+    let mut registry = ArtifactRegistry::default();
+    registry.approved_cids.insert(cid_str.clone());
+    registry.artifacts.push(ApprovedArtifact {
+        cid: cid_str,
+        signer: "alice".into(),
+        approver: "bob".into(),
+        channel: ReleaseChannel::Production,
+    });
+    let check = check_artifact_registry_with(&manifest, Some(&registry));
+    assert!(check.passed, "Expected pass, got: {}", check.detail);
+}
+
+// T054: Unknown CID → rejected
+#[test]
+fn artifact_unknown_cid_rejected() {
+    let manifest = test_manifest();
+    let registry = ArtifactRegistry::default(); // empty registry
+    let check = check_artifact_registry_with(&manifest, Some(&registry));
+    assert!(!check.passed, "Expected rejection for unknown CID");
+    assert!(
+        check.detail.contains("not found"),
+        "Expected 'not found' in detail, got: {}",
+        check.detail
+    );
+}
+
+// T055: Same signer and approver → separation of duties violation → rejected
+#[test]
+fn artifact_same_signer_approver_rejected() {
+    let manifest = test_manifest();
+    let cid_str = manifest.workload_cid.to_string();
+    let mut registry = ArtifactRegistry::default();
+    registry.approved_cids.insert(cid_str.clone());
+    registry.artifacts.push(ApprovedArtifact {
+        cid: cid_str,
+        signer: "alice".into(),
+        approver: "alice".into(), // same as signer — violation
+        channel: ReleaseChannel::Production,
+    });
+    let check = check_artifact_registry_with(&manifest, Some(&registry));
+    assert!(!check.passed, "Expected rejection for same signer/approver");
+    assert!(
+        check.detail.contains("Separation of duties"),
+        "Expected separation of duties in detail, got: {}",
+        check.detail
+    );
+}
+
+// No registry → structural gate (non-empty CID passes)
+#[test]
+fn artifact_no_registry_passes_structural_gate() {
+    let manifest = test_manifest();
+    let check = check_artifact_registry(&manifest);
+    assert!(check.passed);
 }

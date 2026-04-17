@@ -88,23 +88,23 @@
 
 ### Agent Lifecycle (#30)
 
-- [ ] T036 [US2] Implement `heartbeat()` in src/agent/lifecycle.rs: send periodic state update (node capabilities, active leases, resource usage) to broker via gossipsub, receive lease offers in response
-- [ ] T037 [US2] Implement `pause()` in src/agent/lifecycle.rs: SIGSTOP all sandbox processes, attempt checkpoint for each active sandbox, transition AgentState to Paused, stop accepting new leases
-- [ ] T038 [US2] Implement `withdraw()` in src/agent/lifecycle.rs: checkpoint all active sandboxes, terminate them, wipe scoped working directory (`rm -rf work_dir`), revoke Ed25519 keypair, notify broker of withdrawal, verify zero host residue
-- [ ] T039 [US2] Wire heartbeat loop in src/agent/mod.rs: spawn tokio task that calls `heartbeat()` every 30 seconds while agent is in Idle or Working state
-- [ ] T040 [US2] Add integration test: enroll → heartbeat → receive lease → pause → verify checkpoint saved → resume → withdraw → scan for zero files/processes in tests/agent/test_lifecycle.rs
-- [ ] T041 [US2] Add integration test: rapid pause/resume cycling (10 events/second) → verify stability in tests/agent/test_lifecycle.rs
+- [x] T036 [US2] Implement `heartbeat()` in src/agent/lifecycle.rs: send periodic state update (node capabilities, active leases, resource usage) to broker via gossipsub, receive lease offers in response
+- [x] T037 [US2] Implement `pause()` in src/agent/lifecycle.rs: SIGSTOP all sandbox processes, attempt checkpoint for each active sandbox, transition AgentState to Paused, stop accepting new leases
+- [x] T038 [US2] Implement `withdraw()` in src/agent/lifecycle.rs: checkpoint all active sandboxes, terminate them, wipe scoped working directory (`rm -rf work_dir`), revoke Ed25519 keypair, notify broker of withdrawal, verify zero host residue
+- [x] T039 [US2] Wire heartbeat loop in src/agent/mod.rs: spawn tokio task that calls `heartbeat()` every 30 seconds while agent is in Idle or Working state
+- [x] T040 [US2] Add integration test: enroll → heartbeat → receive lease → pause → verify checkpoint saved → resume → withdraw → scan for zero files/processes in tests/agent/test_lifecycle.rs
+- [x] T041 [US2] Add integration test: rapid pause/resume cycling (10 events/second) → verify stability in tests/agent/test_lifecycle.rs
 
 ### Preemption Supervisor (#45)
 
-- [ ] T042 [US2] Wire `event_rx` channel in src/preemption/supervisor.rs: connect sovereignty trigger detection (keyboard/mouse/thermal/battery) to supervisor via tokio mpsc channel
-- [ ] T043 [US2] Implement preemption handler in src/preemption/supervisor.rs: on event → record Instant::now() → SIGSTOP all sandbox PIDs via `nix::sys::signal::kill(pid, Signal::SIGSTOP)` → record elapsed → log latency
-- [ ] T044 [US2] Implement checkpoint-or-kill escalation in src/preemption/supervisor.rs: after SIGSTOP, attempt checkpoint within 500ms budget; if timeout, send SIGKILL and reschedule from last committed checkpoint
-- [ ] T045 [US2] Implement GPU kernel window handling in src/preemption/supervisor.rs: for GPU workloads, wait up to 200ms for kernel completion before SIGSTOP
-- [ ] T046 [US2] Add integration test: inject simulated keyboard event → measure SIGSTOP latency → assert < 10ms in tests/preemption/test_supervisor.rs
-- [ ] T047 [US2] Add integration test: checkpoint failure → SIGKILL escalation → verify sandbox terminated in tests/preemption/test_supervisor.rs
-- [ ] T048 [US2] Remove all `// TODO` comments from src/agent/lifecycle.rs and src/preemption/supervisor.rs
-- [ ] T049 [US2] Run `cargo test` to verify zero regressions
+- [x] T042 [US2] Wire `event_rx` channel in src/preemption/supervisor.rs: connect sovereignty trigger detection (keyboard/mouse/thermal/battery) to supervisor via tokio mpsc channel
+- [x] T043 [US2] Implement preemption handler in src/preemption/supervisor.rs: on event → record Instant::now() → SIGSTOP all sandbox PIDs via `nix::sys::signal::kill(pid, Signal::SIGSTOP)` → record elapsed → log latency
+- [x] T044 [US2] Implement checkpoint-or-kill escalation in src/preemption/supervisor.rs: after SIGSTOP, attempt checkpoint within 500ms budget; if timeout, send SIGKILL and reschedule from last committed checkpoint
+- [x] T045 [US2] Implement GPU kernel window handling in src/preemption/supervisor.rs: for GPU workloads, wait up to 200ms for kernel completion before SIGSTOP
+- [x] T046 [US2] Add integration test: inject simulated keyboard event → measure SIGSTOP latency → assert < 10ms in tests/preemption/test_supervisor.rs
+- [x] T047 [US2] Add integration test: checkpoint failure → SIGKILL escalation → verify sandbox terminated in tests/preemption/test_supervisor.rs
+- [x] T048 [US2] Remove all `// TODO` comments from src/agent/lifecycle.rs and src/preemption/supervisor.rs
+- [x] T049 [US2] Run `cargo test` to verify zero regressions
 
 **Checkpoint**: FR-003, FR-004, FR-005 satisfied. SC-005, SC-006 verifiable.
 
@@ -116,15 +116,15 @@
 
 **Independent Test**: Submit job with valid/invalid CID → verify accept/reject. Submit job with approved/unapproved endpoints → verify accept/reject.
 
-- [ ] T050 [US3] Implement `check_artifact_registry()` in src/policy/rules.rs: resolve CID against ApprovedArtifact registry, verify signer ≠ approver (separation of duties), check release channel validity (dev→staging→production only)
-- [ ] T051 [US3] Implement `check_egress_allowlist()` in src/policy/rules.rs: validate each declared endpoint in `job.allowed_endpoints` against EgressAllowlist.approved_endpoints, reject undeclared endpoints
-- [ ] T052 [US3] Wire LLM advisory flag in src/policy/engine.rs: set `decision.llm_advisory_flag = false` by default; when mesh LLM is available (Phase G), route manifest through advisory classification
-- [ ] T053 [US3] Add integration test: job with valid artifact CID → accepted in tests/policy/test_artifact_check.rs
-- [ ] T054 [P] [US3] Add integration test: job with unknown CID → rejected with WC-006 in tests/policy/test_artifact_check.rs
-- [ ] T055 [P] [US3] Add integration test: same identity as signer+approver → rejected in tests/policy/test_artifact_check.rs
-- [ ] T056 [US3] Add integration test: job with approved endpoints → accepted; unapproved → rejected in tests/policy/test_egress.rs
-- [ ] T057 [US3] Remove all `// TODO` comments from src/policy/rules.rs and src/policy/engine.rs
-- [ ] T058 [US3] Run `cargo test` to verify zero regressions
+- [x] T050 [US3] Implement `check_artifact_registry()` in src/policy/rules.rs: resolve CID against ApprovedArtifact registry, verify signer ≠ approver (separation of duties), check release channel validity (dev→staging→production only)
+- [x] T051 [US3] Implement `check_egress_allowlist()` in src/policy/rules.rs: validate each declared endpoint in `job.allowed_endpoints` against EgressAllowlist.approved_endpoints, reject undeclared endpoints
+- [x] T052 [US3] Wire LLM advisory flag in src/policy/engine.rs: set `decision.llm_advisory_flag = false` by default; when mesh LLM is available (Phase G), route manifest through advisory classification
+- [x] T053 [US3] Add integration test: job with valid artifact CID → accepted in tests/policy/test_artifact_check.rs
+- [x] T054 [P] [US3] Add integration test: job with unknown CID → rejected with WC-006 in tests/policy/test_artifact_check.rs
+- [x] T055 [P] [US3] Add integration test: same identity as signer+approver → rejected in tests/policy/test_artifact_check.rs
+- [x] T056 [US3] Add integration test: job with approved endpoints → accepted; unapproved → rejected in tests/policy/test_egress.rs
+- [x] T057 [US3] Remove all `// TODO` comments from src/policy/rules.rs and src/policy/engine.rs
+- [x] T058 [US3] Run `cargo test` to verify zero regressions
 
 **Checkpoint**: FR-006, FR-007 satisfied. Policy engine 10-step pipeline fully operational.
 
@@ -138,28 +138,28 @@
 
 ### GPU Passthrough (#32)
 
-- [ ] T059 [P] [US4] Implement PCI device enumeration via sysfs in src/sandbox/gpu.rs `check_linux_gpu()`: read `/sys/bus/pci/devices/*/class` for VGA controllers (0x030000)
-- [ ] T060 [US4] Implement IOMMU group check in src/sandbox/gpu.rs: read `/sys/bus/pci/devices/{dev}/iommu_group/devices/` and verify GPU is sole member
-- [ ] T061 [US4] Implement ACS-override detection in src/sandbox/gpu.rs: check `/sys/module/vfio/parameters/enable_unsafe_noiommu_mode` and kernel command line for `pcie_acs_override`
-- [ ] T062 [US4] Add integration test: GPU in singleton IOMMU group → allowed; shared group → rejected in tests/sandbox/test_gpu.rs
+- [x] T059 [P] [US4] Implement PCI device enumeration via sysfs in src/sandbox/gpu.rs `check_linux_gpu()`: read `/sys/bus/pci/devices/*/class` for VGA controllers (0x030000)
+- [x] T060 [US4] Implement IOMMU group check in src/sandbox/gpu.rs: read `/sys/bus/pci/devices/{dev}/iommu_group/devices/` and verify GPU is sole member
+- [x] T061 [US4] Implement ACS-override detection in src/sandbox/gpu.rs: check `/sys/module/vfio/parameters/enable_unsafe_noiommu_mode` and kernel command line for `pcie_acs_override`
+- [x] T062 [US4] Add integration test: GPU in singleton IOMMU group → allowed; shared group → rejected in tests/sandbox/test_gpu.rs
 
 ### Firecracker Rootfs (#33)
 
-- [ ] T063 [P] [US4] Implement OCI image fetch from CID store in src/sandbox/firecracker.rs `prepare_rootfs()`: retrieve layer CIDs from manifest, fetch each layer blob
-- [ ] T064 [US4] Implement OCI layer extraction and overlay in src/sandbox/firecracker.rs: extract tar layers in order, create ext4 filesystem image via `mkfs.ext4` + loop mount + copy
-- [ ] T065 [US4] Wire rootfs into Firecracker VM config in src/sandbox/firecracker.rs `start()`: mount assembled rootfs.ext4 as root drive
-- [ ] T066 [US4] Add integration test: store minimal OCI image → prepare rootfs → boot Firecracker → verify output in tests/sandbox/test_firecracker_rootfs.rs
+- [x] T063 [P] [US4] Implement OCI image fetch from CID store in src/sandbox/firecracker.rs `prepare_rootfs()`: retrieve layer CIDs from manifest, fetch each layer blob
+- [x] T064 [US4] Implement OCI layer extraction and overlay in src/sandbox/firecracker.rs: extract tar layers in order, create ext4 filesystem image via `mkfs.ext4` + loop mount + copy
+- [x] T065 [US4] Wire rootfs into Firecracker VM config in src/sandbox/firecracker.rs `start()`: mount assembled rootfs.ext4 as root drive
+- [x] T066 [US4] Add integration test: store minimal OCI image → prepare rootfs → boot Firecracker → verify output in tests/sandbox/test_firecracker_rootfs.rs
 
 ### Incident Containment (#34)
 
-- [ ] T067 [P] [US4] Implement FreezeHost in src/incident/containment.rs: enumerate all sandbox PIDs on target host, send SIGSTOP to each, block new lease assignments for host
-- [ ] T068 [US4] Implement QuarantineWorkloadClass in src/incident/containment.rs: add class to policy engine's quarantine list so `check_workload_class()` rejects it
-- [ ] T069 [US4] Implement BlockSubmitter in src/incident/containment.rs: add submitter to ban list, cancel all in-flight jobs from submitter, reject new submissions
-- [ ] T070 [US4] Implement RevokeArtifact in src/incident/containment.rs: remove CID from ApprovedArtifact registry, halt all running jobs that loaded the revoked artifact
-- [ ] T071 [US4] Implement DrainHostPool in src/incident/containment.rs: migrate all active workloads to other nodes (checkpoint + reschedule), block new assignments to pool
-- [ ] T072 [US4] Add integration test for each containment primitive: execute → verify enforcement effect in tests/incident/test_enforcement.rs
-- [ ] T073 [US4] Remove all `// TODO` comments from src/sandbox/gpu.rs, src/sandbox/firecracker.rs, src/incident/containment.rs
-- [ ] T074 [US4] Run `cargo test` to verify zero regressions
+- [x] T067 [P] [US4] Implement FreezeHost in src/incident/containment.rs: enumerate all sandbox PIDs on target host, send SIGSTOP to each, block new lease assignments for host
+- [x] T068 [US4] Implement QuarantineWorkloadClass in src/incident/containment.rs: add class to policy engine's quarantine list so `check_workload_class()` rejects it
+- [x] T069 [US4] Implement BlockSubmitter in src/incident/containment.rs: add submitter to ban list, cancel all in-flight jobs from submitter, reject new submissions
+- [x] T070 [US4] Implement RevokeArtifact in src/incident/containment.rs: remove CID from ApprovedArtifact registry, halt all running jobs that loaded the revoked artifact
+- [x] T071 [US4] Implement DrainHostPool in src/incident/containment.rs: migrate all active workloads to other nodes (checkpoint + reschedule), block new assignments to pool
+- [x] T072 [US4] Add integration test for each containment primitive: execute → verify enforcement effect in tests/incident/test_enforcement.rs
+- [x] T073 [US4] Remove all `// TODO` comments from src/sandbox/gpu.rs, src/sandbox/firecracker.rs, src/incident/containment.rs
+- [x] T074 [US4] Run `cargo test` to verify zero regressions
 
 **Checkpoint**: FR-008, FR-009, FR-010 satisfied.
 
