@@ -172,7 +172,7 @@ pub fn run_module(engine: &Engine, module: &Module, fuel: u64) -> Result<Vec<u8>
 
     // Try to read output from exported memory (convention: "memory" export
     // with result written to a known offset, or an "output" function)
-    if let Some(output_fn) = instance.get_typed_func::<(), i32>(&mut store, "output_len").ok() {
+    if let Ok(output_fn) = instance.get_typed_func::<(), i32>(&mut store, "output_len") {
         if let Ok(len) = output_fn.call(&mut store, ()) {
             if let Some(memory) = instance.get_memory(&mut store, "memory") {
                 let len = len as usize;
