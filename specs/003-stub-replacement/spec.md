@@ -143,6 +143,8 @@ Donor and coordinator nodes discover each other through DNS seed nodes and detec
 - What happens when a WASM module in the CID store is corrupted? The module should fail compilation with a clear error and the task should be rescheduled.
 - What happens when all coordinator nodes fail simultaneously? The system should detect the condition and refuse new job submissions until a coordinator recovers.
 - What happens when DNS seed nodes return stale peer addresses? The node should attempt connection, detect failure, and fall back to mDNS or cached peers.
+- What happens when provider credentials (OAuth2, BrightID, Twilio, Apple) expire mid-operation? The current operation fails with a clear error message indicating credential expiry. The agent must be restarted with updated credentials; no hot-reload.
+- What happens when Firecracker API socket returns an error during VM setup (invalid kernel, insufficient resources)? The system fails immediately, marks the donor as incompatible for this workload class, and reschedules the task to another donor. Maximum 3 donors attempted per task — after 3 failures the task is marked as failed with a clear error listing all attempted donors and their failure reasons.
 
 ## Requirements *(mandatory)*
 
@@ -157,6 +159,7 @@ Donor and coordinator nodes discover each other through DNS seed nodes and detec
 
 **Sandbox VM Lifecycle (Issues #13–#15)**
 - **FR-006**: System MUST configure and start a Firecracker microVM via the API socket, including machine config, boot source, drives, network interfaces, and instance start.
+- **FR-006a**: When a Firecracker VM configuration fails, the system MUST mark the donor as incompatible for that workload class and reschedule to another donor, with a maximum of 3 donor attempts per task before marking the task as failed.
 - **FR-007**: System MUST start, pause, stop, and save Apple Virtualization.framework VMs via a Swift FFI bridge or helper binary.
 - **FR-008**: System MUST fetch WASM modules from the CID store, compile them via wasmtime, and execute them within sandbox constraints.
 
@@ -193,7 +196,7 @@ Donor and coordinator nodes discover each other through DNS seed nodes and detec
 ### Measurable Outcomes
 
 - **SC-001**: All 5 CLI command groups (donor, job, cluster, governance, admin) accept and dispatch every defined subcommand, with no "not yet implemented" messages remaining.
-- **SC-002**: A sample workload submitted via CLI completes end-to-end through sandbox execution and returns results within a reasonable time on each supported platform.
+- **SC-002**: A sample workload submitted via CLI completes end-to-end through sandbox execution and returns results within 60 seconds on each supported platform.
 - **SC-003**: Hardware attestation verification correctly accepts valid certificate chains and rejects invalid/expired chains with 100% accuracy on test vectors.
 - **SC-004**: At least one identity verification path (BrightID, OAuth2, or phone) completes a full end-to-end flow from user initiation to recorded verification.
 - **SC-005**: Transparency log entries are retrievable from Sigstore Rekor after submission, with verifiable timestamps and receipts.
@@ -202,6 +205,14 @@ Donor and coordinator nodes discover each other through DNS seed nodes and detec
 - **SC-008**: NAT detection correctly identifies at least 3 NAT types (direct, full cone, symmetric) when tested against known network configurations.
 - **SC-009**: DNS seed resolution returns valid peer addresses and nodes successfully bootstrap from them.
 - **SC-010**: All existing tests continue to pass after stub replacement, plus new integration tests cover each replaced stub — zero regressions.
+
+## Clarifications
+
+### Session 2026-04-16
+
+- Q: What end-to-end completion target defines success for a minimal test workload? → A: Under 60 seconds on each supported platform.
+- Q: What happens when provider credentials (OAuth2, BrightID, Twilio) expire or are rotated mid-operation? → A: Fail the current operation with a clear error; require agent restart for new credentials.
+- Q: What happens when Firecracker API socket returns an error during VM configuration? → A: Fail immediately, mark donor as incompatible for this workload, reschedule to another donor.
 
 ## Assumptions
 
