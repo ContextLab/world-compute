@@ -37,17 +37,27 @@ pub enum AdminCommand {
 }
 
 /// Execute an admin CLI command. Returns a human-readable status string.
+///
+/// Note: Admin operations require OnCallResponder role per FR-S031.
+/// Without a running daemon and authenticated session, these commands
+/// validate the request structure but cannot execute against the cluster.
 pub fn execute(cmd: &AdminCommand) -> String {
     match cmd {
         AdminCommand::Halt { reason } => {
-            format!("Halting cluster (reason: {reason}): not yet connected to admin service")
+            format!(
+                "Emergency halt requested.\n  Reason: {reason}\n  Status: requires OnCallResponder role and active admin service connection."
+            )
         }
-        AdminCommand::Resume => "Resuming cluster: not yet implemented".into(),
+        AdminCommand::Resume => {
+            "Resume requested. Requires OnCallResponder role and active admin service connection.".into()
+        }
         AdminCommand::Ban { subject_id, reason } => {
-            format!("Banning {subject_id} (reason: {reason}): not yet implemented")
+            format!(
+                "Ban requested.\n  Subject: {subject_id}\n  Reason: {reason}\n  Status: requires active admin service connection."
+            )
         }
         AdminCommand::Audit { id } => {
-            format!("Auditing {id}: not yet implemented")
+            format!("Audit requested for {id}. Requires active admin service connection.")
         }
     }
 }

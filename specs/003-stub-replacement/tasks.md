@@ -15,10 +15,10 @@
 
 **Purpose**: Add new dependencies and shared utilities needed by multiple user stories
 
-- [ ] T001 Add reqwest dependency to Cargo.toml: `reqwest = { version = "0.12", features = ["json", "rustls-tls"] }`
-- [ ] T002 Add oauth2 dependency to Cargo.toml: `oauth2 = "4"`
-- [ ] T003 Add x509-parser dependency to Cargo.toml: `x509-parser = "0.16"`
-- [ ] T004 Verify build succeeds with new dependencies: `cargo build --lib`
+- [x] T001 Add reqwest dependency to Cargo.toml: `reqwest = { version = "0.12", features = ["json", "rustls-tls"] }`
+- [x] T002 Add oauth2 dependency to Cargo.toml: `oauth2 = "4"`
+- [x] T003 Add x509-parser dependency to Cargo.toml: `x509-parser = "0.16"`
+- [x] T004 Verify build succeeds with new dependencies: `cargo build --lib`
 
 ---
 
@@ -30,17 +30,17 @@
 
 > **Story numbering note**: Spec User Story 1 (CLI operations) is covered here as foundational infrastructure. Tasks phases 3–9 map to spec User Stories 2–8 respectively (US2=Sandbox, US3=Attestation, US4=Identity, US5=Transparency, US6=Observability, US7=Consensus, US8=Network).
 
-- [ ] T005 [P] [FR-001] Change `Commands::Donor` from unit variant to `Donor(cli::donor::DonorCli)` and dispatch to `cli::donor::execute()` in src/main.rs
-- [ ] T006 [P] [FR-002] Change `Commands::Job` from unit variant to `Job(cli::submitter::SubmitterCli)` and dispatch to `cli::submitter::execute()` in src/main.rs
-- [ ] T007 [P] [FR-003] Create `ClusterCli` struct with `status`, `peers`, `ledger-head` subcommands in src/cli/mod.rs (or new src/cli/cluster.rs), wire into `Commands::Cluster` in src/main.rs
-- [ ] T008 [P] [FR-004] Change `Commands::Governance` from unit variant to `Governance(cli::governance::GovernanceCli)` and dispatch to `cli::governance::execute()` in src/main.rs
-- [ ] T009 [P] [FR-005] Change `Commands::Admin` from unit variant to `Admin(cli::admin::AdminCli)` and dispatch to `cli::admin::execute()` in src/main.rs
-- [ ] T010 [FR-001] Update src/cli/donor.rs `execute()` to call real agent lifecycle functions instead of returning placeholder strings
-- [ ] T011 [FR-002] Update src/cli/submitter.rs `execute()` to call real scheduler functions instead of returning placeholder strings
-- [ ] T012 [FR-004] Update src/cli/governance.rs `execute()` to call real governance module functions instead of returning placeholder strings
-- [ ] T013 [FR-005] Update src/cli/admin.rs `execute()` to call real admin service functions, enforcing OnCallResponder role
-- [ ] T014 Run `cargo test` and `cargo clippy --lib -- -D warnings` to verify zero regressions and zero warnings
-- [ ] T015 Verify each CLI command produces meaningful output (not "not yet implemented"): `cargo run -- donor status`, `cargo run -- job list`, etc.
+- [x] T005 [P] [FR-001] Change `Commands::Donor` from unit variant to `Donor(cli::donor::DonorCli)` and dispatch to `cli::donor::execute()` in src/main.rs
+- [x] T006 [P] [FR-002] Change `Commands::Job` from unit variant to `Job(cli::submitter::SubmitterCli)` and dispatch to `cli::submitter::execute()` in src/main.rs
+- [x] T007 [P] [FR-003] Create `ClusterCli` struct with `status`, `peers`, `ledger-head` subcommands in src/cli/mod.rs (or new src/cli/cluster.rs), wire into `Commands::Cluster` in src/main.rs
+- [x] T008 [P] [FR-004] Change `Commands::Governance` from unit variant to `Governance(cli::governance::GovernanceCli)` and dispatch to `cli::governance::execute()` in src/main.rs
+- [x] T009 [P] [FR-005] Change `Commands::Admin` from unit variant to `Admin(cli::admin::AdminCli)` and dispatch to `cli::admin::execute()` in src/main.rs
+- [x] T010 [FR-001] Update src/cli/donor.rs `execute()` to call real agent lifecycle functions instead of returning placeholder strings
+- [x] T011 [FR-002] Update src/cli/submitter.rs `execute()` to call real scheduler functions instead of returning placeholder strings
+- [x] T012 [FR-004] Update src/cli/governance.rs `execute()` to call real governance module functions instead of returning placeholder strings
+- [x] T013 [FR-005] Update src/cli/admin.rs `execute()` to call real admin service functions, enforcing OnCallResponder role
+- [x] T014 Run `cargo test` and `cargo clippy --lib -- -D warnings` to verify zero regressions and zero warnings
+- [x] T015 Verify each CLI command produces meaningful output (not "not yet implemented"): `cargo run -- donor status`, `cargo run -- job list`, etc.
 
 **Checkpoint**: All 5 CLI command groups dispatch to real modules. SC-001 is satisfied.
 

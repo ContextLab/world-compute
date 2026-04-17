@@ -1,5 +1,7 @@
 use clap::{Parser, Subcommand};
 
+mod cli_dispatch;
+
 #[derive(Parser)]
 #[command(name = "worldcompute")]
 #[command(about = "World Compute — a decentralized, volunteer-built compute public good")]
@@ -12,38 +14,39 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Donor operations: join, status, pause, resume, leave, credits
-    Donor,
+    Donor(worldcompute::cli::donor::DonorCli),
     /// Job operations: submit, status, results, cancel, list
-    Job,
+    Job(worldcompute::cli::submitter::JobCli),
     /// Cluster operations: status, peers, ledger-head
-    Cluster,
+    Cluster(cli_dispatch::ClusterCli),
     /// Governance operations: propose, list, vote, report
-    Governance,
+    Governance(worldcompute::cli::governance::GovernanceCli),
     /// Admin operations: halt, resume, ban, audit (requires admin cert)
-    Admin,
+    Admin(worldcompute::cli::admin::AdminCli),
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
-    match cli.command {
-        Commands::Donor => {
-            println!("worldcompute donor: not yet implemented");
+    let output = match cli.command {
+        Commands::Donor(donor_cli) => {
+            worldcompute::cli::donor::execute(&donor_cli.command)
         }
-        Commands::Job => {
-            println!("worldcompute job: not yet implemented");
+        Commands::Job(job_cli) => {
+            worldcompute::cli::submitter::execute(&job_cli.command)
         }
-        Commands::Cluster => {
-            println!("worldcompute cluster: not yet implemented");
+        Commands::Cluster(cluster_cli) => {
+            cli_dispatch::execute_cluster(&cluster_cli.command)
         }
-        Commands::Governance => {
-            println!("worldcompute governance: not yet implemented");
+        Commands::Governance(gov_cli) => {
+            worldcompute::cli::governance::execute(&gov_cli.command)
         }
-        Commands::Admin => {
-            println!("worldcompute admin: not yet implemented");
+        Commands::Admin(admin_cli) => {
+            worldcompute::cli::admin::execute(&admin_cli.command)
         }
-    }
+    };
 
+    println!("{output}");
     Ok(())
 }
