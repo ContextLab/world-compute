@@ -29,6 +29,19 @@ enum Commands {
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
+    // Check if this is a daemon command (donor join --daemon)
+    if let Commands::Donor(ref donor_cli) = cli.command {
+        if let worldcompute::cli::donor::DonorCommand::Join { daemon: true, .. } = donor_cli.command
+        {
+            // Daemon mode — run the persistent P2P node (blocks until Ctrl+C)
+            worldcompute::cli::donor::execute_daemon(&donor_cli.command)
+                .await
+                .map_err(|e| anyhow::anyhow!("Daemon error: {e}"))?;
+            return Ok(());
+        }
+    }
+
+    // Non-daemon commands — execute and print output
     let output = match cli.command {
         Commands::Donor(donor_cli) => worldcompute::cli::donor::execute(&donor_cli.command),
         Commands::Job(job_cli) => worldcompute::cli::submitter::execute(&job_cli.command),

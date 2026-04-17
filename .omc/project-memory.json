@@ -145,14 +145,14 @@
   "hotPaths": [
     {
       "path": "Cargo.toml",
-      "accessCount": 39,
-      "lastAccessed": 1776433716696,
+      "accessCount": 40,
+      "lastAccessed": 1776442519013,
       "type": "file"
     },
     {
       "path": "src",
-      "accessCount": 27,
-      "lastAccessed": 1776433978465,
+      "accessCount": 28,
+      "lastAccessed": 1776442512081,
       "type": "directory"
     },
     {
@@ -168,16 +168,16 @@
       "type": "file"
     },
     {
-      "path": "src/agent/lifecycle.rs",
-      "accessCount": 15,
-      "lastAccessed": 1776401287403,
-      "type": "file"
+      "path": "",
+      "accessCount": 17,
+      "lastAccessed": 1776442505422,
+      "type": "directory"
     },
     {
-      "path": "",
-      "accessCount": 15,
-      "lastAccessed": 1776402188679,
-      "type": "directory"
+      "path": "src/agent/lifecycle.rs",
+      "accessCount": 17,
+      "lastAccessed": 1776442598739,
+      "type": "file"
     },
     {
       "path": "src/ledger/transparency.rs",

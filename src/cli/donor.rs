@@ -20,6 +20,15 @@ pub enum DonorCommand {
         /// Workload classes to accept (comma-separated: scientific,public-good-ml,rendering,indexing,self-improvement,general)
         #[arg(long, default_value = "scientific,general")]
         consent: String,
+        /// Run as a persistent P2P daemon (listens for peers, publishes heartbeats)
+        #[arg(long)]
+        daemon: bool,
+        /// TCP/QUIC listen port (default: 19999)
+        #[arg(long, default_value = "19999")]
+        port: u16,
+        /// Bootstrap peer addresses to connect to (comma-separated multiaddrs)
+        #[arg(long)]
+        bootstrap: Option<String>,
     },
     /// Show current donor status, trust score, and caliber class
     Status,
@@ -44,14 +53,21 @@ pub enum DonorCommand {
 }
 
 /// Execute a donor CLI command. Returns a human-readable status string.
+/// For daemon mode, use `execute_async` instead.
 pub fn execute(cmd: &DonorCommand) -> String {
     match cmd {
-        DonorCommand::Join { consent } => {
+        DonorCommand::Join { consent, daemon, port, bootstrap: _ } => {
             let classes: Vec<AcceptableUseClass> =
                 consent.split(',').filter_map(|s| parse_use_class(s.trim())).collect();
 
             if classes.is_empty() {
                 return "Error: no valid consent classes provided. Valid classes: scientific, public-good-ml, rendering, indexing, self-improvement, general".into();
+            }
+
+            if *daemon {
+                return format!(
+                    "Daemon mode requested on port {port}. Use execute_async() for daemon startup."
+                );
             }
 
             let config = AgentConfig::default();
@@ -85,6 +101,48 @@ pub fn execute(cmd: &DonorCommand) -> String {
         DonorCommand::Logs { lines } => {
             format!("Logs: no agent log file found. Requested last {lines} lines.")
         }
+    }
+}
+
+/// Execute a donor join command in daemon mode (async, blocks until shutdown).
+pub async fn execute_daemon(cmd: &DonorCommand) -> Result<(), Box<dyn std::error::Error>> {
+    match cmd {
+        DonorCommand::Join { consent, daemon: _, port, bootstrap } => {
+            let classes: Vec<AcceptableUseClass> =
+                consent.split(',').filter_map(|s| parse_use_class(s.trim())).collect();
+
+            if classes.is_empty() {
+                return Err("No valid consent classes provided".into());
+            }
+
+            let config = AgentConfig::default();
+            let mut agent = AgentInstance::new(config);
+            let result = agent.enroll(classes.clone())?;
+
+            println!(
+                "Enrolled as donor.\n  Peer ID: {}\n  Trust tier: {:?}\n  Caliber: {:?}\n  Sandbox: {:?}\n  Consent: {:?}",
+                result.peer_id, result.trust_tier, result.caliber_class,
+                result.sandbox_capability, classes
+            );
+
+            // Parse bootstrap peers
+            let bootstrap_peers: Vec<String> = bootstrap
+                .as_deref()
+                .map(|b| b.split(',').map(|s| s.trim().to_string()).collect())
+                .unwrap_or_default();
+
+            let daemon_config = crate::agent::daemon::DaemonConfig {
+                tcp_port: *port,
+                quic_port: *port,
+                heartbeat_interval_secs: 30,
+                bootstrap_peers,
+            };
+
+            // Start the persistent daemon — this blocks until Ctrl+C
+            crate::agent::daemon::start_daemon(agent, daemon_config).await?;
+            Ok(())
+        }
+        _ => Err("Only 'join' supports daemon mode".into()),
     }
 }
 

@@ -2,6 +2,7 @@
 
 pub mod build_info;
 pub mod config;
+pub mod daemon;
 pub mod donor;
 pub mod identity;
 pub mod lifecycle;
