@@ -7,6 +7,8 @@ Last updated: 2026-04-16
 World Compute is a decentralized, volunteer-built compute federation. The codebase is a Rust workspace with 94 source files, 422 passing tests, and 20 library modules. The CLI compiles but subcommands are not yet functional — all print "not yet implemented." Safety-critical library modules (policy engine, attestation, governance, egress, incident response) are implemented and tested.
 
 ## Active Technologies
+- Rust stable (tested on 1.95.0) + libp2p 0.54, tonic 0.12, ed25519-dalek 2, wasmtime 27, openraft 0.9, opentelemetry 0.27, clap 4 (003-stub-replacement)
+- CID-addressed content store (cid 0.11, multihash 0.19), erasure-coded (reed-solomon-erasure 6) (003-stub-replacement)
 
 - **Language**: Rust (stable, tested on 1.95.0)
 - **Networking**: rust-libp2p 0.54 (QUIC, TCP, mDNS, Kademlia, gossipsub)
@@ -125,6 +127,7 @@ Two GitHub Actions workflows:
 - `safety-hardening-ci.yml` — multi-platform (Linux/macOS/Windows) with Principle V evidence artifacts
 
 ## Recent Changes
+- 003-stub-replacement: Added Rust stable (tested on 1.95.0) + libp2p 0.54, tonic 0.12, ed25519-dalek 2, wasmtime 27, openraft 0.9, opentelemetry 0.27, clap 4
 
 - **002-safety-hardening** (2026-04-16): Addressed red team review (#4). Added policy engine, attestation enforcement, governance separation, incident response, egress blocking, identity hardening, supply chain controls. 110 tasks, 422 tests, red team exercise (26 adversarial tests). PR #6.
 - **001-world-compute-core** (2026-04-15): Initial architecture and implementation across 11 phases.
