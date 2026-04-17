@@ -40,6 +40,18 @@
 | DeployMinor | 2-of-3 quorum | Update non-critical config |
 | DeployMajor | Full vote + 24h review | Change scheduler algorithm |
 
+### Classification Criteria
+
+Action tier is determined by keyword/pattern matching on the mesh LLM output:
+
+- **ReadOnly**: Output contains only analysis, metrics, observations, or reports. No imperative verbs targeting system state.
+- **Suggest**: Output contains proposals prefixed with "suggest:", "recommend:", or "consider:" and does not include executable commands.
+- **SandboxTest**: Output contains "experiment:", "test:", or "canary:" prefixed actions targeting ≤1% of traffic/nodes.
+- **DeployMinor**: Output contains "update:", "set:", or "configure:" targeting non-critical config keys (defined in a configurable allowlist).
+- **DeployMajor**: Any output containing "change:", "replace:", "remove:", or "deploy:" targeting scheduler algorithms, sandbox policies, governance rules, or security parameters.
+
+If classification is ambiguous (matches multiple tiers), the **highest** (most restrictive) tier applies.
+
 ## Kill Switch
 
 - Triggered by any governance participant via signed GossipSub message

@@ -15,12 +15,12 @@
 
 **Purpose**: Add new dependencies needed across multiple user stories
 
-- [ ] T001 Add `rsa = "0.9"` and `p256 = "0.13"` and `p384 = "0.13"` dependencies to Cargo.toml for certificate chain verification
+- [ ] T001 Add `rsa = "0.9"`, `p256 = "0.13"`, `p384 = "0.13"`, and `nix = { version = "0.29", features = ["signal", "process"] }` dependencies to Cargo.toml for certificate chain verification and SIGSTOP delivery
 - [ ] T002 [P] Add `aes-gcm = "0.10"` and `x25519-dalek = "2"` dependencies to Cargo.toml for confidential compute
 - [ ] T003 [P] Add `rcgen = "0.12"` and `tokio-rustls = "0.26"` dependencies to Cargo.toml for mTLS
 - [ ] T004 [P] Add `threshold-crypto = "0.2"` dependency to Cargo.toml for threshold signing (verify not already present)
 - [ ] T005 [P] Add `kube = "0.88"` and `k8s-openapi = "0.21"` dependencies to adapters/kubernetes/Cargo.toml
-- [ ] T006 [P] Add `candle-core = "0.8"` and `candle-transformers = "0.8"` and `tokenizers = "0.20"` dependencies to Cargo.toml for mesh LLM
+- [ ] T006 [P] Add `candle-core`, `candle-transformers`, and `tokenizers` dependencies to Cargo.toml for mesh LLM (check crates.io for latest versions before adding — candle may be 0.6.x or 0.7.x)
 - [ ] T007 Verify build succeeds with all new dependencies: `cargo build --lib`
 
 ---
@@ -243,7 +243,7 @@
 
 ### Phase 1 LAN Testnet (#42)
 
-- [ ] T117 [US6] Create multi-node test harness in tests/integration/test_lan_testnet.rs: spawn 3+ agent processes, verify mDNS discovery < 5 seconds
+- [ ] T117 [US6] Create multi-node test harness in tests/integration/test_lan_testnet.rs: spawn 3+ agent processes on the same host (multi-process simulation acceptable for CI; real multi-machine test on tensor01.dartmouth.edu for Phase 1 evidence artifact), verify mDNS discovery < 5 seconds
 - [ ] T118 [US6] Add R=3 job execution test in tests/integration/test_lan_testnet.rs: submit job → verify dispatched to 3 nodes → collect quorum result
 - [ ] T119 [US6] Add failure recovery test in tests/integration/test_lan_testnet.rs: kill one node mid-job → verify job reschedules from checkpoint → correct result
 - [ ] T120 [US6] Add preemption test in tests/integration/test_lan_testnet.rs: inject keyboard event → verify preemption < 1s → verify job continues after resume
@@ -309,7 +309,7 @@
 - [ ] T145 [P] [US8] Implement slurmrestd HTTP client in adapters/slurm/src/main.rs: connect to Slurm REST API, GET /slurm/v0.0.40/nodes for capacity reporting
 - [ ] T146 [US8] Implement job dispatch via sbatch in adapters/slurm/src/main.rs: POST /slurm/v0.0.40/job/submit with job script, track job ID
 - [ ] T147 [US8] Implement result collection in adapters/slurm/src/main.rs: poll GET /slurm/v0.0.40/job/{id} until COMPLETED, fetch output
-- [ ] T148 [US8] Add integration test: submit SHA-256 test job to Slurm → verify correct result in adapters/slurm/tests/test_slurm.rs
+- [ ] T148 [US8] Add integration test: submit SHA-256 test job to Slurm → verify correct result in adapters/slurm/tests/test_slurm.rs (if no real Slurm cluster available, test uses mock slurmrestd server returning known responses; document limitation in test comments)
 
 ### Kubernetes (#38)
 
@@ -324,7 +324,7 @@
 - [ ] T154 [P] [US8] Implement AWS IMDSv2 attestation in adapters/cloud/src/main.rs: GET token → GET instance identity document → verify signature against AWS public key
 - [ ] T155 [P] [US8] Implement GCP metadata attestation in adapters/cloud/src/main.rs: GET instance identity token → verify JWT against Google public keys
 - [ ] T156 [P] [US8] Implement Azure IMDS attestation in adapters/cloud/src/main.rs: GET attested data → verify signature against Azure certificate
-- [ ] T157 [US8] Add integration test on real cloud instance: verify identity attestation in adapters/cloud/tests/test_cloud.rs
+- [ ] T157 [US8] Add integration test on real cloud instance: verify identity attestation in adapters/cloud/tests/test_cloud.rs (if no real cloud instance available, test verifies parsing logic against known IMDSv2/GCP/Azure response fixtures; document limitation in test comments)
 
 ### Apple VF (#52)
 
@@ -361,6 +361,14 @@
 - [ ] T172 [US9] Wire rate limiting into REST gateway in src/network/rest_gateway.rs: apply per-class rate limits from FR-015
 - [ ] T173 [US9] Wire Ed25519 token authentication into REST gateway in src/network/rest_gateway.rs
 - [ ] T174 [US9] Add integration test: REST API submit job → verify completion in tests/network/test_rest.rs
+
+### Web Dashboard SPA (FR-031)
+
+- [ ] T174a [P] [US9] Create static web dashboard SPA scaffold in gui/src/web/: index.html, package.json (React + TypeScript), build to gui/src/web/dist/ for CDN deployment
+- [ ] T174b [US9] Implement donor status page in gui/src/web/pages/DonorStatus.tsx: fetch from REST gateway, display credit balance, trust score, active leases
+- [ ] T174c [P] [US9] Implement job submission page in gui/src/web/pages/JobSubmit.tsx: form for manifest upload, job list with status, result download
+- [ ] T174d [US9] Add integration test: load web dashboard → submit job via REST → verify result displayed in tests/network/test_web_dashboard.rs
+
 - [ ] T175 [US9] Run `cargo test` to verify zero regressions
 
 **Checkpoint**: FR-029 through FR-031 satisfied.
@@ -385,6 +393,7 @@
 - [ ] T180 [US10] Implement GPU power reading via NVML in src/telemetry/energy.rs: `nvmlDeviceGetPowerUsage()` for NVIDIA GPUs (optional — skip if no GPU)
 - [ ] T181 [US10] Implement aggregate carbon footprint in src/telemetry/energy.rs: multiply watts by regional carbon intensity (configurable g CO2/kWh)
 - [ ] T182 [US10] Add integration test: run workload → read RAPL → verify non-zero joules in tests/telemetry/test_energy.rs
+- [ ] T182a [US10] Calibration test on tensor01.dartmouth.edu: run standardized workload, compare RAPL reading against wall-meter measurement (if available) or known TDP, document calibration factor, assert estimates within 20% (SC target)
 
 ### Documentation (#50)
 
