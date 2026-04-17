@@ -88,16 +88,14 @@ fn containment_cascade_completes_within_60_seconds() {
 
     assert!(
         cascade_duration.as_secs() < 60,
-        "Full cascade took {:?} — must complete within 60 seconds (SC-S006)",
-        cascade_duration
+        "Full cascade took {cascade_duration:?} — must complete within 60 seconds (SC-S006)"
     );
 
     // In practice this completes in microseconds since it's all in-memory.
     // The 60-second budget is for real deployments with network calls.
     assert!(
         anomaly_to_containment.as_millis() < 1000,
-        "Anomaly-to-containment took {:?} — should be sub-second for in-memory ops",
-        anomaly_to_containment
+        "Anomaly-to-containment took {anomaly_to_containment:?} — should be sub-second for in-memory ops"
     );
 
     // Step 6: Verify audit trail completeness

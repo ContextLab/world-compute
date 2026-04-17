@@ -6,7 +6,7 @@
 use worldcompute::error::ErrorCode;
 use worldcompute::governance::admin_service::AdminServiceHandler;
 use worldcompute::governance::proposal::{GovernanceProposal, ProposalState, ProposalType};
-use worldcompute::governance::roles::{GovernanceRole, RoleType};
+use worldcompute::governance::roles::GovernanceRole;
 use worldcompute::governance::vote::{validate_vote_with_hp, Vote, VoteChoice};
 use worldcompute::policy::decision::Verdict;
 use worldcompute::policy::engine::{evaluate, SubmissionContext};

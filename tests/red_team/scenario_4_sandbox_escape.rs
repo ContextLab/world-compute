@@ -4,7 +4,7 @@
 //! filesystem, network, LAN, metadata endpoints.
 
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
-use worldcompute::sandbox::egress::{is_blocked_destination, EgressPolicy};
+use worldcompute::sandbox::egress::is_blocked_destination;
 use worldcompute::sandbox::Sandbox;
 
 #[test]
@@ -32,8 +32,7 @@ fn attack_4b_lan_scanning_blocked() {
     for target in &lan_targets {
         assert!(
             is_blocked_destination(&IpAddr::V4(*target)),
-            "LAN target {} must be blocked",
-            target
+            "LAN target {target} must be blocked"
         );
     }
 }

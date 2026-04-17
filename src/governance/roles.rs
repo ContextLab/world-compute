@@ -111,7 +111,7 @@ mod tests {
     use super::*;
 
     fn make_role(peer_id: &str, role: RoleType) -> GovernanceRole {
-        GovernanceRole::new(format!("test-{:?}", role), peer_id.into(), role, "admin".into())
+        GovernanceRole::new(format!("test-{role:?}"), peer_id.into(), role, "admin".into())
     }
 
     #[test]
