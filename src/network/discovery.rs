@@ -56,15 +56,23 @@ pub struct DiscoveryConfig {
 
 impl Default for DiscoveryConfig {
     fn default() -> Self {
+        // Load bootstrap seeds from environment or use defaults.
+        // In production, set WORLDCOMPUTE_BOOTSTRAP_SEEDS to a comma-separated
+        // list of multiaddr strings.
+        let seeds = std::env::var("WORLDCOMPUTE_BOOTSTRAP_SEEDS")
+            .map(|s| s.split(',').map(|s| s.trim().to_string()).collect())
+            .unwrap_or_else(|_| {
+                vec![
+                    "/dnsaddr/bootstrap1.worldcompute.org".into(),
+                    "/dnsaddr/bootstrap2.worldcompute.org".into(),
+                    "/dnsaddr/bootstrap3.worldcompute.org".into(),
+                ]
+            });
+
         Self {
             mdns_enabled: true,
             kademlia_enabled: true,
-            bootstrap_seeds: vec![
-                // TODO: Replace with real World Compute DNS seeds at launch.
-                // These are placeholder seeds for development.
-                "/dnsaddr/bootstrap1.worldcompute.org".into(),
-                "/dnsaddr/bootstrap2.worldcompute.org".into(),
-            ],
+            bootstrap_seeds: seeds,
             kad_query_timeout: Duration::from_secs(30),
         }
     }

@@ -5,15 +5,28 @@ use worldcompute::identity::personhood::{
 };
 
 #[test]
-fn personhood_verification_returns_unavailable_without_http_client() {
-    match verify_personhood("test-context") {
+fn personhood_verification_handles_unreachable_provider() {
+    // With the real HTTP client wired, verifying a fake context ID will either:
+    // - Return ProviderUnavailable if BrightID node is unreachable (network error)
+    // - Return Pending if the context ID is not found (404)
+    // - Return Failed in other error conditions
+    // All are acceptable — the key is it doesn't panic or hang.
+    match verify_personhood("test-context-nonexistent") {
         PersonhoodResult::ProviderUnavailable(msg) => {
             assert!(
-                msg.contains("BrightID") || msg.contains("HTTP client"),
-                "Should reference BrightID or HTTP client, got: {msg}"
+                msg.contains("BrightID") || msg.contains("request failed") || msg.contains("error"),
+                "Error should be descriptive, got: {msg}"
             );
         }
-        other => panic!("Expected ProviderUnavailable, got {other:?}"),
+        PersonhoodResult::Pending { .. } => {
+            // 404 response treated as "not yet verified"
+        }
+        PersonhoodResult::Failed(_) => {
+            // Other error condition
+        }
+        PersonhoodResult::Verified => {
+            panic!("Fake context ID should not verify as real");
+        }
     }
 }
 

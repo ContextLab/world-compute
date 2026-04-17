@@ -67,7 +67,9 @@ pub fn brightid_link_url(context_id: &str) -> String {
 /// In production, it should be called at enrollment time and
 /// re-verified at trust score recalculation intervals.
 pub fn verify_personhood(context_id: &str) -> PersonhoodResult {
-    let url = format!("{BRIGHTID_NODE_URL}/verifications/{BRIGHTID_CONTEXT}/{context_id}");
+    let base_url = std::env::var("BRIGHTID_NODE_URL")
+        .unwrap_or_else(|_| BRIGHTID_NODE_URL.to_string());
+    let url = format!("{base_url}/verifications/{BRIGHTID_CONTEXT}/{context_id}");
 
     // Use a blocking HTTP client for simplicity.
     // In production, this should be async via reqwest or hyper.
@@ -96,21 +98,53 @@ pub fn verify_personhood(context_id: &str) -> PersonhoodResult {
     }
 }
 
-/// Make a GET request to BrightID verification endpoint.
+/// BrightID API response wrapper.
+#[derive(Debug, Deserialize)]
+struct BrightIdApiResponse {
+    data: Option<BrightIdVerification>,
+    #[serde(default)]
+    error: Option<bool>,
+    #[serde(rename = "errorMessage", default)]
+    error_message: Option<String>,
+}
+
+/// Make a GET request to BrightID verification endpoint via reqwest.
 ///
-/// Returns the parsed verification response or an error string.
-/// This is a synchronous HTTP call; production should use async.
-fn ureq_get_brightid(_url: &str) -> Result<BrightIdVerification, String> {
-    // TODO: Replace with real HTTP client (reqwest or ureq).
-    // The BrightID API endpoint is:
-    // GET /node/v6/verifications/{context}/{contextId}
-    //
-    // Response: { "data": { "unique": true, "contextIds": [...] } }
-    //
-    // For now, return an error indicating the HTTP client is not wired.
-    // This allows the code to compile and tests to verify the flow
-    // without adding an HTTP dependency yet.
-    Err("HTTP client not yet integrated — add ureq or reqwest dependency to Cargo.toml".into())
+/// Uses a blocking reqwest client. The BrightID node URL can be overridden
+/// via the BRIGHTID_NODE_URL environment variable.
+fn ureq_get_brightid(url: &str) -> Result<BrightIdVerification, String> {
+    // Use reqwest blocking client (runs inside tokio via spawn_blocking
+    // or in a non-async context for CLI usage).
+    let client = reqwest::blocking::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+        .map_err(|e| format!("HTTP client init failed: {e}"))?;
+
+    let response = client
+        .get(url)
+        .header("Accept", "application/json")
+        .send()
+        .map_err(|e| format!("BrightID request failed: {e}"))?;
+
+    let status = response.status();
+    if status == reqwest::StatusCode::NOT_FOUND {
+        return Err("404 Not Found".into());
+    }
+    if !status.is_success() {
+        return Err(format!("BrightID returned status {status}"));
+    }
+
+    let api_response: BrightIdApiResponse = response
+        .json()
+        .map_err(|e| format!("BrightID response parse failed: {e}"))?;
+
+    if let Some(true) = api_response.error {
+        return Err(
+            api_response.error_message.unwrap_or_else(|| "Unknown BrightID error".into())
+        );
+    }
+
+    api_response.data.ok_or_else(|| "BrightID response missing data field".into())
 }
 
 /// Derive a BrightID context ID from a World Compute PeerId.
@@ -156,12 +190,14 @@ mod tests {
     }
 
     #[test]
-    fn verify_returns_unavailable_without_http_client() {
-        match verify_personhood("test-context") {
-            PersonhoodResult::ProviderUnavailable(msg) => {
-                assert!(msg.contains("HTTP client"));
-            }
-            other => panic!("Expected ProviderUnavailable, got {other:?}"),
+    fn verify_returns_unavailable_or_pending_for_fake_context() {
+        // With real HTTP client wired, this will either:
+        // - Return ProviderUnavailable if BrightID node is unreachable
+        // - Return Pending if the context ID is not found (404)
+        match verify_personhood("test-context-nonexistent") {
+            PersonhoodResult::ProviderUnavailable(_) | PersonhoodResult::Pending { .. } => {}
+            PersonhoodResult::Failed(_) => {}
+            other => panic!("Expected ProviderUnavailable, Pending, or Failed — got {other:?}"),
         }
     }
 
