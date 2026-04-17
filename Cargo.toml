@@ -101,5 +101,8 @@ uuid = { version = "1", features = ["v4", "serde"] }
 hex = "0.4"
 base64 = "0.22"
 
+[dev-dependencies]
+rcgen = "0.13"
+
 [build-dependencies]
 tonic-build = "0.12"
