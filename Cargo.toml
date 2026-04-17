@@ -124,6 +124,7 @@ tokenizers = "0.20"
 sysinfo = "0.32"
 
 [dev-dependencies]
+time = "0.3"
 
 [build-dependencies]
 tonic-build = "0.12"

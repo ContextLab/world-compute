@@ -144,15 +144,33 @@
   },
   "hotPaths": [
     {
-      "path": "tests",
-      "accessCount": 9,
-      "lastAccessed": 1776396576046,
-      "type": "directory"
+      "path": "src/verification/attestation.rs",
+      "accessCount": 18,
+      "lastAccessed": 1776400483980,
+      "type": "file"
+    },
+    {
+      "path": "src/ledger/transparency.rs",
+      "accessCount": 13,
+      "lastAccessed": 1776400485039,
+      "type": "file"
+    },
+    {
+      "path": "Cargo.toml",
+      "accessCount": 12,
+      "lastAccessed": 1776400588363,
+      "type": "file"
     },
     {
       "path": "src",
-      "accessCount": 8,
-      "lastAccessed": 1776396575588,
+      "accessCount": 10,
+      "lastAccessed": 1776400491845,
+      "type": "directory"
+    },
+    {
+      "path": "tests",
+      "accessCount": 10,
+      "lastAccessed": 1776400497152,
       "type": "directory"
     },
     {
@@ -168,15 +186,15 @@
       "type": "file"
     },
     {
-      "path": "Cargo.toml",
-      "accessCount": 5,
-      "lastAccessed": 1776399614175,
-      "type": "file"
-    },
-    {
       "path": "specs/001-world-compute-core/tasks.md",
       "accessCount": 4,
       "lastAccessed": 1776395605951,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_rekor_transparency.rs",
+      "accessCount": 4,
+      "lastAccessed": 1776400693830,
       "type": "file"
     },
     {
@@ -189,12 +207,6 @@
       "path": "adapters/kubernetes/Cargo.toml",
       "accessCount": 3,
       "lastAccessed": 1776399600749,
-      "type": "file"
-    },
-    {
-      "path": "src/ledger/transparency.rs",
-      "accessCount": 3,
-      "lastAccessed": 1776399757931,
       "type": "file"
     },
     {
@@ -225,12 +237,6 @@
       "path": "src/incident/containment.rs",
       "accessCount": 1,
       "lastAccessed": 1776395506380,
-      "type": "file"
-    },
-    {
-      "path": "src/verification/attestation.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395506500,
       "type": "file"
     },
     {
@@ -435,12 +441,6 @@
       "path": "tests/incident/test_auth.rs",
       "accessCount": 1,
       "lastAccessed": 1776395546733,
-      "type": "file"
-    },
-    {
-      "path": "tests/test_rekor_transparency.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395547017,
       "type": "file"
     }
   ],

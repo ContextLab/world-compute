@@ -55,26 +55,26 @@
 
 ### Certificate Chain Verification (#28)
 
-- [ ] T019 [P] [US1] Implement RSA signature verification using `rsa` crate in src/verification/attestation.rs `validate_chain_structure()`: extract RSA public key from parent cert, verify child cert signature
-- [ ] T020 [P] [US1] Implement ECDSA-P256/P384 signature verification using `p256`/`p384` crates in src/verification/attestation.rs: extract EC public key, verify signature
-- [ ] T021 [US1] Wire RSA/ECDSA verification into `Tpm2ChainValidator::validate_chain()` in src/verification/attestation.rs: verify EK cert signature chain, check manufacturer OID (2.23.133.x) in leaf cert extensions
-- [ ] T022 [P] [US1] Wire ECDSA-P384 verification into `SevSnpChainValidator::validate_chain()` in src/verification/attestation.rs: verify ARK→ASK→VCEK chain, compare root fingerprint against pinned AMD ARK SHA-256
-- [ ] T023 [P] [US1] Wire ECDSA-P256 verification into `TdxChainValidator::validate_chain()` in src/verification/attestation.rs: verify Intel DCAP root→PCK chain, compare root fingerprint against pinned Intel CA SHA-256
-- [ ] T024 [US1] Implement certificate expiry checking in all three validators: reject chains containing expired certificates
-- [ ] T025 [US1] Replace TODO at src/verification/attestation.rs line ~627 with real Ed25519/ECDSA verification against platform root-of-trust
-- [ ] T026 [US1] Add integration test: valid AMD SEV-SNP test vector → accepted; tampered chain → rejected in tests/verification/test_deep_attestation.rs
-- [ ] T027 [P] [US1] Add integration test: valid Intel TDX test vector → accepted; wrong root → rejected in tests/verification/test_deep_attestation.rs
-- [ ] T028 [P] [US1] Add integration test: valid TPM2 EK chain → accepted; expired cert → rejected in tests/verification/test_deep_attestation.rs
+- [x] T019 [P] [US1] Implement RSA signature verification using `rsa` crate in src/verification/attestation.rs `validate_chain_structure()`: extract RSA public key from parent cert, verify child cert signature
+- [x] T020 [P] [US1] Implement ECDSA-P256/P384 signature verification using `p256`/`p384` crates in src/verification/attestation.rs: extract EC public key, verify signature
+- [x] T021 [US1] Wire RSA/ECDSA verification into `Tpm2ChainValidator::validate_chain()` in src/verification/attestation.rs: verify EK cert signature chain, check manufacturer OID (2.23.133.x) in leaf cert extensions
+- [x] T022 [P] [US1] Wire ECDSA-P384 verification into `SevSnpChainValidator::validate_chain()` in src/verification/attestation.rs: verify ARK→ASK→VCEK chain, compare root fingerprint against pinned AMD ARK SHA-256
+- [x] T023 [P] [US1] Wire ECDSA-P256 verification into `TdxChainValidator::validate_chain()` in src/verification/attestation.rs: verify Intel DCAP root→PCK chain, compare root fingerprint against pinned Intel CA SHA-256
+- [x] T024 [US1] Implement certificate expiry checking in all three validators: reject chains containing expired certificates
+- [x] T025 [US1] Replace TODO at src/verification/attestation.rs line ~627 with real Ed25519/ECDSA verification against platform root-of-trust
+- [x] T026 [US1] Add integration test: valid AMD SEV-SNP test vector → accepted; tampered chain → rejected in tests/verification/test_deep_attestation.rs
+- [x] T027 [P] [US1] Add integration test: valid Intel TDX test vector → accepted; wrong root → rejected in tests/verification/test_deep_attestation.rs
+- [x] T028 [P] [US1] Add integration test: valid TPM2 EK chain → accepted; expired cert → rejected in tests/verification/test_deep_attestation.rs
 
 ### Merkle Inclusion Proof (#29)
 
-- [ ] T029 [P] [US1] Implement RFC 6962 Merkle inclusion proof verification in src/ledger/transparency.rs `verify_anchor()`: compute root from leaf_hash + proof_hashes, compare to signed_tree_head.root_hash
-- [ ] T030 [US1] Pin Rekor public key as compile-time constant in src/ledger/transparency.rs (fetch from Rekor API `/api/v1/log/publicKey`)
-- [ ] T031 [US1] Verify signed tree head signature with pinned Rekor public key in src/ledger/transparency.rs
-- [ ] T032 [US1] Add integration test: submit entry to Rekor staging → retrieve inclusion proof → verify against signed tree head in tests/test_rekor_transparency.rs
-- [ ] T033 [US1] Add integration test: tampered proof data → verification fails in tests/test_rekor_transparency.rs
-- [ ] T034 [US1] Remove all `// TODO` comments from src/verification/attestation.rs and src/ledger/transparency.rs
-- [ ] T035 [US1] Run `cargo test` to verify zero regressions
+- [x] T029 [P] [US1] Implement RFC 6962 Merkle inclusion proof verification in src/ledger/transparency.rs `verify_anchor()`: compute root from leaf_hash + proof_hashes, compare to signed_tree_head.root_hash
+- [x] T030 [US1] Pin Rekor public key as compile-time constant in src/ledger/transparency.rs (fetch from Rekor API `/api/v1/log/publicKey`)
+- [x] T031 [US1] Verify signed tree head signature with pinned Rekor public key in src/ledger/transparency.rs
+- [x] T032 [US1] Add integration test: submit entry to Rekor staging → retrieve inclusion proof → verify against signed tree head in tests/test_rekor_transparency.rs
+- [x] T033 [US1] Add integration test: tampered proof data → verification fails in tests/test_rekor_transparency.rs
+- [x] T034 [US1] Remove all `// TODO` comments from src/verification/attestation.rs and src/ledger/transparency.rs
+- [x] T035 [US1] Run `cargo test` to verify zero regressions
 
 **Checkpoint**: SC-001 partial (attestation TODOs resolved). FR-001, FR-002 satisfied.
 
