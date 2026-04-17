@@ -92,7 +92,7 @@
 
 ### Ed25519 (no external deps)
 
-- [ ] T032 [P] [FR-009] [US3] Replace structural signature check in src/policy/rules.rs `check_signature()` (line 60) with `ed25519_dalek::VerifyingKey::from_bytes()` → `.verify(&message, &signature)`
+- [x] T032 [P] [FR-009] [US3] Replace structural signature check in src/policy/rules.rs `check_signature()` (line 60) with `ed25519_dalek::VerifyingKey::from_bytes()` → `.verify(&message, &signature)`
 
 ### Certificate Chain Validation
 
@@ -125,8 +125,8 @@
 
 ### BrightID
 
-- [ ] T043 [FR-012] [US4] Replace `ureq_get_brightid()` stub in src/identity/personhood.rs (line 103) with reqwest async GET to `{BRIGHTID_NODE_URL}/node/v6/verifications/WorldCompute/{contextId}`
-- [ ] T044 [FR-012] [US4] Parse JSON response into existing `BrightIdVerification` struct, map to `PersonhoodResult` enum
+- [x] T043 [FR-012] [US4] Replace `ureq_get_brightid()` stub in src/identity/personhood.rs (line 103) with reqwest async GET to `{BRIGHTID_NODE_URL}/node/v6/verifications/WorldCompute/{contextId}`
+- [x] T044 [FR-012] [US4] Parse JSON response into existing `BrightIdVerification` struct, map to `PersonhoodResult` enum
 
 ### OAuth2
 
@@ -174,8 +174,8 @@
 
 **Independent Test**: Configure OTLP endpoint and verify telemetry appears within 30 seconds.
 
-- [ ] T058 [FR-016] [US6] Implement OTLP exporter wiring in src/telemetry/mod.rs (line 20): when `otel_endpoint` is Some, create OTLP trace exporter via `opentelemetry_otlp::new_exporter().tonic()`, add batch span processor, connect tracing-opentelemetry layer
-- [ ] T059 [FR-016] [US6] Implement OtlpConfig struct in src/telemetry/mod.rs: endpoint, service_name, batch_size, export_interval_secs with defaults
+- [x] T058 [FR-016] [US6] Implement OTLP exporter wiring in src/telemetry/mod.rs (line 20): when `otel_endpoint` is Some, create OTLP trace exporter via `opentelemetry_otlp::new_exporter().tonic()`, add batch span processor, connect tracing-opentelemetry layer
+- [x] T059 [FR-016] [US6] Implement OtlpConfig struct in src/telemetry/mod.rs: endpoint, service_name, batch_size, export_interval_secs with defaults
 - [ ] T060 [US6] Add integration test: start with OTLP endpoint, verify traces arrive within 30 seconds in tests/infrastructure/
 - [ ] T061 [US6] Run `cargo test` to verify zero regressions
 
@@ -205,8 +205,8 @@
 
 **Independent Test**: Run NAT detection against STUN server; resolve DNS seeds.
 
-- [ ] T067 [P] [FR-018] [US8] Implement STUN-based NAT detection in src/network/nat.rs (line 35): send STUN binding request to public servers (Google, Cloudflare), classify NAT type from response
-- [ ] T068 [P] [FR-019] [US8] Replace placeholder DNS seed addresses in src/network/discovery.rs (line 63) with configurable seed list (env var or config file, placeholder as fallback)
+- [x] T067 [P] [FR-018] [US8] Implement STUN-based NAT detection in src/network/nat.rs (line 35): send STUN binding request to public servers (Google, Cloudflare), classify NAT type from response
+- [x] T068 [P] [FR-019] [US8] Replace placeholder DNS seed addresses in src/network/discovery.rs (line 63) with configurable seed list (env var or config file, placeholder as fallback)
 - [ ] T069 [US8] Add integration test: NAT detection against real STUN server in tests/network/
 - [ ] T070 [US8] Add integration test: DNS seed resolution returns valid multiaddrs in tests/network/
 - [ ] T071 [US8] Run `cargo test` to verify zero regressions
