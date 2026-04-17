@@ -80,6 +80,41 @@ pub fn compute_cid(data: &[u8]) -> Result<Cid, crate::error::WcError> {
     Ok(Cid::new_v1(RAW_CODEC, mh))
 }
 
+/// Track storage usage against a cap. Returns error if adding bytes would exceed cap.
+pub fn track_storage(cap: &mut StorageCap, bytes_added: u64) -> Result<(), crate::error::WcError> {
+    if cap.used_bytes.saturating_add(bytes_added) > cap.cap_bytes {
+        return Err(crate::error::WcError::new(
+            crate::error::ErrorCode::InsufficientCredits,
+            format!(
+                "Storage cap exceeded: {} + {} > {} bytes",
+                cap.used_bytes, bytes_added, cap.cap_bytes
+            ),
+        ));
+    }
+    cap.used_bytes += bytes_added;
+    Ok(())
+}
+
+/// Garbage collect expired CIDs from the store, freeing storage cap.
+/// Returns the total number of bytes freed.
+pub fn garbage_collect(store: &CidStore, cap: &mut StorageCap, expired_cids: &[String]) -> u64 {
+    let mut bytes_freed: u64 = 0;
+    for cid_str in expired_cids {
+        // Parse the CID string; skip if invalid
+        if let Ok(cid) = cid_str.parse::<Cid>() {
+            if let Some(data) = store.get(&cid) {
+                let size = data.len() as u64;
+                if store.delete(&cid) {
+                    bytes_freed += size;
+                }
+            }
+        }
+    }
+    cap.used_bytes = cap.used_bytes.saturating_sub(bytes_freed);
+    cap.last_gc_at = crate::types::Timestamp::now();
+    bytes_freed
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

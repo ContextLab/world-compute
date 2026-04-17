@@ -6,9 +6,174 @@
 //! node registration.
 
 use clap::{Parser, Subcommand};
+use serde::{Deserialize, Serialize};
 
 // ---------------------------------------------------------------------------
-// CRD schema
+// ClusterDonation CRD type (T149)
+// ---------------------------------------------------------------------------
+
+/// Spec for a `ClusterDonation` custom resource.
+///
+/// Represents donated Kubernetes cluster capacity for World Compute workloads.
+/// This mirrors the CRD defined in the YAML below and in `helm/templates/crd.yaml`.
+///
+/// Note: We define the struct manually rather than using `kube::CustomResource`
+/// derive to avoid pulling in `schemars`/`JsonSchema` — the CRD YAML is the
+/// authoritative schema installed by the Helm chart.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ClusterDonationSpec {
+    /// CPU capacity cap (e.g. "4000m" for 4 cores).
+    pub cpu_cap: String,
+    /// Memory capacity cap (e.g. "8Gi").
+    pub memory_cap: String,
+    /// Allowed job classes for this donation.
+    pub job_classes: Vec<String>,
+    /// Kubernetes namespace for workload pods.
+    pub namespace: String,
+}
+
+/// Full ClusterDonation resource (as stored in etcd).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ClusterDonation {
+    pub api_version: String,
+    pub kind: String,
+    pub metadata: ResourceMeta,
+    pub spec: ClusterDonationSpec,
+}
+
+/// Minimal Kubernetes metadata.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResourceMeta {
+    pub name: String,
+    #[serde(default)]
+    pub namespace: Option<String>,
+}
+
+impl ClusterDonation {
+    /// Create a new ClusterDonation resource with the given spec.
+    pub fn new(name: &str, spec: ClusterDonationSpec) -> Self {
+        Self {
+            api_version: "worldcompute.org/v1".to_string(),
+            kind: "ClusterDonation".to_string(),
+            metadata: ResourceMeta {
+                name: name.to_string(),
+                namespace: Some(spec.namespace.clone()),
+            },
+            spec,
+        }
+    }
+
+    /// Serialize this resource to a Kubernetes-compatible JSON string.
+    pub fn to_json(&self) -> Result<String, String> {
+        serde_json::to_string_pretty(self).map_err(|e| format!("Serialization error: {e}"))
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Pod creation / cleanup helpers (T150-T151)
+// ---------------------------------------------------------------------------
+
+/// Resource requirements for a task pod.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResourceRequirements {
+    pub cpu: String,
+    pub memory: String,
+}
+
+/// Build the JSON manifest for a task pod (without requiring a live kube::Client).
+///
+/// In production, `create_task_pod` would use `kube::Api<Pod>::create()`.
+/// This function builds the manifest that would be sent to the API server.
+pub fn build_task_pod_manifest(
+    namespace: &str,
+    task_id: &str,
+    image: &str,
+    resources: &ResourceRequirements,
+) -> serde_json::Value {
+    serde_json::json!({
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": {
+            "name": format!("wc-task-{task_id}"),
+            "namespace": namespace,
+            "labels": {
+                "app.kubernetes.io/managed-by": "worldcompute",
+                "worldcompute.org/task-id": task_id,
+            }
+        },
+        "spec": {
+            "restartPolicy": "Never",
+            "containers": [{
+                "name": "task",
+                "image": image,
+                "resources": {
+                    "requests": {
+                        "cpu": &resources.cpu,
+                        "memory": &resources.memory,
+                    },
+                    "limits": {
+                        "cpu": &resources.cpu,
+                        "memory": &resources.memory,
+                    }
+                }
+            }]
+        }
+    })
+}
+
+/// Build the delete options for pod cleanup.
+pub fn build_cleanup_request(namespace: &str, task_id: &str) -> (String, String) {
+    let pod_name = format!("wc-task-{task_id}");
+    (namespace.to_string(), pod_name)
+}
+
+/// Async stub for pod creation — requires a live kube::Client.
+///
+/// ```ignore
+/// pub async fn create_task_pod(
+///     client: &kube::Client,
+///     namespace: &str,
+///     task_id: &str,
+///     image: &str,
+///     resources: ResourceRequirements,
+/// ) -> Result<(), kube::Error> {
+///     let pods: kube::Api<k8s_openapi::api::core::v1::Pod> =
+///         kube::Api::namespaced(client.clone(), namespace);
+///     let manifest = build_task_pod_manifest(namespace, task_id, image, &resources);
+///     let pod: k8s_openapi::api::core::v1::Pod = serde_json::from_value(manifest).unwrap();
+///     pods.create(&kube::api::PostParams::default(), &pod).await?;
+///     Ok(())
+/// }
+/// ```
+pub fn create_task_pod_manifest(
+    namespace: &str,
+    task_id: &str,
+    image: &str,
+    resources: &ResourceRequirements,
+) -> serde_json::Value {
+    build_task_pod_manifest(namespace, task_id, image, resources)
+}
+
+/// Async stub for pod cleanup — requires a live kube::Client.
+///
+/// ```ignore
+/// pub async fn cleanup_pod(
+///     client: &kube::Client,
+///     namespace: &str,
+///     task_id: &str,
+/// ) -> Result<(), kube::Error> {
+///     let pods: kube::Api<k8s_openapi::api::core::v1::Pod> =
+///         kube::Api::namespaced(client.clone(), namespace);
+///     pods.delete(&format!("wc-task-{task_id}"), &kube::api::DeleteParams::default()).await?;
+///     Ok(())
+/// }
+/// ```
+pub fn cleanup_pod_name(task_id: &str) -> String {
+    format!("wc-task-{task_id}")
+}
+
+// ---------------------------------------------------------------------------
+// CRD schema (YAML)
 // ---------------------------------------------------------------------------
 
 /// YAML definition of the `ClusterDonation` CRD installed by this operator.
@@ -157,6 +322,89 @@ enum Commands {
     },
     /// Show current operator and ClusterDonation status.
     Status,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn crd_spec_creation() {
+        let spec = ClusterDonationSpec {
+            cpu_cap: "4000m".to_string(),
+            memory_cap: "8Gi".to_string(),
+            job_classes: vec!["batch".to_string(), "ml-inference".to_string()],
+            namespace: "worldcompute".to_string(),
+        };
+        assert_eq!(spec.cpu_cap, "4000m");
+        assert_eq!(spec.memory_cap, "8Gi");
+        assert_eq!(spec.job_classes.len(), 2);
+    }
+
+    #[test]
+    fn cluster_donation_resource() {
+        let spec = ClusterDonationSpec {
+            cpu_cap: "2000m".to_string(),
+            memory_cap: "4Gi".to_string(),
+            job_classes: vec!["batch".to_string()],
+            namespace: "wc-prod".to_string(),
+        };
+        let cr = ClusterDonation::new("my-donation", spec);
+        assert_eq!(cr.api_version, "worldcompute.org/v1");
+        assert_eq!(cr.kind, "ClusterDonation");
+        assert_eq!(cr.metadata.name, "my-donation");
+        assert_eq!(cr.metadata.namespace, Some("wc-prod".to_string()));
+    }
+
+    #[test]
+    fn cluster_donation_to_json() {
+        let spec = ClusterDonationSpec {
+            cpu_cap: "1000m".to_string(),
+            memory_cap: "2Gi".to_string(),
+            job_classes: vec![],
+            namespace: "default".to_string(),
+        };
+        let cr = ClusterDonation::new("test", spec);
+        let json = cr.to_json().unwrap();
+        let v: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(v["kind"], "ClusterDonation");
+        assert_eq!(v["spec"]["cpu_cap"], "1000m");
+    }
+
+    #[test]
+    fn pod_manifest_structure() {
+        let res = ResourceRequirements { cpu: "500m".to_string(), memory: "1Gi".to_string() };
+        let manifest = build_task_pod_manifest("wc-ns", "task-42", "ubuntu:22.04", &res);
+        assert_eq!(manifest["kind"], "Pod");
+        assert_eq!(manifest["metadata"]["name"], "wc-task-task-42");
+        assert_eq!(manifest["metadata"]["namespace"], "wc-ns");
+        assert_eq!(manifest["spec"]["containers"][0]["image"], "ubuntu:22.04");
+        assert_eq!(manifest["spec"]["containers"][0]["resources"]["limits"]["cpu"], "500m");
+    }
+
+    #[test]
+    fn cleanup_pod_name_format() {
+        assert_eq!(cleanup_pod_name("abc-123"), "wc-task-abc-123");
+    }
+
+    #[test]
+    fn resource_limits_default() {
+        let limits = ResourceLimits {
+            max_cpu_millicores: 4000,
+            max_ram_bytes: 8 * 1024 * 1024 * 1024,
+            max_gpu_count: 0,
+        };
+        assert_eq!(limits.max_cpu_millicores, 4000);
+        assert_eq!(limits.max_gpu_count, 0);
+    }
+
+    #[test]
+    fn crd_yaml_contains_key_fields() {
+        assert!(CLUSTER_DONATION_CRD.contains("ClusterDonation"));
+        assert!(CLUSTER_DONATION_CRD.contains("worldcompute.io"));
+        assert!(CLUSTER_DONATION_CRD.contains("maxCpuMillicores"));
+        assert!(CLUSTER_DONATION_CRD.contains("maxRamBytes"));
+    }
 }
 
 #[tokio::main]

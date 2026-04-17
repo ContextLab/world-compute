@@ -47,14 +47,14 @@ fn iommu_singleton_group_allows_passthrough() {
 
 #[test]
 fn iommu_shared_group_rejects_passthrough() {
-    let tmp = std::env::temp_dir().join("wc-t062-iommu-shared");
+    let tmp = std::env::temp_dir().join(format!("wc-t062-iommu-shared-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&tmp);
 
     let dev = tmp.join("0000:03:00.0");
     let iommu_devs = dev.join("iommu_group").join("devices");
     std::fs::create_dir_all(&iommu_devs).unwrap();
-    std::fs::create_dir(iommu_devs.join("0000:03:00.0")).unwrap();
-    std::fs::create_dir(iommu_devs.join("0000:03:00.1")).unwrap();
+    std::fs::create_dir_all(iommu_devs.join("0000:03:00.0")).unwrap();
+    std::fs::create_dir_all(iommu_devs.join("0000:03:00.1")).unwrap();
 
     assert!(!gpu::check_iommu_singleton(&dev).unwrap());
     let _ = std::fs::remove_dir_all(&tmp);

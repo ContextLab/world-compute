@@ -5,6 +5,7 @@
 
 pub mod crdt;
 pub mod entry;
+pub mod threshold_sig;
 pub mod transparency;
 
 pub use entry::{LedgerEntry, LedgerEntryType, LedgerShard, MerkleRoot};

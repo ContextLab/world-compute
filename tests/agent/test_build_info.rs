@@ -38,10 +38,12 @@ fn binary_signature_roundtrip() {
     use sha2::{Digest, Sha256};
 
     let dir = std::env::temp_dir().join("wc_integ_binary_sig");
+    let _ = std::fs::remove_dir_all(&dir); // clean up from previous runs
     std::fs::create_dir_all(&dir).unwrap();
     let path = dir.join("testbin");
     let content = b"integration test binary payload";
-    std::fs::write(&path, content).unwrap();
+    std::fs::write(&path, content).expect("must write test binary");
+    assert!(path.exists(), "test binary must exist after write");
 
     let signing_key = SigningKey::generate(&mut rand::thread_rng());
     let verifying_key = signing_key.verifying_key();

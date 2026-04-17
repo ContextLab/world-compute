@@ -7,7 +7,8 @@ use worldcompute::sandbox::Sandbox;
 #[test]
 fn firecracker_cleanup_removes_all_files() {
     use worldcompute::sandbox::firecracker::FirecrackerSandbox;
-    let tmp = std::env::temp_dir().join("wc-t024-fc");
+    let tmp = std::env::temp_dir().join(format!("wc-t024-fc-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&tmp);
     std::fs::create_dir_all(&tmp).unwrap();
     std::fs::write(tmp.join("secret.txt"), b"host data").unwrap();
 

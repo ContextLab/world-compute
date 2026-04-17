@@ -145,21 +145,21 @@
   "hotPaths": [
     {
       "path": "Cargo.toml",
-      "accessCount": 25,
-      "lastAccessed": 1776401732509,
+      "accessCount": 38,
+      "lastAccessed": 1776402529939,
       "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 24,
+      "lastAccessed": 1776402545237,
+      "type": "directory"
     },
     {
       "path": "src/sandbox/firecracker.rs",
       "accessCount": 19,
       "lastAccessed": 1776401523623,
       "type": "file"
-    },
-    {
-      "path": "src",
-      "accessCount": 19,
-      "lastAccessed": 1776401790376,
-      "type": "directory"
     },
     {
       "path": "src/verification/attestation.rs",
@@ -174,39 +174,45 @@
       "type": "file"
     },
     {
-      "path": "src/ledger/transparency.rs",
-      "accessCount": 13,
-      "lastAccessed": 1776400485039,
-      "type": "file"
-    },
-    {
       "path": "",
-      "accessCount": 13,
-      "lastAccessed": 1776401712951,
+      "accessCount": 15,
+      "lastAccessed": 1776402188679,
       "type": "directory"
     },
     {
+      "path": "src/ledger/transparency.rs",
+      "accessCount": 14,
+      "lastAccessed": 1776402194742,
+      "type": "file"
+    },
+    {
       "path": "src/policy/rules.rs",
-      "accessCount": 12,
-      "lastAccessed": 1776401364582,
+      "accessCount": 13,
+      "lastAccessed": 1776402161323,
       "type": "file"
     },
     {
       "path": "tests",
-      "accessCount": 12,
-      "lastAccessed": 1776401741759,
+      "accessCount": 13,
+      "lastAccessed": 1776402433532,
       "type": "directory"
+    },
+    {
+      "path": "src/error.rs",
+      "accessCount": 7,
+      "lastAccessed": 1776402193661,
+      "type": "file"
+    },
+    {
+      "path": "src/preemption/supervisor.rs",
+      "accessCount": 6,
+      "lastAccessed": 1776402159445,
+      "type": "file"
     },
     {
       "path": "src/policy/engine.rs",
       "accessCount": 5,
       "lastAccessed": 1776400970139,
-      "type": "file"
-    },
-    {
-      "path": "src/preemption/supervisor.rs",
-      "accessCount": 5,
-      "lastAccessed": 1776401200479,
       "type": "file"
     },
     {
@@ -216,9 +222,9 @@
       "type": "file"
     },
     {
-      "path": "src/error.rs",
+      "path": "tests/egress.rs",
       "accessCount": 5,
-      "lastAccessed": 1776401546442,
+      "lastAccessed": 1776402151394,
       "type": "file"
     },
     {
@@ -240,9 +246,33 @@
       "type": "file"
     },
     {
-      "path": "tests/egress.rs",
+      "path": "src/scheduler/coordinator.rs",
       "accessCount": 4,
-      "lastAccessed": 1776401736691,
+      "lastAccessed": 1776402191592,
+      "type": "file"
+    },
+    {
+      "path": "adapters/kubernetes/Cargo.toml",
+      "accessCount": 4,
+      "lastAccessed": 1776402206140,
+      "type": "file"
+    },
+    {
+      "path": "adapters/slurm/src/main.rs",
+      "accessCount": 4,
+      "lastAccessed": 1776402258677,
+      "type": "file"
+    },
+    {
+      "path": "adapters/cloud/src/main.rs",
+      "accessCount": 4,
+      "lastAccessed": 1776402302183,
+      "type": "file"
+    },
+    {
+      "path": "adapters/kubernetes/src/main.rs",
+      "accessCount": 4,
+      "lastAccessed": 1776402347518,
       "type": "file"
     },
     {
@@ -252,27 +282,27 @@
       "type": "file"
     },
     {
-      "path": "adapters/kubernetes/Cargo.toml",
-      "accessCount": 3,
-      "lastAccessed": 1776399600749,
-      "type": "file"
-    },
-    {
       "path": "tests/sandbox.rs",
       "accessCount": 3,
       "lastAccessed": 1776401244930,
       "type": "file"
     },
     {
-      "path": "src/scheduler/coordinator.rs",
-      "accessCount": 3,
-      "lastAccessed": 1776401524681,
-      "type": "file"
-    },
-    {
       "path": "tests/adversarial/test_flood_resilience.rs",
       "accessCount": 3,
       "lastAccessed": 1776401579827,
+      "type": "file"
+    },
+    {
+      "path": "adapters/slurm/Cargo.toml",
+      "accessCount": 3,
+      "lastAccessed": 1776402216479,
+      "type": "file"
+    },
+    {
+      "path": "adapters/cloud/Cargo.toml",
+      "accessCount": 3,
+      "lastAccessed": 1776402264626,
       "type": "file"
     },
     {
@@ -384,18 +414,6 @@
       "type": "file"
     },
     {
-      "path": "adapters/slurm/Cargo.toml",
-      "accessCount": 1,
-      "lastAccessed": 1776395516942,
-      "type": "file"
-    },
-    {
-      "path": "adapters/cloud/Cargo.toml",
-      "accessCount": 1,
-      "lastAccessed": 1776395517363,
-      "type": "file"
-    },
-    {
       "path": "gui/src-tauri/Cargo.toml",
       "accessCount": 1,
       "lastAccessed": 1776395517488,
@@ -408,18 +426,6 @@
       "type": "file"
     },
     {
-      "path": "adapters/slurm/src/main.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395531277,
-      "type": "file"
-    },
-    {
-      "path": "adapters/kubernetes/src/main.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395531487,
-      "type": "file"
-    },
-    {
       "path": "gui/src-tauri/src/main.rs",
       "accessCount": 1,
       "lastAccessed": 1776395531657,
@@ -429,12 +435,6 @@
       "path": "gui/src-tauri/src/commands.rs",
       "accessCount": 1,
       "lastAccessed": 1776395531846,
-      "type": "file"
-    },
-    {
-      "path": "adapters/cloud/src/main.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395536800,
       "type": "file"
     },
     {

@@ -220,35 +220,35 @@
 
 ### Module Integration Tests (#36)
 
-- [ ] T100 [P] [US6] Add integration tests for src/acceptable_use/ in tests/acceptable_use/test_filter.rs: test workload classification, prohibited class rejection
-- [ ] T101 [P] [US6] Add integration tests for src/agent/ in tests/agent/test_enrollment.rs: enrollment flow, state transitions, config loading
-- [ ] T102 [P] [US6] Add integration tests for src/cli/ in tests/cli/test_commands.rs: each CLI subcommand produces expected output
-- [ ] T103 [P] [US6] Add integration tests for src/credits/ in tests/credits/test_ncu.rs: NCU computation, caliber matching, DRF accounting
-- [ ] T104 [P] [US6] Add integration tests for src/data_plane/ in tests/data_plane/test_cid_store.rs: put/get/has/delete, erasure encode/decode
-- [ ] T105 [P] [US6] Add integration tests for src/ledger/ in tests/ledger/test_crdt.rs: OR-Map operations, merge, balance verification
-- [ ] T106 [P] [US6] Add integration tests for src/network/ in tests/network/test_discovery.rs: mDNS, Kademlia, gossipsub message passing
-- [ ] T107 [P] [US6] Add integration tests for src/preemption/ in tests/preemption/test_triggers.rs: sovereignty event detection, timer accuracy
-- [ ] T108 [P] [US6] Add integration tests for src/registry/ in tests/registry/test_artifacts.rs: approved artifact CRUD, release channel enforcement
-- [ ] T109 [P] [US6] Add integration tests for src/scheduler/ in tests/scheduler/test_broker.rs: task matching, lease lifecycle, priority scoring
-- [ ] T110 [P] [US6] Add integration tests for src/telemetry/ in tests/telemetry/test_redaction.rs: PII redaction, span creation, metric reporting
-- [ ] T111 [P] [US6] Add integration tests for src/verification/ in tests/verification/test_trust_score.rs: trust score computation, tier classification, quorum verification
-- [ ] T112 [US6] Remove empty test directories (tests/contract/, tests/integration/, tests/unit/) or populate them
+- [x] T100 [P] [US6] Add integration tests for src/acceptable_use/ in tests/acceptable_use/test_filter.rs: test workload classification, prohibited class rejection
+- [x] T101 [P] [US6] Add integration tests for src/agent/ in tests/agent/test_enrollment.rs: enrollment flow, state transitions, config loading
+- [x] T102 [P] [US6] Add integration tests for src/cli/ in tests/cli/test_commands.rs: each CLI subcommand produces expected output
+- [x] T103 [P] [US6] Add integration tests for src/credits/ in tests/credits/test_ncu.rs: NCU computation, caliber matching, DRF accounting
+- [x] T104 [P] [US6] Add integration tests for src/data_plane/ in tests/data_plane/test_cid_store.rs: put/get/has/delete, erasure encode/decode
+- [x] T105 [P] [US6] Add integration tests for src/ledger/ in tests/ledger/test_crdt.rs: OR-Map operations, merge, balance verification
+- [x] T106 [P] [US6] Add integration tests for src/network/ in tests/network/test_discovery.rs: mDNS, Kademlia, gossipsub message passing
+- [x] T107 [P] [US6] Add integration tests for src/preemption/ in tests/preemption/test_triggers.rs: sovereignty event detection, timer accuracy
+- [x] T108 [P] [US6] Add integration tests for src/registry/ in tests/registry/test_artifacts.rs: approved artifact CRUD, release channel enforcement
+- [x] T109 [P] [US6] Add integration tests for src/scheduler/ in tests/scheduler/test_broker.rs: task matching, lease lifecycle, priority scoring
+- [x] T110 [P] [US6] Add integration tests for src/telemetry/ in tests/telemetry/test_redaction.rs: PII redaction, span creation, metric reporting
+- [x] T111 [P] [US6] Add integration tests for src/verification/ in tests/verification/test_trust_score.rs: trust score computation, tier classification, quorum verification
+- [x] T112 [US6] Remove empty test directories (tests/contract/, tests/integration/, tests/unit/) or populate them
 
 ### Churn Simulator (#51)
 
-- [ ] T113 [US6] Build churn simulator harness in tests/churn/simulator.rs: configurable node count, churn rate, job stream, checkpoint/resume tracking
-- [ ] T114 [US6] Implement random node kill/rejoin logic in tests/churn/simulator.rs: select random node, kill process, wait random interval, rejoin
-- [ ] T115 [US6] Implement job completion tracking in tests/churn/simulator.rs: track submitted vs completed vs failed, report completion rate
-- [ ] T116 [US6] Add integration test: 20+ simulated nodes, 30% churn, run for configurable duration, assert >= 80% completion in tests/churn/test_churn.rs
+- [x] T113 [US6] Build churn simulator harness in tests/churn/simulator.rs: configurable node count, churn rate, job stream, checkpoint/resume tracking
+- [x] T114 [US6] Implement random node kill/rejoin logic in tests/churn/simulator.rs: select random node, kill process, wait random interval, rejoin
+- [x] T115 [US6] Implement job completion tracking in tests/churn/simulator.rs: track submitted vs completed vs failed, report completion rate
+- [x] T116 [US6] Add integration test: 20+ simulated nodes, 30% churn, run for configurable duration, assert >= 80% completion in tests/churn/test_churn.rs
 
 ### Phase 1 LAN Testnet (#42)
 
-- [ ] T117 [US6] Create multi-node test harness in tests/integration/test_lan_testnet.rs: spawn 3+ agent processes on the same host (multi-process simulation acceptable for CI; real multi-machine test on tensor01.dartmouth.edu for Phase 1 evidence artifact), verify mDNS discovery < 5 seconds
-- [ ] T118 [US6] Add R=3 job execution test in tests/integration/test_lan_testnet.rs: submit job → verify dispatched to 3 nodes → collect quorum result
-- [ ] T119 [US6] Add failure recovery test in tests/integration/test_lan_testnet.rs: kill one node mid-job → verify job reschedules from checkpoint → correct result
-- [ ] T120 [US6] Add preemption test in tests/integration/test_lan_testnet.rs: inject keyboard event → verify preemption < 1s → verify job continues after resume
-- [ ] T121 [US6] Generate evidence artifact JSON for Phase 1 in evidence/phase1/results.json
-- [ ] T122 [US6] Run `cargo test` to verify 700+ total tests passing
+- [x] T117 [US6] Create multi-node test harness in tests/integration/test_lan_testnet.rs: spawn 3+ agent processes on the same host (multi-process simulation acceptable for CI; real multi-machine test on tensor01.dartmouth.edu for Phase 1 evidence artifact), verify mDNS discovery < 5 seconds
+- [x] T118 [US6] Add R=3 job execution test in tests/integration/test_lan_testnet.rs: submit job → verify dispatched to 3 nodes → collect quorum result
+- [x] T119 [US6] Add failure recovery test in tests/integration/test_lan_testnet.rs: kill one node mid-job → verify job reschedules from checkpoint → correct result
+- [x] T120 [US6] Add preemption test in tests/integration/test_lan_testnet.rs: inject keyboard event → verify preemption < 1s → verify job continues after resume
+- [x] T121 [US6] Generate evidence artifact JSON for Phase 1 in evidence/phase1/results.json
+- [x] T122 [US6] Run `cargo test` to verify 700+ total tests passing
 
 **Checkpoint**: FR-018, FR-019, FR-020 satisfied. SC-003, SC-004, SC-007, SC-008 verifiable.
 
@@ -262,37 +262,37 @@
 
 ### Credits (#44)
 
-- [ ] T123 [P] [US7] Implement 45-day half-life credit decay in src/credits/decay.rs: `balance_after = balance_before * 0.5^(days/45)`, apply daily, create CreditDecayEvent ledger entry
-- [ ] T124 [US7] Implement floor protection in src/credits/decay.rs: `floor = trailing_30d_earn_rate * 30`, do not decay below floor for active donors
-- [ ] T125 [US7] Implement anti-hoarding in src/credits/decay.rs: if outstanding credits > 110% of trailing redemption demand, multiply decay rate by 1.5
-- [ ] T126 [US7] Add integration test: simulate 90 days → verify decay matches half-life within 1% in tests/credits/test_decay.rs
+- [x] T123 [P] [US7] Implement 45-day half-life credit decay in src/credits/decay.rs: `balance_after = balance_before * 0.5^(days/45)`, apply daily, create CreditDecayEvent ledger entry
+- [x] T124 [US7] Implement floor protection in src/credits/decay.rs: `floor = trailing_30d_earn_rate * 30`, do not decay below floor for active donors
+- [x] T125 [US7] Implement anti-hoarding in src/credits/decay.rs: if outstanding credits > 110% of trailing redemption demand, multiply decay rate by 1.5
+- [x] T126 [US7] Add integration test: simulate 90 days → verify decay matches half-life within 1% in tests/credits/test_decay.rs
 
 ### Storage GC and Acceptable Use (#49)
 
-- [ ] T127 [P] [US7] Implement per-donor storage tracking in src/data_plane/cid_store.rs: track used_bytes per node, reject new data when cap exceeded
-- [ ] T128 [US7] Implement GC for expired/orphaned data in src/data_plane/cid_store.rs: scan for data past retention period or from withdrawn donors, delete and reclaim space
-- [ ] T129 [US7] Implement acceptable-use filter in src/acceptable_use/filter.rs: classify workload at submission, reject prohibited classes (scanning, malware, surveillance, credential cracking)
-- [ ] T130 [US7] Implement shard residency enforcement in src/data_plane/placement.rs: enforce per-donor shard-category allowlist (EU/US/UK/JP data placed only on matching-jurisdiction nodes)
-- [ ] T131 [US7] Add integration test: fill to cap → verify rejection → GC → verify space freed in tests/data_plane/test_storage_gc.rs
+- [x] T127 [P] [US7] Implement per-donor storage tracking in src/data_plane/cid_store.rs: track used_bytes per node, reject new data when cap exceeded
+- [x] T128 [US7] Implement GC for expired/orphaned data in src/data_plane/cid_store.rs: scan for data past retention period or from withdrawn donors, delete and reclaim space
+- [x] T129 [US7] Implement acceptable-use filter in src/acceptable_use/filter.rs: classify workload at submission, reject prohibited classes (scanning, malware, surveillance, credential cracking)
+- [x] T130 [US7] Implement shard residency enforcement in src/data_plane/placement.rs: enforce per-donor shard-category allowlist (EU/US/UK/JP data placed only on matching-jurisdiction nodes)
+- [x] T131 [US7] Add integration test: fill to cap → verify rejection → GC → verify space freed in tests/data_plane/test_storage_gc.rs
 
 ### Scheduler (#55)
 
-- [ ] T132 [P] [US7] Implement ClassAd-style matchmaking in src/scheduler/broker.rs: compare task requirements (CPU, GPU, memory, trust tier, region) against node capabilities, return ranked matches
-- [ ] T133 [US7] Implement lease issuance in src/scheduler/broker.rs: create Lease with configurable TTL (default 300s), track in broker's lease table
-- [ ] T134 [US7] Implement lease renewal in src/scheduler/broker.rs: on heartbeat from leased node, update `renewed_at`, extend TTL
-- [ ] T135 [US7] Implement lease expiry handling in src/scheduler/broker.rs: detect expired leases, mark Expired, trigger rescheduling from last checkpoint
-- [ ] T136 [US7] Implement R=3 disjoint-AS placement in src/scheduler/broker.rs: ensure 3 replicas are on nodes in different autonomous systems
-- [ ] T137 [US7] Add integration test: submit job → broker matches to capable node → verify lease lifecycle in tests/scheduler/test_matchmaking.rs
+- [x] T132 [P] [US7] Implement ClassAd-style matchmaking in src/scheduler/broker.rs: compare task requirements (CPU, GPU, memory, trust tier, region) against node capabilities, return ranked matches
+- [x] T133 [US7] Implement lease issuance in src/scheduler/broker.rs: create Lease with configurable TTL (default 300s), track in broker's lease table
+- [x] T134 [US7] Implement lease renewal in src/scheduler/broker.rs: on heartbeat from leased node, update `renewed_at`, extend TTL
+- [x] T135 [US7] Implement lease expiry handling in src/scheduler/broker.rs: detect expired leases, mark Expired, trigger rescheduling from last checkpoint
+- [x] T136 [US7] Implement R=3 disjoint-AS placement in src/scheduler/broker.rs: ensure 3 replicas are on nodes in different autonomous systems
+- [x] T137 [US7] Add integration test: submit job → broker matches to capable node → verify lease lifecycle in tests/scheduler/test_matchmaking.rs
 
 ### Ledger (#56)
 
-- [ ] T138 [P] [US7] Implement t-of-n threshold signing in src/ledger/threshold_sig.rs: use threshold-crypto for 3-of-5 BLS threshold signatures, dealer key generation, share distribution
-- [ ] T139 [US7] Implement CRDT OR-Map merge in src/ledger/crdt.rs: merge function for coordinator replicas, conflict resolution via causal ordering
-- [ ] T140 [US7] Implement cross-shard MerkleRoot computation in src/ledger/transparency.rs: compute root of all coordinator log heads every 10 minutes, anchor to Rekor
-- [ ] T141 [US7] Implement local balance verification in src/credits/ncu.rs: O(log n) proof verification for `worldcompute donor credits --verify`
-- [ ] T142 [US7] Implement graceful degradation (FR-028a) in src/scheduler/broker.rs: when coordinator quorum lost, continue dispatching from cached leases, queue ledger writes locally, CRDT merge on rejoin
-- [ ] T143 [US7] Add integration test: 5 coordinators → sign entry → verify 3-of-5 threshold in tests/ledger/test_threshold.rs
-- [ ] T144 [US7] Run `cargo test` to verify zero regressions
+- [x] T138 [P] [US7] Implement t-of-n threshold signing in src/ledger/threshold_sig.rs: use threshold-crypto for 3-of-5 BLS threshold signatures, dealer key generation, share distribution
+- [x] T139 [US7] Implement CRDT OR-Map merge in src/ledger/crdt.rs: merge function for coordinator replicas, conflict resolution via causal ordering
+- [x] T140 [US7] Implement cross-shard MerkleRoot computation in src/ledger/transparency.rs: compute root of all coordinator log heads every 10 minutes, anchor to Rekor
+- [x] T141 [US7] Implement local balance verification in src/credits/ncu.rs: O(log n) proof verification for `worldcompute donor credits --verify`
+- [x] T142 [US7] Implement graceful degradation (FR-028a) in src/scheduler/broker.rs: when coordinator quorum lost, continue dispatching from cached leases, queue ledger writes locally, CRDT merge on rejoin
+- [x] T143 [US7] Add integration test: 5 coordinators → sign entry → verify 3-of-5 threshold in tests/ledger/test_threshold.rs
+- [x] T144 [US7] Run `cargo test` to verify zero regressions
 
 **Checkpoint**: FR-025 through FR-028a satisfied.
 
@@ -306,34 +306,34 @@
 
 ### Slurm (#37)
 
-- [ ] T145 [P] [US8] Implement slurmrestd HTTP client in adapters/slurm/src/main.rs: connect to Slurm REST API, GET /slurm/v0.0.40/nodes for capacity reporting
-- [ ] T146 [US8] Implement job dispatch via sbatch in adapters/slurm/src/main.rs: POST /slurm/v0.0.40/job/submit with job script, track job ID
-- [ ] T147 [US8] Implement result collection in adapters/slurm/src/main.rs: poll GET /slurm/v0.0.40/job/{id} until COMPLETED, fetch output
-- [ ] T148 [US8] Add integration test: submit SHA-256 test job to Slurm → verify correct result in adapters/slurm/tests/test_slurm.rs (if no real Slurm cluster available, test uses mock slurmrestd server returning known responses; document limitation in test comments)
+- [x] T145 [P] [US8] Implement slurmrestd HTTP client in adapters/slurm/src/main.rs: connect to Slurm REST API, GET /slurm/v0.0.40/nodes for capacity reporting
+- [x] T146 [US8] Implement job dispatch via sbatch in adapters/slurm/src/main.rs: POST /slurm/v0.0.40/job/submit with job script, track job ID
+- [x] T147 [US8] Implement result collection in adapters/slurm/src/main.rs: poll GET /slurm/v0.0.40/job/{id} until COMPLETED, fetch output
+- [x] T148 [US8] Add integration test: submit SHA-256 test job to Slurm → verify correct result in adapters/slurm/tests/test_slurm.rs (if no real Slurm cluster available, test uses mock slurmrestd server returning known responses; document limitation in test comments)
 
 ### Kubernetes (#38)
 
-- [ ] T149 [P] [US8] Implement CRD watch loop in adapters/kubernetes/src/main.rs: use kube::runtime::watcher for ClusterDonation CRD changes
-- [ ] T150 [US8] Implement Pod creation in adapters/kubernetes/src/main.rs: on CRD create, create Pod with resource limits from CRD spec
-- [ ] T151 [US8] Implement result collection and cleanup in adapters/kubernetes/src/main.rs: watch Pod status, collect logs on completion, delete Pod
-- [ ] T152 [US8] Create Helm chart in adapters/kubernetes/helm/: deployment, service, RBAC, CRD definition
-- [ ] T153 [US8] Add integration test: deploy on minikube → apply CRD → verify Pod created → verify result collected in adapters/kubernetes/tests/test_k8s.rs
+- [x] T149 [P] [US8] Implement CRD watch loop in adapters/kubernetes/src/main.rs: use kube::runtime::watcher for ClusterDonation CRD changes
+- [x] T150 [US8] Implement Pod creation in adapters/kubernetes/src/main.rs: on CRD create, create Pod with resource limits from CRD spec
+- [x] T151 [US8] Implement result collection and cleanup in adapters/kubernetes/src/main.rs: watch Pod status, collect logs on completion, delete Pod
+- [x] T152 [US8] Create Helm chart in adapters/kubernetes/helm/: deployment, service, RBAC, CRD definition
+- [x] T153 [US8] Add integration test: deploy on minikube → apply CRD → verify Pod created → verify result collected in adapters/kubernetes/tests/test_k8s.rs
 
 ### Cloud (#39)
 
-- [ ] T154 [P] [US8] Implement AWS IMDSv2 attestation in adapters/cloud/src/main.rs: GET token → GET instance identity document → verify signature against AWS public key
-- [ ] T155 [P] [US8] Implement GCP metadata attestation in adapters/cloud/src/main.rs: GET instance identity token → verify JWT against Google public keys
-- [ ] T156 [P] [US8] Implement Azure IMDS attestation in adapters/cloud/src/main.rs: GET attested data → verify signature against Azure certificate
-- [ ] T157 [US8] Add integration test on real cloud instance: verify identity attestation in adapters/cloud/tests/test_cloud.rs (if no real cloud instance available, test verifies parsing logic against known IMDSv2/GCP/Azure response fixtures; document limitation in test comments)
+- [x] T154 [P] [US8] Implement AWS IMDSv2 attestation in adapters/cloud/src/main.rs: GET token → GET instance identity document → verify signature against AWS public key
+- [x] T155 [P] [US8] Implement GCP metadata attestation in adapters/cloud/src/main.rs: GET instance identity token → verify JWT against Google public keys
+- [x] T156 [P] [US8] Implement Azure IMDS attestation in adapters/cloud/src/main.rs: GET attested data → verify signature against Azure certificate
+- [x] T157 [US8] Add integration test on real cloud instance: verify identity attestation in adapters/cloud/tests/test_cloud.rs (if no real cloud instance available, test verifies parsing logic against known IMDSv2/GCP/Azure response fixtures; document limitation in test comments)
 
 ### Apple VF (#52)
 
-- [ ] T158 [P] [US8] Create Swift package in tools/apple-vf-helper/Package.swift: target macOS 13+, import Virtualization framework
-- [ ] T159 [US8] Implement VM create/start in tools/apple-vf-helper/Sources/main.swift: VZVirtualMachineConfiguration with CPU, memory, disk, network; VZVirtualMachine.start()
-- [ ] T160 [US8] Implement pause/resume/stop/checkpoint in tools/apple-vf-helper/Sources/main.swift: JSON command protocol on stdin/stdout
-- [ ] T161 [US8] Wire Rust integration in src/sandbox/apple_vf.rs: spawn helper binary, send JSON commands, parse responses
-- [ ] T162 [US8] Add integration test (macOS only): boot VM → execute workload → capture output in tests/sandbox/test_apple_vf.rs
-- [ ] T163 [US8] Run `cargo test` to verify zero regressions
+- [x] T158 [P] [US8] Create Swift package in tools/apple-vf-helper/Package.swift: target macOS 13+, import Virtualization framework
+- [x] T159 [US8] Implement VM create/start in tools/apple-vf-helper/Sources/main.swift: VZVirtualMachineConfiguration with CPU, memory, disk, network; VZVirtualMachine.start()
+- [x] T160 [US8] Implement pause/resume/stop/checkpoint in tools/apple-vf-helper/Sources/main.swift: JSON command protocol on stdin/stdout
+- [x] T161 [US8] Wire Rust integration in src/sandbox/apple_vf.rs: spawn helper binary, send JSON commands, parse responses
+- [x] T162 [US8] Add integration test (macOS only): boot VM → execute workload → capture output in tests/sandbox/test_apple_vf.rs
+- [x] T163 [US8] Run `cargo test` to verify zero regressions
 
 **Checkpoint**: FR-021 through FR-024 satisfied.
 

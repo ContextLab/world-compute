@@ -64,6 +64,39 @@ pub fn check_acceptable_use_with_policy(
     Ok(())
 }
 
+/// Banned keyword lists for workload classification.
+const BANNED_KEYWORDS: &[(&str, RejectedCategory)] = &[
+    ("port scan", RejectedCategory::UnauthorizedScanning),
+    ("nmap", RejectedCategory::UnauthorizedScanning),
+    ("vulnerability scan", RejectedCategory::UnauthorizedScanning),
+    ("malware", RejectedCategory::MalwareDistribution),
+    ("ransomware", RejectedCategory::MalwareDistribution),
+    ("trojan", RejectedCategory::MalwareDistribution),
+    ("exploit kit", RejectedCategory::MalwareDistribution),
+    ("child exploitation", RejectedCategory::IllegalContent),
+    ("csam", RejectedCategory::IllegalContent),
+    ("surveillance", RejectedCategory::TargetedSurveillance),
+    ("spyware", RejectedCategory::TargetedSurveillance),
+    ("keylogger", RejectedCategory::TargetedSurveillance),
+    ("credential stuffing", RejectedCategory::CredentialCracking),
+    ("brute force password", RejectedCategory::CredentialCracking),
+    ("password cracking", RejectedCategory::CredentialCracking),
+];
+
+/// Classify a workload description by scanning for prohibited keywords.
+///
+/// Returns `Ok(())` if the description is clean, or an error identifying
+/// the rejected category if a banned keyword is found.
+pub fn classify_workload(description: &str) -> Result<(), (RejectedCategory, String)> {
+    let lower = description.to_ascii_lowercase();
+    for (keyword, category) in BANNED_KEYWORDS {
+        if lower.contains(keyword) {
+            return Err((*category, format!("Prohibited keyword detected: '{keyword}'")));
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

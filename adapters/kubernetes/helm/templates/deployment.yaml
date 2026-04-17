@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worldcompute-k8s-operator
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: worldcompute-k8s-operator
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: worldcompute-k8s-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: worldcompute-k8s-operator
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: operator
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - "status"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: WC_NAMESPACE
+              value: {{ .Values.namespace }}
+            - name: WC_COORDINATOR
+              value: {{ .Values.coordinator.endpoint }}
