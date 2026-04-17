@@ -28,15 +28,17 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 [P] Change `Commands::Donor` from unit variant to `Donor(cli::donor::DonorCli)` and dispatch to `cli::donor::execute()` in src/main.rs
-- [ ] T006 [P] Change `Commands::Job` from unit variant to `Job(cli::submitter::SubmitterCli)` and dispatch to `cli::submitter::execute()` in src/main.rs
-- [ ] T007 [P] Create `ClusterCli` struct with `status`, `peers`, `ledger-head` subcommands in src/cli/mod.rs (or new src/cli/cluster.rs), wire into `Commands::Cluster` in src/main.rs
-- [ ] T008 [P] Change `Commands::Governance` from unit variant to `Governance(cli::governance::GovernanceCli)` and dispatch to `cli::governance::execute()` in src/main.rs
-- [ ] T009 [P] Change `Commands::Admin` from unit variant to `Admin(cli::admin::AdminCli)` and dispatch to `cli::admin::execute()` in src/main.rs
-- [ ] T010 Update src/cli/donor.rs `execute()` to call real agent lifecycle functions instead of returning placeholder strings
-- [ ] T011 Update src/cli/submitter.rs `execute()` to call real scheduler functions instead of returning placeholder strings
-- [ ] T012 Update src/cli/governance.rs `execute()` to call real governance module functions instead of returning placeholder strings
-- [ ] T013 Update src/cli/admin.rs `execute()` to call real admin service functions, enforcing OnCallResponder role per FR-005
+> **Story numbering note**: Spec User Story 1 (CLI operations) is covered here as foundational infrastructure. Tasks phases 3–9 map to spec User Stories 2–8 respectively (US2=Sandbox, US3=Attestation, US4=Identity, US5=Transparency, US6=Observability, US7=Consensus, US8=Network).
+
+- [ ] T005 [P] [FR-001] Change `Commands::Donor` from unit variant to `Donor(cli::donor::DonorCli)` and dispatch to `cli::donor::execute()` in src/main.rs
+- [ ] T006 [P] [FR-002] Change `Commands::Job` from unit variant to `Job(cli::submitter::SubmitterCli)` and dispatch to `cli::submitter::execute()` in src/main.rs
+- [ ] T007 [P] [FR-003] Create `ClusterCli` struct with `status`, `peers`, `ledger-head` subcommands in src/cli/mod.rs (or new src/cli/cluster.rs), wire into `Commands::Cluster` in src/main.rs
+- [ ] T008 [P] [FR-004] Change `Commands::Governance` from unit variant to `Governance(cli::governance::GovernanceCli)` and dispatch to `cli::governance::execute()` in src/main.rs
+- [ ] T009 [P] [FR-005] Change `Commands::Admin` from unit variant to `Admin(cli::admin::AdminCli)` and dispatch to `cli::admin::execute()` in src/main.rs
+- [ ] T010 [FR-001] Update src/cli/donor.rs `execute()` to call real agent lifecycle functions instead of returning placeholder strings
+- [ ] T011 [FR-002] Update src/cli/submitter.rs `execute()` to call real scheduler functions instead of returning placeholder strings
+- [ ] T012 [FR-004] Update src/cli/governance.rs `execute()` to call real governance module functions instead of returning placeholder strings
+- [ ] T013 [FR-005] Update src/cli/admin.rs `execute()` to call real admin service functions, enforcing OnCallResponder role
 - [ ] T014 Run `cargo test` and `cargo clippy --lib -- -D warnings` to verify zero regressions and zero warnings
 - [ ] T015 Verify each CLI command produces meaningful output (not "not yet implemented"): `cargo run -- donor status`, `cargo run -- job list`, etc.
 
@@ -52,25 +54,25 @@
 
 ### WASM (cross-platform, start here)
 
-- [ ] T016 [US2] Implement CID store fetch in src/sandbox/wasm.rs `create()` (line 35): fetch WASM bytes from `data_plane::cid_store` by CID
-- [ ] T017 [US2] Implement wasmtime compilation in src/sandbox/wasm.rs `create()`: `wasmtime::Module::new(&engine, &wasm_bytes)`
-- [ ] T018 [US2] Implement WASI instantiation in src/sandbox/wasm.rs `start()` (line 43): create WASI context, instantiate module, call `_start` or entry function
-- [ ] T019 [US2] Implement stdout/stderr capture in src/sandbox/wasm.rs `run_module()` (line 106): return output bytes instead of empty Vec
+- [ ] T016 [FR-008] [US2] Implement CID store fetch in src/sandbox/wasm.rs `create()` (line 35): fetch WASM bytes from `data_plane::cid_store` by CID
+- [ ] T017 [FR-008] [US2] Implement wasmtime compilation in src/sandbox/wasm.rs `create()`: `wasmtime::Module::new(&engine, &wasm_bytes)`
+- [ ] T018 [FR-008] [US2] Implement WASI instantiation in src/sandbox/wasm.rs `start()` (line 43): create WASI context, instantiate module, call `_start` or entry function
+- [ ] T019 [FR-008] [US2] Implement stdout/stderr capture in src/sandbox/wasm.rs `run_module()` (line 106): return output bytes instead of empty Vec
 
 ### Firecracker (Linux)
 
-- [ ] T020 [P] [US2] Implement Firecracker API socket HTTP client in src/sandbox/firecracker.rs: PUT requests over Unix domain socket using hyper
-- [ ] T021 [US2] Implement VM configuration sequence in src/sandbox/firecracker.rs `start()` (line 227): PUT /machine-config → /boot-source → /drives/rootfs → /network-interfaces/eth0 → /actions InstanceStart
-- [ ] T022 [US2] Implement snapshot creation in src/sandbox/firecracker.rs `checkpoint()` (line 274): PUT /snapshot/create with JSON body
-- [ ] T023 [US2] Implement FirecrackerVmConfig struct with validation (vcpu_count ≥ 1, mem_size_mib ≥ 128) in src/sandbox/firecracker.rs
-- [ ] T024 [US2] Implement max-3-donor retry logic: on Firecracker API error, mark donor incompatible, reschedule; fail task after 3 attempts
+- [ ] T020 [P] [FR-006] [US2] Implement Firecracker API socket HTTP client in src/sandbox/firecracker.rs: PUT requests over Unix domain socket using hyper
+- [ ] T021 [FR-006] [US2] Implement VM configuration sequence in src/sandbox/firecracker.rs `start()` (line 227): PUT /machine-config → /boot-source → /drives/rootfs → /network-interfaces/eth0 → /actions InstanceStart
+- [ ] T022 [FR-006] [US2] Implement snapshot creation in src/sandbox/firecracker.rs `checkpoint()` (line 274): PUT /snapshot/create with JSON body
+- [ ] T023 [FR-006] [US2] Implement FirecrackerVmConfig struct with validation (vcpu_count ≥ 1, mem_size_mib ≥ 128) in src/sandbox/firecracker.rs
+- [ ] T024 [FR-006a] [US2] Implement max-3-donor retry logic: on Firecracker API error, mark donor incompatible, reschedule; fail task after 3 attempts
 
 ### Apple Virtualization.framework (macOS)
 
-- [ ] T025 [P] [US2] Create Swift helper binary `wc-apple-vf-helper` (new directory: tools/apple-vf-helper/) accepting JSON commands on stdin, returning JSON on stdout
-- [ ] T026 [US2] Implement VZVirtualMachineConfiguration create/start in tools/apple-vf-helper/
-- [ ] T027 [US2] Implement pause/resume/stop/checkpoint commands in tools/apple-vf-helper/
-- [ ] T028 [US2] Wire src/sandbox/apple_vf.rs `start()` (line 138), `freeze()` (line 154), `checkpoint()` (line 173), `terminate()` (line 191) to call helper binary via subprocess
+- [ ] T025 [P] [FR-007] [US2] Create Swift helper binary `wc-apple-vf-helper` (new directory: tools/apple-vf-helper/) accepting JSON commands on stdin, returning JSON on stdout
+- [ ] T026 [FR-007] [US2] Implement VZVirtualMachineConfiguration create/start in tools/apple-vf-helper/
+- [ ] T027 [FR-007] [US2] Implement pause/resume/stop/checkpoint commands in tools/apple-vf-helper/
+- [ ] T028 [FR-007] [US2] Wire src/sandbox/apple_vf.rs `start()` (line 138), `freeze()` (line 154), `checkpoint()` (line 173), `terminate()` (line 191) to call helper binary via subprocess
 
 ### Integration
 
@@ -90,20 +92,20 @@
 
 ### Ed25519 (no external deps)
 
-- [ ] T032 [P] [US3] Replace structural signature check in src/policy/rules.rs `check_signature()` (line 60) with `ed25519_dalek::VerifyingKey::from_bytes()` → `.verify(&message, &signature)`
+- [ ] T032 [P] [FR-009] [US3] Replace structural signature check in src/policy/rules.rs `check_signature()` (line 60) with `ed25519_dalek::VerifyingKey::from_bytes()` → `.verify(&message, &signature)`
 
 ### Certificate Chain Validation
 
-- [ ] T033 [P] [US3] Define `CertificateChainValidator` trait in src/verification/attestation.rs: `validate_chain(quote, certs) → Result<bool>` + `root_ca() → Certificate`
-- [ ] T034 [US3] Implement `Tpm2ChainValidator`: parse EK certificate, verify AIK signature against EK, verify quote against AIK in src/verification/attestation.rs
-- [ ] T035 [P] [US3] Implement `SevSnpChainValidator`: validate ARK → ASK → VCEK chain, verify attestation report signature in src/verification/attestation.rs
-- [ ] T036 [P] [US3] Implement `TdxChainValidator`: validate Intel DCAP root → PCK cert → quote signature in src/verification/attestation.rs
-- [ ] T037 [US3] Bundle AMD ARK/ASK and Intel DCAP root CA certificates as compile-time constants in src/verification/attestation.rs
-- [ ] T038 [US3] Wire validators into `verify_tpm2()` (line 401), `verify_sev_snp()` (line 410), `verify_tdx()` (line 418), replacing stubbed `verify_quote_signature()`
+- [ ] T033 [P] [FR-010] [US3] Define `CertificateChainValidator` trait in src/verification/attestation.rs: `validate_chain(quote, certs) → Result<bool>` + `root_ca() → Certificate`
+- [ ] T034 [FR-010] [US3] Implement `Tpm2ChainValidator`: parse EK certificate, verify AIK signature against EK, verify quote against AIK in src/verification/attestation.rs
+- [ ] T035 [P] [FR-010] [US3] Implement `SevSnpChainValidator`: validate ARK → ASK → VCEK chain, verify attestation report signature in src/verification/attestation.rs
+- [ ] T036 [P] [FR-010] [US3] Implement `TdxChainValidator`: validate Intel DCAP root → PCK cert → quote signature in src/verification/attestation.rs
+- [ ] T037 [FR-010] [US3] Bundle AMD ARK/ASK and Intel DCAP root CA certificates as compile-time constants in src/verification/attestation.rs
+- [ ] T038 [FR-010] [US3] Wire validators into `verify_tpm2()` (line 401), `verify_sev_snp()` (line 410), `verify_tdx()` (line 418), replacing stubbed `verify_quote_signature()`
 
 ### Apple Secure Enclave
 
-- [ ] T039 [US3] Implement `AppleSeValidator` in src/verification/attestation.rs `verify_apple_se()` (line 426): HTTP POST to Apple App Attest API via reqwest, parse CBOR response
+- [ ] T039 [FR-011] [US3] Implement `AppleSeValidator` in src/verification/attestation.rs `verify_apple_se()` (line 426): HTTP POST to Apple App Attest API via reqwest, parse CBOR response
 
 ### Integration
 
@@ -123,19 +125,19 @@
 
 ### BrightID
 
-- [ ] T043 [US4] Replace `ureq_get_brightid()` stub in src/identity/personhood.rs (line 103) with reqwest async GET to `{BRIGHTID_NODE_URL}/node/v6/verifications/WorldCompute/{contextId}`
-- [ ] T044 [US4] Parse JSON response into existing `BrightIdVerification` struct, map to `PersonhoodResult` enum
+- [ ] T043 [FR-012] [US4] Replace `ureq_get_brightid()` stub in src/identity/personhood.rs (line 103) with reqwest async GET to `{BRIGHTID_NODE_URL}/node/v6/verifications/WorldCompute/{contextId}`
+- [ ] T044 [FR-012] [US4] Parse JSON response into existing `BrightIdVerification` struct, map to `PersonhoodResult` enum
 
 ### OAuth2
 
-- [ ] T045 [P] [US4] Implement `OAuth2ProviderConfig` struct in src/identity/oauth2.rs: load client_id, client_secret, auth_url, token_url, redirect_uri, scopes from environment variables
-- [ ] T046 [US4] Implement authorization code flow in src/identity/oauth2.rs `verify_oauth2()` (line 27): generate auth URL → exchange code for token → fetch user profile → return OAuth2Result::Verified
+- [ ] T045 [P] [FR-013] [US4] Implement `OAuth2ProviderConfig` struct in src/identity/oauth2.rs: load client_id, client_secret, auth_url, token_url, redirect_uri, scopes from environment variables
+- [ ] T046 [FR-013] [US4] Implement authorization code flow in src/identity/oauth2.rs `verify_oauth2()` (line 27): generate auth URL → exchange code for token → fetch user profile → return OAuth2Result::Verified
 
 ### Phone/SMS
 
-- [ ] T047 [P] [US4] Implement `SmsProviderConfig` struct in src/identity/phone.rs: load account_sid, auth_token, verify_service_sid from environment variables
-- [ ] T048 [US4] Implement `send_verification_code()` in src/identity/phone.rs (line 18): POST to Twilio Verify API to send SMS code
-- [ ] T049 [US4] Implement `verify_code()` in src/identity/phone.rs (line 25): POST to Twilio Verify API to check code, return PhoneResult
+- [ ] T047 [P] [FR-014] [US4] Implement `SmsProviderConfig` struct in src/identity/phone.rs: load account_sid, auth_token, verify_service_sid from environment variables
+- [ ] T048 [FR-014] [US4] Implement `send_verification_code()` in src/identity/phone.rs (line 18): POST to Twilio Verify API to send SMS code
+- [ ] T049 [FR-014] [US4] Implement `verify_code()` in src/identity/phone.rs (line 25): POST to Twilio Verify API to check code, return PhoneResult
 
 ### Credential Error Handling
 
@@ -156,9 +158,9 @@
 
 **Independent Test**: Submit a log entry to Rekor staging and verify retrieval.
 
-- [ ] T053 [US5] Implement Rekor submission in src/registry/transparency.rs (line 60): POST hashedrekord entry to Rekor REST API via reqwest, parse response for log index, UUID, inclusion proof
-- [ ] T054 [US5] Replace fake entry ID generation in src/ledger/transparency.rs (line 28): use real Rekor entry UUID instead of `stub-rekor-{hex_prefix}`
-- [ ] T055 [US5] Implement real verification in src/ledger/transparency.rs `verify()` (line 51): check inclusion proof against Rekor signed tree head instead of always returning Ok(true)
+- [ ] T053 [FR-015] [US5] Implement Rekor submission in src/registry/transparency.rs (line 60): POST hashedrekord entry to Rekor REST API via reqwest, parse response for log index, UUID, inclusion proof
+- [ ] T054 [FR-015] [US5] Replace fake entry ID generation in src/ledger/transparency.rs (line 28): use real Rekor entry UUID instead of `stub-rekor-{hex_prefix}`
+- [ ] T055 [FR-015] [US5] Implement real verification in src/ledger/transparency.rs `verify()` (line 51): check inclusion proof against Rekor signed tree head instead of always returning Ok(true)
 - [ ] T056 [US5] Add integration test: submit entry to Rekor public staging, verify retrieval in tests/infrastructure/
 - [ ] T057 [US5] Run `cargo test` to verify zero regressions
 
@@ -172,8 +174,8 @@
 
 **Independent Test**: Configure OTLP endpoint and verify telemetry appears within 30 seconds.
 
-- [ ] T058 [US6] Implement OTLP exporter wiring in src/telemetry/mod.rs (line 20): when `otel_endpoint` is Some, create OTLP trace exporter via `opentelemetry_otlp::new_exporter().tonic()`, add batch span processor, connect tracing-opentelemetry layer
-- [ ] T059 [US6] Implement OtlpConfig struct in src/telemetry/mod.rs: endpoint, service_name, batch_size, export_interval_secs with defaults
+- [ ] T058 [FR-016] [US6] Implement OTLP exporter wiring in src/telemetry/mod.rs (line 20): when `otel_endpoint` is Some, create OTLP trace exporter via `opentelemetry_otlp::new_exporter().tonic()`, add batch span processor, connect tracing-opentelemetry layer
+- [ ] T059 [FR-016] [US6] Implement OtlpConfig struct in src/telemetry/mod.rs: endpoint, service_name, batch_size, export_interval_secs with defaults
 - [ ] T060 [US6] Add integration test: start with OTLP endpoint, verify traces arrive within 30 seconds in tests/infrastructure/
 - [ ] T061 [US6] Run `cargo test` to verify zero regressions
 
@@ -187,9 +189,9 @@
 
 **Independent Test**: Start 3 coordinators, verify leader election and single-node failure survival.
 
-- [ ] T062 [US7] Implement `RaftCoordinatorStorage` in src/scheduler/coordinator.rs: implement openraft `RaftStorage` trait with in-memory log + optional WAL
-- [ ] T063 [US7] Implement Raft network adapter in src/scheduler/coordinator.rs: implement openraft `RaftNetworkFactory` trait using libp2p gossipsub for RPC transport
-- [ ] T064 [US7] Wire `Raft::new()` into coordinator startup, replacing stub `start_election()` (line 55) and `become_leader()` (line 64)
+- [ ] T062 [FR-017] [US7] Implement `RaftCoordinatorStorage` in src/scheduler/coordinator.rs: implement openraft `RaftStorage` trait with in-memory log + optional WAL
+- [ ] T063 [FR-017] [US7] Implement Raft network adapter in src/scheduler/coordinator.rs: implement openraft `RaftNetworkFactory` trait using libp2p gossipsub for RPC transport
+- [ ] T064 [FR-017] [US7] Wire `Raft::new()` into coordinator startup, replacing stub `start_election()` (line 55) and `become_leader()` (line 64)
 - [ ] T065 [US7] Add integration test: 3-node cluster leader election + single-node failure recovery in tests/infrastructure/
 - [ ] T066 [US7] Run `cargo test` to verify zero regressions
 
@@ -203,8 +205,8 @@
 
 **Independent Test**: Run NAT detection against STUN server; resolve DNS seeds.
 
-- [ ] T067 [P] [US8] Implement STUN-based NAT detection in src/network/nat.rs (line 35): send STUN binding request to public servers (Google, Cloudflare), classify NAT type from response
-- [ ] T068 [P] [US8] Replace placeholder DNS seed addresses in src/network/discovery.rs (line 63) with configurable seed list (env var or config file, placeholder as fallback)
+- [ ] T067 [P] [FR-018] [US8] Implement STUN-based NAT detection in src/network/nat.rs (line 35): send STUN binding request to public servers (Google, Cloudflare), classify NAT type from response
+- [ ] T068 [P] [FR-019] [US8] Replace placeholder DNS seed addresses in src/network/discovery.rs (line 63) with configurable seed list (env var or config file, placeholder as fallback)
 - [ ] T069 [US8] Add integration test: NAT detection against real STUN server in tests/network/
 - [ ] T070 [US8] Add integration test: DNS seed resolution returns valid multiaddrs in tests/network/
 - [ ] T071 [US8] Run `cargo test` to verify zero regressions
@@ -217,7 +219,7 @@
 
 **Purpose**: Final validation across all stories
 
-- [ ] T072 [P] Run full regression: `cargo test` — all 422+ tests must pass (SC-010)
+- [ ] T072 [P] Run full regression: `cargo test` — all existing tests must pass (SC-010)
 - [ ] T073 [P] Run full clippy: `cargo clippy --lib -- -D warnings` — zero warnings
 - [ ] T074 Verify no "not yet implemented" strings remain: grep for "not yet implemented" across src/
 - [ ] T075 [P] Update CLAUDE.md test count and stub count to reflect current state

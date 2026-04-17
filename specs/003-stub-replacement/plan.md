@@ -85,6 +85,8 @@ src/
 │   ├── firecracker.rs               # Firecracker API socket config (#13)
 │   ├── apple_vf.rs                  # Apple VF Swift FFI bridge (#14)
 │   └── wasm.rs                      # WASM CID loading + wasmtime (#15)
+tools/
+└── apple-vf-helper/                 # Swift helper binary for Apple VF lifecycle (subprocess, not FFI)
 ├── policy/
 │   └── rules.rs                     # Ed25519 real verification (#16)
 ├── verification/

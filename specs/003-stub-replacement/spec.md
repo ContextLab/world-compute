@@ -130,7 +130,7 @@ Donor and coordinator nodes discover each other through DNS seed nodes and detec
 **Acceptance Scenarios**:
 
 1. **Given** a new node starting, **When** it queries DNS seeds, **Then** it receives a list of bootstrap peer addresses to connect to.
-2. **Given** a node behind a NAT, **When** NAT detection runs, **Then** the correct NAT type (direct, full cone, symmetric, etc.) is identified via STUN.
+2. **Given** a node behind a NAT, **When** NAT detection runs, **Then** the correct NAT type (Direct, FullCone, RestrictedCone, PortRestricted, Symmetric, or Unknown) is identified via STUN.
 
 ---
 
