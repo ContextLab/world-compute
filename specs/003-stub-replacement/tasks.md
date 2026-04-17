@@ -54,10 +54,10 @@
 
 ### WASM (cross-platform, start here)
 
-- [ ] T016 [FR-008] [US2] Implement CID store fetch in src/sandbox/wasm.rs `create()` (line 35): fetch WASM bytes from `data_plane::cid_store` by CID
-- [ ] T017 [FR-008] [US2] Implement wasmtime compilation in src/sandbox/wasm.rs `create()`: `wasmtime::Module::new(&engine, &wasm_bytes)`
-- [ ] T018 [FR-008] [US2] Implement WASI instantiation in src/sandbox/wasm.rs `start()` (line 43): create WASI context, instantiate module, call `_start` or entry function
-- [ ] T019 [FR-008] [US2] Implement stdout/stderr capture in src/sandbox/wasm.rs `run_module()` (line 106): return output bytes instead of empty Vec
+- [x] T016 [FR-008] [US2] Implement CID store fetch in src/sandbox/wasm.rs `create()` (line 35): fetch WASM bytes from `data_plane::cid_store` by CID
+- [x] T017 [FR-008] [US2] Implement wasmtime compilation in src/sandbox/wasm.rs `create()`: `wasmtime::Module::new(&engine, &wasm_bytes)`
+- [x] T018 [FR-008] [US2] Implement WASI instantiation in src/sandbox/wasm.rs `start()` (line 43): create WASI context, instantiate module, call `_start` or entry function
+- [x] T019 [FR-008] [US2] Implement stdout/stderr capture in src/sandbox/wasm.rs `run_module()` (line 106): return output bytes instead of empty Vec
 
 ### Firecracker (Linux)
 

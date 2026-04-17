@@ -1,7 +1,9 @@
 //! T040 [US2]: Valid attestation + valid signature = job admitted.
 
+use ed25519_dalek::{Signer, SigningKey};
 use worldcompute::policy::decision::Verdict;
 use worldcompute::policy::engine::{evaluate, SubmissionContext};
+use worldcompute::policy::rules::manifest_signing_bytes;
 use worldcompute::scheduler::manifest::JobManifest;
 use worldcompute::scheduler::{
     ConfidentialityLevel, JobCategory, ResourceEnvelope, VerificationMethod, WorkloadType,
@@ -10,7 +12,7 @@ use worldcompute::scheduler::{
 fn test_ctx() -> SubmissionContext {
     SubmissionContext {
         submitter_peer_id: "12D3KooWTest".into(),
-        submitter_public_key: vec![0u8; 32],
+        submitter_public_key: SigningKey::from_bytes(&[42u8; 32]).verifying_key().to_bytes().to_vec(),
         submitter_hp_score: 10,
         submitter_banned: false,
         epoch_submission_count: 0,
@@ -20,7 +22,7 @@ fn test_ctx() -> SubmissionContext {
 
 fn valid_manifest() -> JobManifest {
     let cid = worldcompute::data_plane::cid_store::compute_cid(b"valid artifact").unwrap();
-    JobManifest {
+    let mut manifest = JobManifest {
         manifest_cid: None,
         name: "valid-job".into(),
         workload_type: WorkloadType::WasmModule,
@@ -42,8 +44,13 @@ fn valid_manifest() -> JobManifest {
         verification: VerificationMethod::ReplicatedQuorum,
         acceptable_use_classes: vec![worldcompute::acceptable_use::AcceptableUseClass::Scientific],
         max_wallclock_ms: 3_600_000,
-        submitter_signature: vec![1u8; 64], // non-zero = valid
-    }
+        submitter_signature: vec![0u8; 64],
+    };
+    let signing_key = SigningKey::from_bytes(&[42u8; 32]);
+    let message = manifest_signing_bytes(&manifest);
+    let signature = signing_key.sign(&message);
+    manifest.submitter_signature = signature.to_bytes().to_vec();
+    manifest
 }
 
 #[test]

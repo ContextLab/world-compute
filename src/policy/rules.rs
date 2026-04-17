@@ -57,12 +57,42 @@ pub fn check_signature(manifest: &JobManifest, _ctx: &SubmissionContext) -> Poli
             detail: "Submitter signature is all zeros — rejected per FR-S012".into(),
         };
     }
-    // TODO(Phase 2 T018): Full Ed25519 cryptographic verification against
-    // ctx.submitter_public_key. For now, non-trivial signatures pass.
-    PolicyCheck {
-        check_name: "signature_verification".into(),
-        passed: true,
-        detail: "Signature is non-trivial (full crypto verification pending T018)".into(),
+    // Ed25519 cryptographic verification against ctx.submitter_public_key.
+    if _ctx.submitter_public_key.len() != 32 {
+        return PolicyCheck {
+            check_name: "signature_verification".into(),
+            passed: false,
+            detail: format!(
+                "Submitter public key has invalid length {} (expected 32 bytes)",
+                _ctx.submitter_public_key.len()
+            ),
+        };
+    }
+    if manifest.submitter_signature.len() != 64 {
+        return PolicyCheck {
+            check_name: "signature_verification".into(),
+            passed: false,
+            detail: format!(
+                "Signature has invalid length {} (expected 64 bytes)",
+                manifest.submitter_signature.len()
+            ),
+        };
+    }
+
+    // Construct the message: hash of manifest fields excluding the signature
+    let message = manifest_signing_bytes(manifest);
+
+    match verify_ed25519(&_ctx.submitter_public_key, &message, &manifest.submitter_signature) {
+        Ok(true) => PolicyCheck {
+            check_name: "signature_verification".into(),
+            passed: true,
+            detail: "Ed25519 signature verified against submitter public key".into(),
+        },
+        Ok(false) | Err(_) => PolicyCheck {
+            check_name: "signature_verification".into(),
+            passed: false,
+            detail: "Ed25519 signature verification failed".into(),
+        },
     }
 }
 
@@ -221,6 +251,45 @@ pub fn check_ban_status(ctx: &SubmissionContext) -> PolicyCheck {
     }
 }
 
+/// Compute the canonical signing bytes for a manifest (all fields except signature).
+pub fn manifest_signing_bytes(manifest: &JobManifest) -> Vec<u8> {
+    use sha2::{Digest, Sha256};
+    let mut hasher = Sha256::new();
+    hasher.update(manifest.name.as_bytes());
+    hasher.update(manifest.workload_cid.to_string().as_bytes());
+    for cmd in &manifest.command {
+        hasher.update(cmd.as_bytes());
+    }
+    for input in &manifest.inputs {
+        hasher.update(input.to_string().as_bytes());
+    }
+    hasher.update(manifest.output_sink.as_bytes());
+    hasher.update(manifest.max_wallclock_ms.to_le_bytes());
+    hasher.finalize().to_vec()
+}
+
+/// Verify an Ed25519 signature.
+fn verify_ed25519(public_key: &[u8], message: &[u8], signature: &[u8]) -> Result<bool, String> {
+    use ed25519_dalek::{Signature, VerifyingKey};
+
+    let pk_bytes: [u8; 32] = public_key
+        .try_into()
+        .map_err(|_| "Invalid public key length")?;
+    let verifying_key =
+        VerifyingKey::from_bytes(&pk_bytes).map_err(|e| format!("Invalid public key: {e}"))?;
+
+    let sig_bytes: [u8; 64] = signature
+        .try_into()
+        .map_err(|_| "Invalid signature length")?;
+    let sig = Signature::from_bytes(&sig_bytes);
+
+    use ed25519_dalek::Verifier;
+    match verifying_key.verify(message, &sig) {
+        Ok(()) => Ok(true),
+        Err(_) => Ok(false),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -230,9 +299,12 @@ mod tests {
         ConfidentialityLevel, JobCategory, ResourceEnvelope, VerificationMethod, WorkloadType,
     };
 
-    fn test_manifest() -> JobManifest {
+    use ed25519_dalek::{Signer, SigningKey};
+
+    /// Create a signed test manifest with a real Ed25519 key pair.
+    fn signed_test_manifest() -> (JobManifest, SubmissionContext) {
         let cid = compute_cid(b"test workload").unwrap();
-        JobManifest {
+        let mut manifest = JobManifest {
             manifest_cid: None,
             name: "test".into(),
             workload_type: WorkloadType::WasmModule,
@@ -254,19 +326,33 @@ mod tests {
             verification: VerificationMethod::ReplicatedQuorum,
             acceptable_use_classes: vec![crate::acceptable_use::AcceptableUseClass::Scientific],
             max_wallclock_ms: 3_600_000,
-            submitter_signature: vec![1u8; 64],
-        }
-    }
+            submitter_signature: vec![0u8; 64], // placeholder — signed below
+        };
 
-    fn test_ctx() -> SubmissionContext {
-        SubmissionContext {
+        // Generate a real Ed25519 key pair and sign the manifest
+        let signing_key = SigningKey::from_bytes(&[42u8; 32]);
+        let message = manifest_signing_bytes(&manifest);
+        let signature = signing_key.sign(&message);
+        manifest.submitter_signature = signature.to_bytes().to_vec();
+
+        let ctx = SubmissionContext {
             submitter_peer_id: "12D3KooWTest".into(),
-            submitter_public_key: vec![0u8; 32],
+            submitter_public_key: signing_key.verifying_key().to_bytes().to_vec(),
             submitter_hp_score: 10,
             submitter_banned: false,
             epoch_submission_count: 0,
             epoch_submission_quota: 100,
-        }
+        };
+
+        (manifest, ctx)
+    }
+
+    fn test_manifest() -> JobManifest {
+        signed_test_manifest().0
+    }
+
+    fn test_ctx() -> SubmissionContext {
+        signed_test_manifest().1
     }
 
     #[test]
