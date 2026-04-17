@@ -1,0 +1,30 @@
+# Default values for worldcompute Helm chart.
+
+image:
+  repository: worldcompute
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+coordinator:
+  replicas: 3
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+
+agent:
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "4"
+      memory: "4Gi"
+
+service:
+  type: ClusterIP
+  port: 9090
+  grpcPort: 50051

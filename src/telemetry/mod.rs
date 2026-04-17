@@ -3,6 +3,7 @@
 //! Every production component MUST emit all three categories.
 //! Donor-privacy redaction is enforced at the emit layer (FR-106).
 
+pub mod energy;
 pub mod redaction;
 
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};

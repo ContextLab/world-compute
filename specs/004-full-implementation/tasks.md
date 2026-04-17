@@ -347,29 +347,29 @@
 
 ### Tauri GUI (#40)
 
-- [ ] T164 [P] [US9] Initialize Tauri window in gui/src-tauri/src/main.rs: replace print-only demo with real Tauri::Builder, create window
-- [ ] T165 [US9] Implement backend IPC commands in gui/src-tauri/src/commands.rs: replace stub returns with real agent/scheduler/governance calls
-- [ ] T166 [US9] Create React frontend scaffold in gui/src/: package.json, tsconfig.json, index.html, App.tsx
-- [ ] T167 [P] [US9] Implement DonorDashboard page in gui/src/pages/DonorDashboard.tsx: enrollment status, credit balance, trust score, active leases
-- [ ] T168 [P] [US9] Implement SubmitterDashboard page in gui/src/pages/SubmitterDashboard.tsx: job submission form, job list, status, results
-- [ ] T169 [P] [US9] Implement GovernanceBoard page in gui/src/pages/GovernanceBoard.tsx: proposal list, create, vote, results
-- [ ] T170 [US9] Implement Settings page in gui/src/pages/Settings.tsx: workload class opt-in/out, CPU cap, storage cap, OTel endpoint
+- [x] T164 [P] [US9] Initialize Tauri window in gui/src-tauri/src/main.rs: replace print-only demo with real Tauri::Builder, create window
+- [x] T165 [US9] Implement backend IPC commands in gui/src-tauri/src/commands.rs: replace stub returns with real agent/scheduler/governance calls
+- [x] T166 [US9] Create React frontend scaffold in gui/src/: package.json, tsconfig.json, index.html, App.tsx
+- [x] T167 [P] [US9] Implement DonorDashboard page in gui/src/pages/DonorDashboard.tsx: enrollment status, credit balance, trust score, active leases
+- [x] T168 [P] [US9] Implement SubmitterDashboard page in gui/src/pages/SubmitterDashboard.tsx: job submission form, job list, status, results
+- [x] T169 [P] [US9] Implement GovernanceBoard page in gui/src/pages/GovernanceBoard.tsx: proposal list, create, vote, results
+- [x] T170 [US9] Implement Settings page in gui/src/pages/Settings.tsx: workload class opt-in/out, CPU cap, storage cap, OTel endpoint
 
 ### REST Gateway (#43)
 
-- [ ] T171 [P] [US9] Implement HTTP+JSON gateway in src/network/rest_gateway.rs: expose all 6 gRPC services via tonic-web with JSON transcoding
-- [ ] T172 [US9] Wire rate limiting into REST gateway in src/network/rest_gateway.rs: apply per-class rate limits from FR-015
-- [ ] T173 [US9] Wire Ed25519 token authentication into REST gateway in src/network/rest_gateway.rs
-- [ ] T174 [US9] Add integration test: REST API submit job → verify completion in tests/network/test_rest.rs
+- [x] T171 [P] [US9] Implement HTTP+JSON gateway in src/network/rest_gateway.rs: expose all 6 gRPC services via tonic-web with JSON transcoding
+- [x] T172 [US9] Wire rate limiting into REST gateway in src/network/rest_gateway.rs: apply per-class rate limits from FR-015
+- [x] T173 [US9] Wire Ed25519 token authentication into REST gateway in src/network/rest_gateway.rs
+- [x] T174 [US9] Add integration test: REST API submit job → verify completion in tests/network/test_rest.rs
 
 ### Web Dashboard SPA (FR-031)
 
-- [ ] T174a [P] [US9] Create static web dashboard SPA scaffold in gui/src/web/: index.html, package.json (React + TypeScript), build to gui/src/web/dist/ for CDN deployment
-- [ ] T174b [US9] Implement donor status page in gui/src/web/pages/DonorStatus.tsx: fetch from REST gateway, display credit balance, trust score, active leases
-- [ ] T174c [P] [US9] Implement job submission page in gui/src/web/pages/JobSubmit.tsx: form for manifest upload, job list with status, result download
-- [ ] T174d [US9] Add integration test: load web dashboard → submit job via REST → verify result displayed in tests/network/test_web_dashboard.rs
+- [x] T174a [P] [US9] Create static web dashboard SPA scaffold in gui/src/web/: index.html, package.json (React + TypeScript), build to gui/src/web/dist/ for CDN deployment
+- [x] T174b [US9] Implement donor status page in gui/src/web/pages/DonorStatus.tsx: fetch from REST gateway, display credit balance, trust score, active leases
+- [x] T174c [P] [US9] Implement job submission page in gui/src/web/pages/JobSubmit.tsx: form for manifest upload, job list with status, result download
+- [x] T174d [US9] Add integration test: load web dashboard → submit job via REST → verify result displayed in tests/network/test_web_dashboard.rs
 
-- [ ] T175 [US9] Run `cargo test` to verify zero regressions
+- [x] T175 [US9] Run `cargo test` to verify zero regressions
 
 **Checkpoint**: FR-029 through FR-031 satisfied.
 
@@ -383,26 +383,26 @@
 
 ### Deployment (#41)
 
-- [ ] T176 [P] [US10] Create multi-stage Dockerfile at repository root: stage 1 rust:1.95-bookworm build, stage 2 distroless runtime
-- [ ] T177 [US10] Create docker-compose.yml at repository root: 3 services (coordinator, broker, agent) with shared network, verify cluster formation
-- [ ] T178 [US10] Create Helm chart in deploy/helm/worldcompute/: Chart.yaml, values.yaml, templates for coordinator StatefulSet + agent DaemonSet
+- [x] T176 [P] [US10] Create multi-stage Dockerfile at repository root: stage 1 rust:1.95-bookworm build, stage 2 distroless runtime
+- [x] T177 [US10] Create docker-compose.yml at repository root: 3 services (coordinator, broker, agent) with shared network, verify cluster formation
+- [x] T178 [US10] Create Helm chart in deploy/helm/worldcompute/: Chart.yaml, values.yaml, templates for coordinator StatefulSet + agent DaemonSet
 
 ### Energy Metering (#48)
 
-- [ ] T179 [P] [US10] Implement RAPL energy reading in src/telemetry/energy.rs: read `/sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj` before/after job, compute joules
-- [ ] T180 [US10] Implement GPU power reading via NVML in src/telemetry/energy.rs: `nvmlDeviceGetPowerUsage()` for NVIDIA GPUs (optional — skip if no GPU)
-- [ ] T181 [US10] Implement aggregate carbon footprint in src/telemetry/energy.rs: multiply watts by regional carbon intensity (configurable g CO2/kWh)
-- [ ] T182 [US10] Add integration test: run workload → read RAPL → verify non-zero joules in tests/telemetry/test_energy.rs
-- [ ] T182a [US10] Calibration test on tensor01.dartmouth.edu: run standardized workload, compare RAPL reading against wall-meter measurement (if available) or known TDP, document calibration factor, assert estimates within 20% (SC target)
+- [x] T179 [P] [US10] Implement RAPL energy reading in src/telemetry/energy.rs: read `/sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj` before/after job, compute joules
+- [x] T180 [US10] Implement GPU power reading via NVML in src/telemetry/energy.rs: `nvmlDeviceGetPowerUsage()` for NVIDIA GPUs (optional — skip if no GPU)
+- [x] T181 [US10] Implement aggregate carbon footprint in src/telemetry/energy.rs: multiply watts by regional carbon intensity (configurable g CO2/kWh)
+- [x] T182 [US10] Add integration test: run workload → read RAPL → verify non-zero joules in tests/telemetry/test_energy.rs
+- [x] T182a [US10] Calibration test on tensor01.dartmouth.edu: run standardized workload, compare RAPL reading against wall-meter measurement (if available) or known TDP, document calibration factor, assert estimates within 20% (SC target)
 
 ### Documentation (#50)
 
-- [ ] T183 [P] [US10] Write comprehensive README.md at repository root: project overview, architecture, quickstart, API reference, contribution guide
-- [ ] T184 [US10] Create evidence artifact JSON schema in evidence/schema.json: jobs run, systems tested, expected vs observed outputs
-- [ ] T185 [US10] Create incident disclosure policy in docs/security/incident-disclosure-policy.md
-- [ ] T186 [US10] Create legal entity placeholder in docs/legal/entity.md (501(c)(3), bylaws, quarterly report template)
-- [ ] T187 [US10] Verify README quickstart works on clean machine
-- [ ] T188 [US10] Run `cargo test` to verify zero regressions
+- [x] T183 [P] [US10] Write comprehensive README.md at repository root: project overview, architecture, quickstart, API reference, contribution guide
+- [x] T184 [US10] Create evidence artifact JSON schema in evidence/schema.json: jobs run, systems tested, expected vs observed outputs
+- [x] T185 [US10] Create incident disclosure policy in docs/security/incident-disclosure-policy.md
+- [x] T186 [US10] Create legal entity placeholder in docs/legal/entity.md (501(c)(3), bylaws, quarterly report template)
+- [x] T187 [US10] Verify README quickstart works on clean machine
+- [x] T188 [US10] Run `cargo test` to verify zero regressions
 
 **Checkpoint**: FR-032 through FR-036 satisfied.
 
@@ -416,32 +416,32 @@
 
 ### Router and Expert
 
-- [ ] T189 [P] [US11] Implement K-of-N expert selection in src/agent/mesh_llm/router.rs: select K experts (default 4) based on health, latency, load; dispatch prompt in parallel via gRPC
-- [ ] T190 [P] [US11] Implement expert registration and health tracking in src/agent/mesh_llm/expert.rs: register with router, report model name/tokenizer/VRAM/health, periodic heartbeat
-- [ ] T191 [US11] Implement model loading via candle in src/agent/mesh_llm/expert.rs: load LLaMA-3-8B-Q4_K_M.gguf, run inference, return top-256 (token_id, logit) pairs
+- [x] T189 [P] [US11] Implement K-of-N expert selection in src/agent/mesh_llm/router.rs: select K experts (default 4) based on health, latency, load; dispatch prompt in parallel via gRPC
+- [x] T190 [P] [US11] Implement expert registration and health tracking in src/agent/mesh_llm/expert.rs: register with router, report model name/tokenizer/VRAM/health, periodic heartbeat
+- [x] T191 [US11] Implement model loading via candle in src/agent/mesh_llm/expert.rs: load LLaMA-3-8B-Q4_K_M.gguf, run inference, return top-256 (token_id, logit) pairs
 
 ### Aggregator
 
-- [ ] T192 [US11] Implement sparse logit aggregation in src/agent/mesh_llm/aggregator.rs: receive top-256 logits from K experts, compute weighted average, apply temperature, sample next token
-- [ ] T193 [US11] Implement tokenizer integration in src/agent/mesh_llm/aggregator.rs: use LLaMA-3 tokenizer (128K vocab) via `tokenizers` crate for encode/decode
+- [x] T192 [US11] Implement sparse logit aggregation in src/agent/mesh_llm/aggregator.rs: receive top-256 logits from K experts, compute weighted average, apply temperature, sample next token
+- [x] T193 [US11] Implement tokenizer integration in src/agent/mesh_llm/aggregator.rs: use LLaMA-3 tokenizer (128K vocab) via `tokenizers` crate for encode/decode
 
 ### Self-Prompting and Safety
 
-- [ ] T194 [US11] Implement self-prompting loop in src/agent/mesh_llm/self_prompt.rs: observe cluster metrics → generate improvement task → classify action tier → route for approval → execute if approved → measure → repeat on 1-24 hour cadence
-- [ ] T195 [US11] Implement action tier classification in src/agent/mesh_llm/safety.rs: parse mesh output, classify into ReadOnly/Suggest/SandboxTest/DeployMinor/DeployMajor based on content analysis
-- [ ] T196 [US11] Implement governance kill switch in src/agent/mesh_llm/safety.rs: on signed GossipSub halt message from any governance participant → immediately stop all inference streams, revert last 3 applied changes, enter read-only mode
+- [x] T194 [US11] Implement self-prompting loop in src/agent/mesh_llm/self_prompt.rs: observe cluster metrics → generate improvement task → classify action tier → route for approval → execute if approved → measure → repeat on 1-24 hour cadence
+- [x] T195 [US11] Implement action tier classification in src/agent/mesh_llm/safety.rs: parse mesh output, classify into ReadOnly/Suggest/SandboxTest/DeployMinor/DeployMajor based on content analysis
+- [x] T196 [US11] Implement governance kill switch in src/agent/mesh_llm/safety.rs: on signed GossipSub halt message from any governance participant → immediately stop all inference streams, revert last 3 applied changes, enter read-only mode
 
 ### gRPC Service
 
-- [ ] T197 [US11] Implement MeshLLMService gRPC handlers in src/agent/mesh_llm/service.rs: RegisterExpert, GetRouterStatus, SubmitSelfTask, HaltMesh per contracts/mesh-llm-contract.md
-- [ ] T198 [US11] Implement graceful degradation below 280 nodes in src/agent/mesh_llm/router.rs: fall back to centralized model when insufficient experts available
+- [x] T197 [US11] Implement MeshLLMService gRPC handlers in src/agent/mesh_llm/service.rs: RegisterExpert, GetRouterStatus, SubmitSelfTask, HaltMesh per contracts/mesh-llm-contract.md
+- [x] T198 [US11] Implement graceful degradation below 280 nodes in src/agent/mesh_llm/router.rs: fall back to centralized model when insufficient experts available
 
 ### Integration
 
-- [ ] T199 [US11] Add integration test: register 4 mock experts → generate token via sparse aggregation → verify valid token ID in tests/mesh_llm/test_inference.rs
-- [ ] T200 [US11] Add integration test: trigger kill switch → verify all streams halted within 1 second in tests/mesh_llm/test_safety.rs
-- [ ] T201 [US11] Add integration test: submit self-task → verify action tier classification → verify governance gating in tests/mesh_llm/test_self_prompt.rs
-- [ ] T202 [US11] Run `cargo test` to verify zero regressions
+- [x] T199 [US11] Add integration test: register 4 mock experts → generate token via sparse aggregation → verify valid token ID in tests/mesh_llm/test_inference.rs
+- [x] T200 [US11] Add integration test: trigger kill switch → verify all streams halted within 1 second in tests/mesh_llm/test_safety.rs
+- [x] T201 [US11] Add integration test: submit self-task → verify action tier classification → verify governance gating in tests/mesh_llm/test_self_prompt.rs
+- [x] T202 [US11] Run `cargo test` to verify zero regressions
 
 **Checkpoint**: FR-037 through FR-043 satisfied. SC-010, SC-011 verifiable on GPU hardware.
 
@@ -451,15 +451,15 @@
 
 **Purpose**: Final validation across all stories
 
-- [ ] T203 [P] Run full regression: `cargo test` — all tests must pass, count >= 700 (SC-004)
-- [ ] T204 [P] Run full clippy: `cargo clippy --lib -- -D warnings` — zero warnings
-- [ ] T205 [P] Run full fmt: `cargo fmt --check` — clean
-- [ ] T206 Verify zero TODO comments: `grep -rn "// TODO" src/` returns 0 results (SC-001)
-- [ ] T207 Verify zero ignored tests: `grep -rn '#\[ignore\]' tests/` returns 0 results (SC-002)
-- [ ] T208 Verify all 12 previously untested modules have integration tests (SC-003)
-- [ ] T209 Run quickstart validation: execute each command from specs/004-full-implementation/quickstart.md
-- [ ] T210 Update CLAUDE.md: test count, module count, remaining stubs (should be zero)
-- [ ] T211 Update notes/ with session summary
+- [x] T203 [P] Run full regression: `cargo test` — all tests must pass, count >= 700 (SC-004)
+- [x] T204 [P] Run full clippy: `cargo clippy --lib -- -D warnings` — zero warnings
+- [x] T205 [P] Run full fmt: `cargo fmt --check` — clean
+- [x] T206 Verify zero TODO comments: `grep -rn "// TODO" src/` returns 0 results (SC-001)
+- [x] T207 Verify zero ignored tests: `grep -rn '#\[ignore\]' tests/` returns 0 results (SC-002)
+- [x] T208 Verify all 12 previously untested modules have integration tests (SC-003)
+- [x] T209 Run quickstart validation: execute each command from specs/004-full-implementation/quickstart.md
+- [x] T210 Update CLAUDE.md: test count, module count, remaining stubs (should be zero)
+- [x] T211 Update notes/ with session summary
 
 ---
 

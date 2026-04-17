@@ -145,14 +145,14 @@
   "hotPaths": [
     {
       "path": "Cargo.toml",
-      "accessCount": 38,
-      "lastAccessed": 1776402529939,
+      "accessCount": 39,
+      "lastAccessed": 1776433716696,
       "type": "file"
     },
     {
       "path": "src",
-      "accessCount": 24,
-      "lastAccessed": 1776402545237,
+      "accessCount": 27,
+      "lastAccessed": 1776433978465,
       "type": "directory"
     },
     {
@@ -199,8 +199,20 @@
     },
     {
       "path": "src/error.rs",
+      "accessCount": 10,
+      "lastAccessed": 1776433723313,
+      "type": "file"
+    },
+    {
+      "path": "gui/src-tauri/src/commands.rs",
+      "accessCount": 9,
+      "lastAccessed": 1776434044181,
+      "type": "file"
+    },
+    {
+      "path": "CLAUDE.md",
       "accessCount": 7,
-      "lastAccessed": 1776402193661,
+      "lastAccessed": 1776434783783,
       "type": "file"
     },
     {
@@ -276,6 +288,12 @@
       "type": "file"
     },
     {
+      "path": "specs/001-world-compute-core/whitepaper.md",
+      "accessCount": 4,
+      "lastAccessed": 1776434843075,
+      "type": "file"
+    },
+    {
       "path": "specs/003-stub-replacement/tasks.md",
       "accessCount": 3,
       "lastAccessed": 1776395619465,
@@ -306,9 +324,15 @@
       "type": "file"
     },
     {
-      "path": "specs/001-world-compute-core/whitepaper.md",
-      "accessCount": 2,
-      "lastAccessed": 1776395592680,
+      "path": "gui/src-tauri/src/main.rs",
+      "accessCount": 3,
+      "lastAccessed": 1776433805105,
+      "type": "file"
+    },
+    {
+      "path": "gui/src-tauri/Cargo.toml",
+      "accessCount": 3,
+      "lastAccessed": 1776434053941,
       "type": "file"
     },
     {
@@ -333,12 +357,6 @@
       "path": "tests/incident.rs",
       "accessCount": 2,
       "lastAccessed": 1776401250128,
-      "type": "file"
-    },
-    {
-      "path": "CLAUDE.md",
-      "accessCount": 1,
-      "lastAccessed": 1776395506551,
       "type": "file"
     },
     {
@@ -414,27 +432,9 @@
       "type": "file"
     },
     {
-      "path": "gui/src-tauri/Cargo.toml",
-      "accessCount": 1,
-      "lastAccessed": 1776395517488,
-      "type": "file"
-    },
-    {
       "path": "tests/governance.rs",
       "accessCount": 1,
       "lastAccessed": 1776395524153,
-      "type": "file"
-    },
-    {
-      "path": "gui/src-tauri/src/main.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395531657,
-      "type": "file"
-    },
-    {
-      "path": "gui/src-tauri/src/commands.rs",
-      "accessCount": 1,
-      "lastAccessed": 1776395531846,
       "type": "file"
     },
     {

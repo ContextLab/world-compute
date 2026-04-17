@@ -56,11 +56,21 @@ pub fn is_killed(state: &MeshSafetyState) -> bool {
 ///
 /// Matches the first applicable keyword in descending tier order so that a
 /// description containing "deploy" is classified as `Deploy` even if it also
-/// contains "modify".
+/// contains "modify". When keywords from multiple tiers are present, the
+/// highest (most restrictive) tier wins per contract.
 pub fn classify_action(description: &str) -> ActionTier {
     let lower = description.to_lowercase();
-    if lower.contains("deploy") || lower.contains("release") || lower.contains("publish") {
+
+    // Deploy tier — highest restriction
+    if lower.contains("deploy")
+        || lower.contains("release")
+        || lower.contains("publish")
+        || lower.contains("change:")
+        || lower.contains("replace:")
+        || lower.contains("deploy:")
+    {
         ActionTier::Deploy
+    // ModifyMajor
     } else if lower.contains("modify major")
         || lower.contains("restructure")
         || lower.contains("refactor")
@@ -68,13 +78,64 @@ pub fn classify_action(description: &str) -> ActionTier {
         || lower.contains("upgrade")
     {
         ActionTier::ModifyMajor
-    } else if lower.contains("modify") || lower.contains("update") || lower.contains("patch") {
+    // ModifyMinor
+    } else if lower.contains("modify")
+        || lower.contains("update")
+        || lower.contains("update:")
+        || lower.contains("set:")
+        || lower.contains("configure:")
+        || lower.contains("patch")
+    {
         ActionTier::ModifyMinor
-    } else if lower.contains("suggest") || lower.contains("recommend") || lower.contains("propose")
+    // Suggest
+    } else if lower.contains("suggest")
+        || lower.contains("suggest:")
+        || lower.contains("recommend")
+        || lower.contains("recommend:")
+        || lower.contains("propose")
+        || lower.contains("experiment:")
+        || lower.contains("test:")
+        || lower.contains("sandbox")
     {
         ActionTier::Suggest
+    // ReadOnly — default / observation keywords
     } else {
+        // "analyze", "report", "observe" all fall here
         ActionTier::ReadOnly
+    }
+}
+
+// ---------------------------------------------------------------------------
+// KillSwitch struct (T196)
+// ---------------------------------------------------------------------------
+
+/// A kill switch that can halt mesh operations and track changes to revert.
+#[derive(Debug, Clone, Default)]
+pub struct KillSwitch {
+    /// Whether the kill switch is currently active.
+    pub active: bool,
+    /// Identity of the actor who triggered the kill switch.
+    pub triggered_by: Option<String>,
+    /// List of change descriptions to revert when the switch is triggered.
+    pub changes_to_revert: Vec<String>,
+}
+
+impl KillSwitch {
+    /// Create a new inactive kill switch.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Trigger the kill switch, recording the actor and recent changes.
+    pub fn trigger(&mut self, actor: &str, recent_changes: &[String]) {
+        self.active = true;
+        self.triggered_by = Some(actor.to_string());
+        self.changes_to_revert = recent_changes.to_vec();
+    }
+
+    /// Returns `true` if the kill switch has been triggered.
+    pub fn is_halted(&self) -> bool {
+        self.active
     }
 }
 
@@ -153,5 +214,47 @@ mod tests {
         });
         handle.join().unwrap();
         assert!(is_killed(&state));
+    }
+
+    // --- KillSwitch tests (T196) ---
+
+    #[test]
+    fn kill_switch_struct_default_inactive() {
+        let ks = KillSwitch::new();
+        assert!(!ks.is_halted());
+        assert!(ks.triggered_by.is_none());
+        assert!(ks.changes_to_revert.is_empty());
+    }
+
+    #[test]
+    fn kill_switch_struct_trigger() {
+        let mut ks = KillSwitch::new();
+        let changes = vec!["config-change-1".to_string(), "deploy-2".to_string()];
+        ks.trigger("admin-alice", &changes);
+        assert!(ks.is_halted());
+        assert_eq!(ks.triggered_by.as_deref(), Some("admin-alice"));
+        assert_eq!(ks.changes_to_revert.len(), 2);
+    }
+
+    #[test]
+    fn kill_switch_struct_trigger_twice() {
+        let mut ks = KillSwitch::new();
+        ks.trigger("alice", &["c1".to_string()]);
+        ks.trigger("bob", &["c2".to_string(), "c3".to_string()]);
+        assert!(ks.is_halted());
+        assert_eq!(ks.triggered_by.as_deref(), Some("bob"));
+        assert_eq!(ks.changes_to_revert.len(), 2);
+    }
+
+    #[test]
+    fn classify_set_configure() {
+        assert_eq!(classify_action("set: new timeout"), ActionTier::ModifyMinor);
+        assert_eq!(classify_action("configure: logging level"), ActionTier::ModifyMinor);
+    }
+
+    #[test]
+    fn classify_change_replace() {
+        assert_eq!(classify_action("change: scheduler algorithm"), ActionTier::Deploy);
+        assert_eq!(classify_action("replace: old module"), ActionTier::Deploy);
     }
 }

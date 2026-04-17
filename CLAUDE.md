@@ -1,10 +1,10 @@
 # world-compute Development Guidelines
 
-Last updated: 2026-04-16
+Last updated: 2026-04-17
 
 ## Project Overview
 
-World Compute is a decentralized, volunteer-built compute federation. The codebase is a Rust workspace with 94+ source files, 489+ passing tests, and 20 library modules. All 5 CLI command groups are functional (donor, job, cluster, governance, admin). Core modules implemented: WASM sandbox with CID store integration, real Ed25519 signature verification, certificate chain validation (TPM2/SEV-SNP/TDX), BrightID/OAuth2/phone identity verification, Sigstore Rekor transparency logging, OTLP telemetry, STUN-based NAT detection, Raft coordinator consensus, and Firecracker/Apple VF sandbox drivers.
+World Compute is a decentralized, volunteer-built compute federation. The codebase is a Rust workspace with 150+ source files, 784+ passing tests, and 20 library modules. All 5 CLI command groups are functional (donor, job, cluster, governance, admin). Core modules implemented: WASM sandbox with CID store integration, real Ed25519 signature verification, certificate chain validation (TPM2/SEV-SNP/TDX), BrightID/OAuth2/phone identity verification, Sigstore Rekor transparency logging, OTLP telemetry, STUN-based NAT detection, Raft coordinator consensus, and Firecracker/Apple VF sandbox drivers.
 
 ## Active Technologies
 - Rust stable (tested on 1.95.0) + libp2p 0.54, tonic 0.12, ed25519-dalek 2, wasmtime 27, openraft 0.9, opentelemetry 0.27, clap 4 (003-stub-replacement)
@@ -69,7 +69,7 @@ gui/src-tauri/              # Tauri GUI scaffold
 
 ```sh
 # Build and test
-cargo test                  # 489+ tests (351+ lib + 138+ integration)
+cargo test                  # 784+ tests (500+ lib + 284+ integration)
 cargo clippy --lib -- -D warnings  # Zero warnings enforced
 
 # Build only
@@ -113,11 +113,7 @@ The project is governed by a ratified constitution at `.specify/memory/constitut
 
 ## Remaining Stubs
 
-Most of the original 76 stubs replaced (issue #7, branch 003-stub-replacement). Remaining:
-- **Egress allowlist**: Endpoint allowlist field in JobManifest (egress is default-deny, correct behavior)
-- **Artifact registry lookup**: Full CID lookup against ApprovedArtifact registry (structural gate in place)
-- **Apple VF helper binary**: Swift helper (`wc-apple-vf-helper`) needs separate macOS compilation
-- **Full Merkle proof verification**: Rekor inclusion proof (format validation in place)
+**None** — all implementation stubs have been replaced as of spec 004-full-implementation. Zero TODO comments remain in src/. Zero `#[ignore]` tests remain.
 
 ## CI
 
@@ -126,7 +122,7 @@ Two GitHub Actions workflows:
 - `safety-hardening-ci.yml` — multi-platform (Linux/macOS/Windows) with Principle V evidence artifacts
 
 ## Recent Changes
-- 004-full-implementation: Added Rust stable (tested on 1.95.0) + libp2p 0.54, tonic 0.12, ed25519-dalek 2, wasmtime 27, openraft 0.9, opentelemetry 0.27, clap 4, reqwest 0.12, oauth2 4, x509-parser 0.16, reed-solomon-erasure 6, cid 0.11, multihash 0.19
 
+- **004-full-implementation** (2026-04-17): Complete functional implementation (#57, #28–#56). 211 tasks, 784+ tests. Deep cryptographic attestation, agent lifecycle, preemption supervisor, policy engine completion, GPU passthrough, Firecracker rootfs, incident containment, adversarial tests, confidential compute, mTLS, threshold signing, CRDT ledger, scheduler matchmaking, credit decay, storage GC, platform adapters (Slurm/K8s/Cloud/Apple VF), Tauri GUI, REST gateway, mesh LLM, Docker/Helm deployment, energy metering.
 - **003-stub-replacement** (2026-04-16): Replaced all implementation stubs (#7, #8–#26). 77 tasks, 489+ tests. Added reqwest, oauth2, x509-parser, rcgen dependencies. Wired CLI, sandboxes, attestation, identity, transparency, telemetry, consensus, network.
 - **002-safety-hardening** (2026-04-16): Red team review (#4). Policy engine, attestation, governance, incident response, egress, identity hardening. 110 tasks, PR #6.

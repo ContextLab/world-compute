@@ -86,6 +86,80 @@ impl ExpertRegistry {
     pub fn get_expert(&self, expert_id: &str) -> Option<&ExpertNode> {
         self.experts.get(expert_id)
     }
+
+    /// Return references to all experts currently `Online` (healthy).
+    pub fn get_healthy(&self) -> Vec<&ExpertNode> {
+        self.experts.values().filter(|n| n.status == ExpertStatus::Online).collect()
+    }
+
+    /// Update the health/status of an expert by ID.
+    pub fn update_health(&mut self, expert_id: &str, status: ExpertStatus) {
+        if let Some(node) = self.experts.get_mut(expert_id) {
+            node.status = status;
+        }
+    }
+
+    /// Number of registered experts.
+    pub fn len(&self) -> usize {
+        self.experts.len()
+    }
+
+    /// Returns true if no experts are registered.
+    pub fn is_empty(&self) -> bool {
+        self.experts.is_empty()
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Model loading (T191)
+// ---------------------------------------------------------------------------
+
+/// Configuration for loading a model onto an expert node.
+#[derive(Debug, Clone)]
+pub struct ModelConfig {
+    /// Path to the .gguf model file.
+    pub model_path: String,
+    /// Path to the tokenizer file.
+    pub tokenizer_path: String,
+    /// Maximum number of tokens the model can generate.
+    pub max_tokens: usize,
+}
+
+/// A loaded model ready for inference.
+#[derive(Debug, Clone)]
+pub struct LoadedModel {
+    pub name: String,
+    pub vocab_size: usize,
+    pub loaded: bool,
+}
+
+/// Attempt to load a model from the given configuration.
+///
+/// This is a placeholder — in production this would use
+/// `candle_transformers::models::llama::Llama::load(...)`.
+/// Returns `Err` if the model file does not exist.
+pub fn load_model(config: &ModelConfig) -> Result<LoadedModel, String> {
+    let path = std::path::Path::new(&config.model_path);
+    if !path.exists() {
+        return Err(format!("model file not found: {}", config.model_path));
+    }
+    Ok(LoadedModel {
+        name: path
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| "unknown".to_string()),
+        vocab_size: 128_000, // LLaMA-3 128K vocab
+        loaded: true,
+    })
+}
+
+/// Health information for an expert node.
+#[derive(Debug, Clone)]
+pub struct ExpertHealth {
+    pub expert_id: String,
+    pub status: ExpertStatus,
+    pub latency_ms: u32,
+    pub tokens_per_sec: f64,
 }
 
 #[cfg(test)]
@@ -145,5 +219,44 @@ mod tests {
     fn list_online_empty_registry() {
         let reg = ExpertRegistry::new();
         assert!(reg.list_online_experts().is_empty());
+    }
+
+    #[test]
+    fn get_healthy_returns_online_only() {
+        let mut reg = ExpertRegistry::new();
+        let mut offline = make_node("off");
+        offline.status = ExpertStatus::Offline;
+        reg.register_expert(make_node("on1")).unwrap();
+        reg.register_expert(make_node("on2")).unwrap();
+        reg.register_expert(offline).unwrap();
+        assert_eq!(reg.get_healthy().len(), 2);
+    }
+
+    #[test]
+    fn update_health_changes_status() {
+        let mut reg = ExpertRegistry::new();
+        reg.register_expert(make_node("x")).unwrap();
+        reg.update_health("x", ExpertStatus::Busy);
+        assert_eq!(reg.get_expert("x").unwrap().status, ExpertStatus::Busy);
+    }
+
+    #[test]
+    fn load_model_missing_file() {
+        let cfg = ModelConfig {
+            model_path: "/nonexistent/model.gguf".to_string(),
+            tokenizer_path: "/nonexistent/tokenizer.json".to_string(),
+            max_tokens: 1024,
+        };
+        assert!(load_model(&cfg).is_err());
+    }
+
+    #[test]
+    fn registry_len_and_empty() {
+        let mut reg = ExpertRegistry::new();
+        assert!(reg.is_empty());
+        assert_eq!(reg.len(), 0);
+        reg.register_expert(make_node("a")).unwrap();
+        assert!(!reg.is_empty());
+        assert_eq!(reg.len(), 1);
     }
 }

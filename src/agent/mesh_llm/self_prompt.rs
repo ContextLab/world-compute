@@ -68,6 +68,106 @@ pub fn generate_task_prompt(task: SelfPromptTask) -> String {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Self-task generation from cluster metrics (T194)
+// ---------------------------------------------------------------------------
+
+use super::safety::ActionTier;
+
+/// Domain categories for self-generated tasks.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TaskDomain {
+    SchedulerOptimization,
+    SecurityAudit,
+    StorageCompaction,
+    NetworkTopology,
+}
+
+/// A self-generated improvement task.
+#[derive(Debug, Clone)]
+pub struct SelfTask {
+    pub description: String,
+    pub domain: TaskDomain,
+    pub priority: u8,
+    pub action_tier: ActionTier,
+}
+
+/// Cluster-wide metrics used to decide which self-tasks to generate.
+#[derive(Debug, Clone)]
+pub struct ClusterMetrics {
+    /// CPU utilization as a fraction in [0.0, 1.0].
+    pub cpu_utilization: f64,
+    /// Memory utilization as a fraction in [0.0, 1.0].
+    pub memory_utilization: f64,
+    /// Fraction of jobs completed successfully in [0.0, 1.0].
+    pub job_completion_rate: f64,
+    /// Number of security events in the last 24 hours.
+    pub security_events_24h: u32,
+    /// Storage utilization as a fraction in [0.0, 1.0].
+    pub storage_utilization: f64,
+}
+
+/// Generate improvement tasks based on cluster metrics.
+///
+/// Rules:
+/// - High CPU utilization (>0.8) → scheduler optimization task
+/// - Recent security events (>0) → security audit task
+/// - Storage near capacity (>0.85) → storage compaction task
+/// - Low job completion rate (<0.9) → network topology review
+pub fn generate_self_tasks(metrics: &ClusterMetrics) -> Vec<SelfTask> {
+    let mut tasks = Vec::new();
+
+    if metrics.cpu_utilization > 0.8 {
+        tasks.push(SelfTask {
+            description: format!(
+                "CPU utilization at {:.0}% — analyze scheduler queue depth and rebalance",
+                metrics.cpu_utilization * 100.0
+            ),
+            domain: TaskDomain::SchedulerOptimization,
+            priority: if metrics.cpu_utilization > 0.95 { 1 } else { 2 },
+            action_tier: ActionTier::Suggest,
+        });
+    }
+
+    if metrics.security_events_24h > 0 {
+        tasks.push(SelfTask {
+            description: format!(
+                "{} security events in last 24h — review audit trail and recommend mitigations",
+                metrics.security_events_24h
+            ),
+            domain: TaskDomain::SecurityAudit,
+            priority: if metrics.security_events_24h > 10 { 1 } else { 3 },
+            action_tier: ActionTier::ReadOnly,
+        });
+    }
+
+    if metrics.storage_utilization > 0.85 {
+        tasks.push(SelfTask {
+            description: format!(
+                "Storage at {:.0}% — identify stale data and suggest compaction",
+                metrics.storage_utilization * 100.0
+            ),
+            domain: TaskDomain::StorageCompaction,
+            priority: if metrics.storage_utilization > 0.95 { 1 } else { 3 },
+            action_tier: ActionTier::Suggest,
+        });
+    }
+
+    if metrics.job_completion_rate < 0.9 {
+        tasks.push(SelfTask {
+            description: format!(
+                "Job completion rate at {:.0}% — analyze network topology for bottlenecks",
+                metrics.job_completion_rate * 100.0
+            ),
+            domain: TaskDomain::NetworkTopology,
+            priority: 2,
+            action_tier: ActionTier::ReadOnly,
+        });
+    }
+
+    tasks
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -99,5 +199,91 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn generate_self_tasks_high_cpu() {
+        let metrics = ClusterMetrics {
+            cpu_utilization: 0.95,
+            memory_utilization: 0.5,
+            job_completion_rate: 0.95,
+            security_events_24h: 0,
+            storage_utilization: 0.5,
+        };
+        let tasks = generate_self_tasks(&metrics);
+        assert_eq!(tasks.len(), 1);
+        assert_eq!(tasks[0].domain, TaskDomain::SchedulerOptimization);
+    }
+
+    #[test]
+    fn generate_self_tasks_security_events() {
+        let metrics = ClusterMetrics {
+            cpu_utilization: 0.5,
+            memory_utilization: 0.5,
+            job_completion_rate: 0.95,
+            security_events_24h: 5,
+            storage_utilization: 0.5,
+        };
+        let tasks = generate_self_tasks(&metrics);
+        assert_eq!(tasks.len(), 1);
+        assert_eq!(tasks[0].domain, TaskDomain::SecurityAudit);
+    }
+
+    #[test]
+    fn generate_self_tasks_storage_full() {
+        let metrics = ClusterMetrics {
+            cpu_utilization: 0.5,
+            memory_utilization: 0.5,
+            job_completion_rate: 0.95,
+            security_events_24h: 0,
+            storage_utilization: 0.92,
+        };
+        let tasks = generate_self_tasks(&metrics);
+        assert_eq!(tasks.len(), 1);
+        assert_eq!(tasks[0].domain, TaskDomain::StorageCompaction);
+    }
+
+    #[test]
+    fn generate_self_tasks_low_completion() {
+        let metrics = ClusterMetrics {
+            cpu_utilization: 0.5,
+            memory_utilization: 0.5,
+            job_completion_rate: 0.7,
+            security_events_24h: 0,
+            storage_utilization: 0.5,
+        };
+        let tasks = generate_self_tasks(&metrics);
+        assert_eq!(tasks.len(), 1);
+        assert_eq!(tasks[0].domain, TaskDomain::NetworkTopology);
+    }
+
+    #[test]
+    fn generate_self_tasks_multiple() {
+        let metrics = ClusterMetrics {
+            cpu_utilization: 0.99,
+            memory_utilization: 0.9,
+            job_completion_rate: 0.5,
+            security_events_24h: 20,
+            storage_utilization: 0.98,
+        };
+        let tasks = generate_self_tasks(&metrics);
+        assert_eq!(tasks.len(), 4);
+        // All tasks should have an action tier assigned.
+        for t in &tasks {
+            assert!(t.priority >= 1 && t.priority <= 3);
+        }
+    }
+
+    #[test]
+    fn generate_self_tasks_healthy_cluster() {
+        let metrics = ClusterMetrics {
+            cpu_utilization: 0.3,
+            memory_utilization: 0.4,
+            job_completion_rate: 0.99,
+            security_events_24h: 0,
+            storage_utilization: 0.2,
+        };
+        let tasks = generate_self_tasks(&metrics);
+        assert!(tasks.is_empty());
     }
 }
