@@ -15,13 +15,13 @@
 
 **Purpose**: Add new dependencies needed across multiple user stories
 
-- [ ] T001 Add `rsa = "0.9"`, `p256 = "0.13"`, `p384 = "0.13"`, and `nix = { version = "0.29", features = ["signal", "process"] }` dependencies to Cargo.toml for certificate chain verification and SIGSTOP delivery
-- [ ] T002 [P] Add `aes-gcm = "0.10"` and `x25519-dalek = "2"` dependencies to Cargo.toml for confidential compute
-- [ ] T003 [P] Add `rcgen = "0.12"` and `tokio-rustls = "0.26"` dependencies to Cargo.toml for mTLS
-- [ ] T004 [P] Add `threshold-crypto = "0.2"` dependency to Cargo.toml for threshold signing (verify not already present)
-- [ ] T005 [P] Add `kube = "0.88"` and `k8s-openapi = "0.21"` dependencies to adapters/kubernetes/Cargo.toml
-- [ ] T006 [P] Add `candle-core`, `candle-transformers`, and `tokenizers` dependencies to Cargo.toml for mesh LLM (check crates.io for latest versions before adding — candle may be 0.6.x or 0.7.x)
-- [ ] T007 Verify build succeeds with all new dependencies: `cargo build --lib`
+- [x] T001 Add `rsa = "0.9"`, `p256 = "0.13"`, `p384 = "0.13"`, and `nix = { version = "0.29", features = ["signal", "process"] }` dependencies to Cargo.toml for certificate chain verification and SIGSTOP delivery
+- [x] T002 [P] Add `aes-gcm = "0.10"` and `x25519-dalek = "2"` dependencies to Cargo.toml for confidential compute
+- [x] T003 [P] Add `rcgen = "0.12"` and `tokio-rustls = "0.26"` dependencies to Cargo.toml for mTLS
+- [x] T004 [P] Add `threshold-crypto = "0.2"` dependency to Cargo.toml for threshold signing (verify not already present)
+- [x] T005 [P] Add `kube = "0.88"` and `k8s-openapi = "0.21"` dependencies to adapters/kubernetes/Cargo.toml
+- [x] T006 [P] Add `candle-core`, `candle-transformers`, and `tokenizers` dependencies to Cargo.toml for mesh LLM (check crates.io for latest versions before adding — candle may be 0.6.x or 0.7.x)
+- [x] T007 Verify build succeeds with all new dependencies: `cargo build --lib`
 
 ---
 

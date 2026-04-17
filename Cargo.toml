@@ -61,6 +61,20 @@ ciborium = "0.2"
 ed25519-dalek = { version = "2", features = ["serde", "rand_core"] }
 sha2 = "0.10"
 rand = "0.8"
+rsa = { version = "0.9", features = ["sha2"] }
+p256 = { version = "0.13", features = ["ecdsa"] }
+p384 = { version = "0.13", features = ["ecdsa"] }
+aes-gcm = "0.10"
+x25519-dalek = { version = "2", features = ["static_secrets"] }
+threshold_crypto = "0.2"
+
+# TLS / certificate management
+rcgen = "0.13"
+tokio-rustls = "0.26"
+rustls = "0.23"
+
+# Unix signals (preemption supervisor)
+nix = { version = "0.29", features = ["signal", "process"] }
 
 # Content addressing
 cid = { version = "0.11", features = ["serde"] }
@@ -101,8 +115,15 @@ uuid = { version = "1", features = ["v4", "serde"] }
 hex = "0.4"
 base64 = "0.22"
 
+# ML inference (mesh LLM)
+candle-core = "0.8"
+candle-transformers = "0.8"
+tokenizers = "0.20"
+
+# System info (energy metering)
+sysinfo = "0.32"
+
 [dev-dependencies]
-rcgen = "0.13"
 
 [build-dependencies]
 tonic-build = "0.12"
