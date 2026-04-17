@@ -208,6 +208,7 @@ GPU donor nodes each run a LLaMA-3-8B model at 4-bit quantization. A distributed
 - What happens when a GPU kernel exceeds the 200ms preemption window? (Kernel runs to completion; preemption latency is logged; donor's GPU certification may require re-testing)
 - What happens when the mesh LLM proposes a deploy-major change but governance rejects it? (Change is discarded; mesh returns to read-only for the rejected domain; next cycle proposes alternatives)
 - What happens when Rekor staging is unreachable? (Transparency anchoring is deferred; entries queue locally; next successful anchor includes all queued entries)
+- What happens when coordinator quorum is lost? (Graceful degradation — local brokers continue dispatching from cached leases; ledger writes queue locally; CRDT merge reconciles on rejoin; system does not halt new dispatch)
 
 ## Requirements
 
@@ -255,6 +256,7 @@ GPU donor nodes each run a LLaMA-3-8B model at 4-bit quantization. A distributed
 - **FR-026**: Storage MUST enforce per-donor caps and garbage collect expired/orphaned data
 - **FR-027**: Scheduler MUST perform ClassAd-style bilateral matchmaking with lease management
 - **FR-028**: Ledger MUST use t-of-n threshold signing (3-of-5 target) with CRDT OR-Map merge
+- **FR-028a**: When coordinator quorum is lost, local brokers MUST continue dispatching from cached leases; ledger writes MUST queue locally and reconcile via CRDT merge when quorum is restored
 
 **Category 6: User-Facing (#40, #43)**
 
@@ -306,6 +308,12 @@ GPU donor nodes each run a LLaMA-3-8B model at 4-bit quantization. A distributed
 - **SC-010**: Mesh LLM generates 3.2+ tokens/second at K=4 experts, 100ms latency
 - **SC-011**: Governance kill switch halts all inference within 1 second
 - **SC-012**: Every functional requirement has a corresponding passing test on real hardware
+
+## Clarifications
+
+### Session 2026-04-17
+
+- Q: What happens when coordinator quorum is lost? → A: Graceful degradation — local brokers continue dispatching from cached leases; ledger writes queue locally until quorum is restored. CRDT merge reconciles on rejoin. System does not halt.
 
 ## Assumptions
 
