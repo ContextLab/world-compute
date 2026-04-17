@@ -30,21 +30,11 @@ async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     let output = match cli.command {
-        Commands::Donor(donor_cli) => {
-            worldcompute::cli::donor::execute(&donor_cli.command)
-        }
-        Commands::Job(job_cli) => {
-            worldcompute::cli::submitter::execute(&job_cli.command)
-        }
-        Commands::Cluster(cluster_cli) => {
-            cli_dispatch::execute_cluster(&cluster_cli.command)
-        }
-        Commands::Governance(gov_cli) => {
-            worldcompute::cli::governance::execute(&gov_cli.command)
-        }
-        Commands::Admin(admin_cli) => {
-            worldcompute::cli::admin::execute(&admin_cli.command)
-        }
+        Commands::Donor(donor_cli) => worldcompute::cli::donor::execute(&donor_cli.command),
+        Commands::Job(job_cli) => worldcompute::cli::submitter::execute(&job_cli.command),
+        Commands::Cluster(cluster_cli) => cli_dispatch::execute_cluster(&cluster_cli.command),
+        Commands::Governance(gov_cli) => worldcompute::cli::governance::execute(&gov_cli.command),
+        Commands::Admin(admin_cli) => worldcompute::cli::admin::execute(&admin_cli.command),
     };
 
     println!("{output}");

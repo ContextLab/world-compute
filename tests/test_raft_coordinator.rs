@@ -3,9 +3,7 @@
 //! Tests the coordinator through its public API as an integration consumer,
 //! exercising the full election-replicate-stepdown lifecycle.
 
-use worldcompute::scheduler::coordinator::{
-    Coordinator, CoordinatorAction, CoordinatorRole,
-};
+use worldcompute::scheduler::coordinator::{Coordinator, CoordinatorAction, CoordinatorRole};
 
 #[test]
 fn quorum_election_with_3_peers_and_replication() {
@@ -43,10 +41,7 @@ fn quorum_election_with_3_peers_and_replication() {
 
     // Replicate more entries
     leader
-        .replicate(CoordinatorAction::RegisterDonor {
-            donor_id: "donor-Y".into(),
-            shard_id: 0,
-        })
+        .replicate(CoordinatorAction::RegisterDonor { donor_id: "donor-Y".into(), shard_id: 0 })
         .expect("second replication should succeed");
 
     // Storage should contain noop + 2 replicated entries
@@ -80,7 +75,7 @@ fn vote_from_wrong_term_is_ignored() {
     let mut coord = Coordinator::with_peers("coord-A", 0, peers);
 
     coord.start_election(); // term 1
-    // Vote from a stale term should be ignored
+                            // Vote from a stale term should be ignored
     coord.receive_vote("coord-B", 0, true);
     assert_eq!(coord.raft_role, CoordinatorRole::Candidate);
 

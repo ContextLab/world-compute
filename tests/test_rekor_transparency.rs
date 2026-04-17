@@ -5,8 +5,7 @@
 //! rather than panicking.
 
 use worldcompute::registry::transparency::{
-    record_artifact_signature, record_policy_decision, ProvenanceAttestation,
-    TransparencyLogResult,
+    record_artifact_signature, record_policy_decision, ProvenanceAttestation, TransparencyLogResult,
 };
 use worldcompute::types::Timestamp;
 
@@ -25,10 +24,7 @@ fn artifact_signature_returns_unavailable_when_rekor_offline() {
     let result = record_artifact_signature("bafytest123", &[0xDE, 0xAD], &provenance);
     match result {
         TransparencyLogResult::Unavailable(msg) => {
-            assert!(
-                !msg.is_empty(),
-                "Unavailable message should be descriptive"
-            );
+            assert!(!msg.is_empty(), "Unavailable message should be descriptive");
         }
         TransparencyLogResult::Recorded { .. } => {
             panic!("Should not record when Rekor is unreachable");
@@ -43,10 +39,7 @@ fn policy_decision_returns_unavailable_when_rekor_offline() {
     let result = record_policy_decision("decision-001", "approved", "policy-v1.0");
     match result {
         TransparencyLogResult::Unavailable(msg) => {
-            assert!(
-                !msg.is_empty(),
-                "Unavailable message should be descriptive"
-            );
+            assert!(!msg.is_empty(), "Unavailable message should be descriptive");
         }
         TransparencyLogResult::Recorded { .. } => {
             panic!("Should not record when Rekor is unreachable");

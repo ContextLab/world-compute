@@ -60,7 +60,9 @@ pub fn execute(cmd: &GovernanceCommand) -> String {
                 proposal_type_parsed,
                 "cli-user",
             ) {
-                Ok(id) => format!("Proposal submitted.\n  ID: {id}\n  Title: {title}\n  Type: {proposal_type}"),
+                Ok(id) => format!(
+                    "Proposal submitted.\n  ID: {id}\n  Title: {title}\n  Type: {proposal_type}"
+                ),
                 Err(e) => format!("Error submitting proposal: {e}"),
             }
         }
@@ -73,7 +75,8 @@ pub fn execute(cmd: &GovernanceCommand) -> String {
             } else {
                 let mut output = format!("Proposals ({}):\n", proposals.len());
                 for p in &proposals {
-                    output.push_str(&format!("  {} — {} [{:?}]\n", p.proposal_id, p.title, p.state));
+                    output
+                        .push_str(&format!("  {} — {} [{:?}]\n", p.proposal_id, p.title, p.state));
                 }
                 output
             }
@@ -83,7 +86,9 @@ pub fn execute(cmd: &GovernanceCommand) -> String {
                 "yes" => "Yes",
                 "no" => "No",
                 "abstain" => "Abstain",
-                _ => return format!("Error: invalid vote choice '{choice}'. Use: yes, no, abstain"),
+                _ => {
+                    return format!("Error: invalid vote choice '{choice}'. Use: yes, no, abstain")
+                }
             };
             format!("Vote '{vote_choice}' registered for proposal {proposal_id} (awaiting governance service connection).")
         }

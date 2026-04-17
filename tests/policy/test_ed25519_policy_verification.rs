@@ -65,11 +65,7 @@ fn correct_ed25519_signature_passes_check_signature() {
 
     let ctx = make_ctx(&verifying_key.to_bytes());
     let check = check_signature(&manifest, &ctx);
-    assert!(
-        check.passed,
-        "check_signature must pass with correct Ed25519 key: {}",
-        check.detail
-    );
+    assert!(check.passed, "check_signature must pass with correct Ed25519 key: {}", check.detail);
 }
 
 // ─── Wrong key: signature verification fails ───────────────────────────
@@ -90,10 +86,7 @@ fn wrong_ed25519_key_fails_check_signature() {
 
     let ctx = make_ctx(&verifying_key_b.to_bytes());
     let check = check_signature(&manifest, &ctx);
-    assert!(
-        !check.passed,
-        "check_signature must FAIL when signature is from a different key"
-    );
+    assert!(!check.passed, "check_signature must FAIL when signature is from a different key");
 }
 
 // ─── Correct key through full policy engine ─────────────────────────────
@@ -188,8 +181,5 @@ fn tampered_manifest_rejected() {
 
     let ctx = make_ctx(&verifying_key.to_bytes());
     let check = check_signature(&manifest, &ctx);
-    assert!(
-        !check.passed,
-        "Tampered manifest must fail signature verification"
-    );
+    assert!(!check.passed, "Tampered manifest must fail signature verification");
 }

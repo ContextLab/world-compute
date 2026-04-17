@@ -12,7 +12,10 @@ use worldcompute::scheduler::{
 fn test_ctx() -> SubmissionContext {
     SubmissionContext {
         submitter_peer_id: "12D3KooWTest".into(),
-        submitter_public_key: SigningKey::from_bytes(&[42u8; 32]).verifying_key().to_bytes().to_vec(),
+        submitter_public_key: SigningKey::from_bytes(&[42u8; 32])
+            .verifying_key()
+            .to_bytes()
+            .to_vec(),
         submitter_hp_score: 10,
         submitter_banned: false,
         epoch_submission_count: 0,

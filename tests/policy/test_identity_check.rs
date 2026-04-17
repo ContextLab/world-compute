@@ -47,7 +47,10 @@ fn valid_manifest() -> JobManifest {
 fn zero_hp_submitter_rejected() {
     let ctx = SubmissionContext {
         submitter_peer_id: "peer-1".into(),
-        submitter_public_key: SigningKey::from_bytes(&[42u8; 32]).verifying_key().to_bytes().to_vec(),
+        submitter_public_key: SigningKey::from_bytes(&[42u8; 32])
+            .verifying_key()
+            .to_bytes()
+            .to_vec(),
         submitter_hp_score: 0,
         submitter_banned: false,
         epoch_submission_count: 0,
@@ -61,7 +64,10 @@ fn zero_hp_submitter_rejected() {
 fn empty_peer_id_rejected() {
     let ctx = SubmissionContext {
         submitter_peer_id: "".into(),
-        submitter_public_key: SigningKey::from_bytes(&[42u8; 32]).verifying_key().to_bytes().to_vec(),
+        submitter_public_key: SigningKey::from_bytes(&[42u8; 32])
+            .verifying_key()
+            .to_bytes()
+            .to_vec(),
         submitter_hp_score: 10,
         submitter_banned: false,
         epoch_submission_count: 0,

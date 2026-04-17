@@ -42,22 +42,20 @@ pub enum JobCommand {
 /// Execute a job CLI command. Returns a human-readable status string.
 pub fn execute(cmd: &JobCommand) -> String {
     match cmd {
-        JobCommand::Submit { manifest_path } => {
-            match std::fs::read_to_string(manifest_path) {
-                Ok(content) => {
-                    match serde_json::from_str::<crate::scheduler::manifest::JobManifest>(&content) {
-                        Ok(manifest) => {
-                            format!(
+        JobCommand::Submit { manifest_path } => match std::fs::read_to_string(manifest_path) {
+            Ok(content) => {
+                match serde_json::from_str::<crate::scheduler::manifest::JobManifest>(&content) {
+                    Ok(manifest) => {
+                        format!(
                                 "Job validated.\n  Name: {}\n  Workload: {:?}\n  Inputs: {}\n  Use classes: {:?}\n  Submitted (awaiting coordinator connection).",
                                 manifest.name, manifest.workload_type, manifest.inputs.len(), manifest.acceptable_use_classes
                             )
-                        }
-                        Err(e) => format!("Error: invalid manifest JSON: {e}"),
                     }
+                    Err(e) => format!("Error: invalid manifest JSON: {e}"),
                 }
-                Err(e) => format!("Error: cannot read manifest file '{manifest_path}': {e}"),
             }
-        }
+            Err(e) => format!("Error: cannot read manifest file '{manifest_path}': {e}"),
+        },
         JobCommand::Status { job_id } => {
             format!("Job {job_id}: no coordinator connection. Start a donor node first.")
         }

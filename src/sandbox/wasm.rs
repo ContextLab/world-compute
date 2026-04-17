@@ -212,8 +212,7 @@ mod tests {
     fn wasm_create_fails_for_missing_cid() {
         let store = CidStore::new();
         let mut sandbox =
-            WasmSandbox::new(std::path::PathBuf::from("/tmp/wc-test-wasm-missing"), store)
-                .unwrap();
+            WasmSandbox::new(std::path::PathBuf::from("/tmp/wc-test-wasm-missing"), store).unwrap();
         let cid = crate::data_plane::cid_store::compute_cid(b"nonexistent").unwrap();
         assert!(sandbox.create(&cid).is_err());
     }

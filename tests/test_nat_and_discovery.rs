@@ -3,27 +3,21 @@
 //! T069: classify_nat_type with various address patterns.
 //! T070: DiscoveryConfig::default() returns valid seed addresses.
 
-use worldcompute::network::nat::{detect_nat_status_with_config, NatConfig, NatStatus};
 use worldcompute::network::discovery::{DiscoveryConfig, BOOTSTRAP_DNS_SEEDS};
+use worldcompute::network::nat::{detect_nat_status_with_config, NatConfig, NatStatus};
 
 // --- T069: NAT detection ---
 
 #[test]
 fn nat_detection_with_no_stun_servers_returns_unknown() {
-    let config = NatConfig {
-        stun_servers: vec![],
-        ..NatConfig::default()
-    };
+    let config = NatConfig { stun_servers: vec![], ..NatConfig::default() };
     assert_eq!(detect_nat_status_with_config(&config), NatStatus::Unknown);
 }
 
 #[test]
 fn nat_detection_with_unreachable_stun_returns_unknown() {
     // Point at a non-routable STUN server — should return Unknown, not panic.
-    let config = NatConfig {
-        stun_servers: vec!["127.0.0.1:1".into()],
-        ..NatConfig::default()
-    };
+    let config = NatConfig { stun_servers: vec!["127.0.0.1:1".into()], ..NatConfig::default() };
     let status = detect_nat_status_with_config(&config);
     // Will be Unknown because the STUN binding request will fail/timeout
     assert_eq!(status, NatStatus::Unknown);
@@ -66,19 +60,10 @@ fn discovery_config_default_returns_valid_seeds() {
     let config = DiscoveryConfig::default();
     assert!(config.mdns_enabled, "mDNS should be on by default");
     assert!(config.kademlia_enabled, "Kademlia should be on by default");
-    assert!(
-        !config.bootstrap_seeds.is_empty(),
-        "Default seeds must be non-empty"
-    );
+    assert!(!config.bootstrap_seeds.is_empty(), "Default seeds must be non-empty");
     for seed in &config.bootstrap_seeds {
-        assert!(
-            seed.starts_with("/dnsaddr/"),
-            "Seed should be a /dnsaddr/ multiaddr, got: {seed}"
-        );
-        assert!(
-            seed.contains("worldcompute"),
-            "Seed should reference worldcompute domain: {seed}"
-        );
+        assert!(seed.starts_with("/dnsaddr/"), "Seed should be a /dnsaddr/ multiaddr, got: {seed}");
+        assert!(seed.contains("worldcompute"), "Seed should reference worldcompute domain: {seed}");
     }
 }
 
@@ -102,10 +87,7 @@ fn bootstrap_dns_seeds_constant_matches_config() {
 #[test]
 fn discovery_config_query_timeout_is_reasonable() {
     let config = DiscoveryConfig::default();
-    assert!(
-        config.kad_query_timeout.as_secs() >= 5,
-        "Kademlia timeout should be at least 5s"
-    );
+    assert!(config.kad_query_timeout.as_secs() >= 5, "Kademlia timeout should be at least 5s");
     assert!(
         config.kad_query_timeout.as_secs() <= 120,
         "Kademlia timeout should not exceed 2 minutes"

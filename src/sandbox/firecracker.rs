@@ -13,9 +13,9 @@ use crate::error::{ErrorCode, WcError};
 use crate::sandbox::egress::EgressPolicy;
 use crate::sandbox::{Sandbox, SandboxCapability};
 use crate::types::{Cid, DurationMs};
-use std::path::PathBuf;
 #[cfg(target_os = "linux")]
 use std::path::Path;
+use std::path::PathBuf;
 
 /// Firecracker VM configuration.
 #[derive(Debug, Clone)]
@@ -73,16 +73,10 @@ impl FirecrackerVmConfig {
         rootfs_path: PathBuf,
     ) -> Result<Self, WcError> {
         if vcpu_count < 1 {
-            return Err(WcError::new(
-                ErrorCode::InvalidManifest,
-                "vcpu_count must be >= 1",
-            ));
+            return Err(WcError::new(ErrorCode::InvalidManifest, "vcpu_count must be >= 1"));
         }
         if mem_size_mib < 128 {
-            return Err(WcError::new(
-                ErrorCode::InvalidManifest,
-                "mem_size_mib must be >= 128",
-            ));
+            return Err(WcError::new(ErrorCode::InvalidManifest, "mem_size_mib must be >= 128"));
         }
         Ok(Self {
             vcpu_count,
@@ -112,12 +106,8 @@ fn api_put(socket_path: &Path, endpoint: &str, body: &str) -> Result<(), WcError
     })?;
 
     // Set a timeout to avoid hanging indefinitely
-    stream
-        .set_read_timeout(Some(std::time::Duration::from_secs(5)))
-        .ok();
-    stream
-        .set_write_timeout(Some(std::time::Duration::from_secs(5)))
-        .ok();
+    stream.set_read_timeout(Some(std::time::Duration::from_secs(5))).ok();
+    stream.set_write_timeout(Some(std::time::Duration::from_secs(5))).ok();
 
     let request = format!(
         "PUT {} HTTP/1.1\r\nHost: localhost\r\nContent-Type: application/json\r\nContent-Length: {}\r\nAccept: application/json\r\n\r\n{}",
@@ -127,10 +117,7 @@ fn api_put(socket_path: &Path, endpoint: &str, body: &str) -> Result<(), WcError
     );
 
     stream.write_all(request.as_bytes()).map_err(|e| {
-        WcError::new(
-            ErrorCode::Internal,
-            format!("Failed to write to Firecracker API socket: {e}"),
-        )
+        WcError::new(ErrorCode::Internal, format!("Failed to write to Firecracker API socket: {e}"))
     })?;
 
     // Read the response (we only need the status line)
@@ -155,9 +142,7 @@ fn api_put(socket_path: &Path, endpoint: &str, body: &str) -> Result<(), WcError
     if !(200..300).contains(&status_code) {
         return Err(WcError::new(
             ErrorCode::Internal,
-            format!(
-                "Firecracker API PUT {endpoint} failed with status {status_code}: {response}"
-            ),
+            format!("Firecracker API PUT {endpoint} failed with status {status_code}: {response}"),
         ));
     }
 
@@ -201,10 +186,8 @@ fn configure_and_start_vm(
     api_put(socket_path, "/drives/rootfs", &drive)?;
 
     // 4. Network interface
-    let net_iface = format!(
-        r#"{{"iface_id":"eth0","host_dev_name":"{}"}}"#,
-        vm_config.host_dev_name,
-    );
+    let net_iface =
+        format!(r#"{{"iface_id":"eth0","host_dev_name":"{}"}}"#, vm_config.host_dev_name,);
     api_put(socket_path, "/network-interfaces/eth0", &net_iface)?;
 
     // 5. Start the instance
@@ -601,10 +584,7 @@ mod tests {
         );
         assert!(result.is_err());
         let err = result.unwrap_err();
-        assert!(
-            err.to_string().contains("vcpu_count"),
-            "Error should mention vcpu_count: {err}"
-        );
+        assert!(err.to_string().contains("vcpu_count"), "Error should mention vcpu_count: {err}");
     }
 
     #[test]

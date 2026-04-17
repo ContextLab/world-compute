@@ -67,11 +67,11 @@ impl AppleVfSandbox {
     /// Objective-C/Swift and allows the helper to be code-signed independently.
     #[cfg(target_os = "macos")]
     fn call_helper(&self, json_command: &str) -> Result<String, WcError> {
-        use std::process::{Command, Stdio};
         use std::io::Write;
+        use std::process::{Command, Stdio};
 
-        let helper_path = std::env::var("WC_APPLE_VF_HELPER")
-            .unwrap_or_else(|_| "wc-apple-vf-helper".into());
+        let helper_path =
+            std::env::var("WC_APPLE_VF_HELPER").unwrap_or_else(|_| "wc-apple-vf-helper".into());
 
         let mut child = Command::new(&helper_path)
             .stdin(Stdio::piped())

@@ -81,8 +81,7 @@ impl RaftCoordinatorStorage {
         let index = entry.index;
         if index <= self.last_log_index() && self.log.contains_key(&index) {
             // Truncate conflicting entries (Raft log matching property)
-            let keys_to_remove: Vec<u64> =
-                self.log.range(index..).map(|(k, _)| *k).collect();
+            let keys_to_remove: Vec<u64> = self.log.range(index..).map(|(k, _)| *k).collect();
             for k in keys_to_remove {
                 self.log.remove(&k);
             }
@@ -109,11 +108,7 @@ impl RaftCoordinatorStorage {
 
     /// Get the last log term.
     pub fn last_log_term(&self) -> u64 {
-        self.log
-            .values()
-            .next_back()
-            .map(|e| e.term)
-            .unwrap_or(0)
+        self.log.values().next_back().map(|e| e.term).unwrap_or(0)
     }
 
     /// Record a vote for the current term.
@@ -123,10 +118,7 @@ impl RaftCoordinatorStorage {
 
     /// Check if we've voted in the given term.
     pub fn voted_for(&self, term: u64) -> Option<&str> {
-        self.current_vote
-            .as_ref()
-            .filter(|(t, _)| *t == term)
-            .map(|(_, id)| id.as_str())
+        self.current_vote.as_ref().filter(|(t, _)| *t == term).map(|(_, id)| id.as_str())
     }
 
     /// Advance the commit index.
@@ -228,8 +220,7 @@ impl Coordinator {
         self.raft_term += 1;
         self.raft_role = CoordinatorRole::Candidate;
         self.votes_received = 1; // Vote for self
-        self.storage
-            .record_vote(self.raft_term, self.coordinator_id.clone());
+        self.storage.record_vote(self.raft_term, self.coordinator_id.clone());
 
         tracing::info!(
             coordinator = %self.coordinator_id,
@@ -307,11 +298,8 @@ impl Coordinator {
             ));
         }
 
-        let entry = RaftLogEntry {
-            term: self.raft_term,
-            index: self.storage.last_log_index() + 1,
-            action,
-        };
+        let entry =
+            RaftLogEntry { term: self.raft_term, index: self.storage.last_log_index() + 1, action };
         self.storage.append(entry)
     }
 
@@ -385,11 +373,7 @@ mod tests {
     #[test]
     fn raft_storage_append_and_get() {
         let mut storage = RaftCoordinatorStorage::new();
-        let entry = RaftLogEntry {
-            term: 1,
-            index: 1,
-            action: CoordinatorAction::Noop,
-        };
+        let entry = RaftLogEntry { term: 1, index: 1, action: CoordinatorAction::Noop };
         assert!(storage.append(entry).is_ok());
         assert_eq!(storage.len(), 1);
         assert_eq!(storage.last_log_index(), 1);
@@ -464,11 +448,7 @@ mod tests {
     fn raft_storage_with_wal() {
         let wal_path = std::path::PathBuf::from("/tmp/wc-test-raft-wal.json");
         let mut storage = RaftCoordinatorStorage::with_wal(wal_path.clone());
-        let entry = RaftLogEntry {
-            term: 1,
-            index: 1,
-            action: CoordinatorAction::Noop,
-        };
+        let entry = RaftLogEntry { term: 1, index: 1, action: CoordinatorAction::Noop };
         assert!(storage.append(entry).is_ok());
         // WAL file should exist
         assert!(wal_path.exists());

@@ -19,10 +19,7 @@ impl Default for NatConfig {
             upnp_enabled: true,
             dcutr_enabled: true,
             relay_enabled: true,
-            stun_servers: vec![
-                "stun.l.google.com:19302".into(),
-                "stun.cloudflare.com:3478".into(),
-            ],
+            stun_servers: vec!["stun.l.google.com:19302".into(), "stun.cloudflare.com:3478".into()],
         }
     }
 }
@@ -114,14 +111,11 @@ fn stun_binding_request(server: &str) -> Result<std::net::SocketAddr, String> {
     let txn_id: [u8; 12] = rand::random();
     request.extend_from_slice(&txn_id);
 
-    socket
-        .send_to(&request, server)
-        .map_err(|e| format!("Cannot send to {server}: {e}"))?;
+    socket.send_to(&request, server).map_err(|e| format!("Cannot send to {server}: {e}"))?;
 
     let mut buf = [0u8; 256];
-    let (len, _) = socket
-        .recv_from(&mut buf)
-        .map_err(|e| format!("No response from {server}: {e}"))?;
+    let (len, _) =
+        socket.recv_from(&mut buf).map_err(|e| format!("No response from {server}: {e}"))?;
 
     if len < 20 {
         return Err("STUN response too short".into());
@@ -133,10 +127,7 @@ fn stun_binding_request(server: &str) -> Result<std::net::SocketAddr, String> {
 }
 
 /// Parse XOR-MAPPED-ADDRESS attribute from STUN response attributes.
-fn parse_xor_mapped_address(
-    attrs: &[u8],
-    magic_cookie: &[u8],
-) -> Option<std::net::SocketAddr> {
+fn parse_xor_mapped_address(attrs: &[u8], magic_cookie: &[u8]) -> Option<std::net::SocketAddr> {
     let mut offset = 0;
     while offset + 4 <= attrs.len() {
         let attr_type = u16::from_be_bytes([attrs[offset], attrs[offset + 1]]);
@@ -150,8 +141,7 @@ fn parse_xor_mapped_address(
         if attr_type == 0x0020 && attr_len >= 8 {
             let value = &attrs[offset + 4..offset + 4 + attr_len];
             let family = value[1];
-            let xor_port =
-                u16::from_be_bytes([value[2], value[3]]) ^ 0x2112; // XOR with magic cookie MSB
+            let xor_port = u16::from_be_bytes([value[2], value[3]]) ^ 0x2112; // XOR with magic cookie MSB
 
             if family == 0x01 && attr_len >= 8 {
                 // IPv4
@@ -234,37 +224,25 @@ mod tests {
 
     #[test]
     fn classify_same_ip_same_port_as_full_cone() {
-        let addrs = vec![
-            "1.2.3.4:5000".parse().unwrap(),
-            "1.2.3.4:5000".parse().unwrap(),
-        ];
+        let addrs = vec!["1.2.3.4:5000".parse().unwrap(), "1.2.3.4:5000".parse().unwrap()];
         assert_eq!(classify_nat_type(&addrs), NatStatus::FullCone);
     }
 
     #[test]
     fn classify_same_ip_diff_port_as_port_restricted() {
-        let addrs = vec![
-            "1.2.3.4:5000".parse().unwrap(),
-            "1.2.3.4:6000".parse().unwrap(),
-        ];
+        let addrs = vec!["1.2.3.4:5000".parse().unwrap(), "1.2.3.4:6000".parse().unwrap()];
         assert_eq!(classify_nat_type(&addrs), NatStatus::PortRestricted);
     }
 
     #[test]
     fn classify_diff_ip_as_symmetric() {
-        let addrs = vec![
-            "1.2.3.4:5000".parse().unwrap(),
-            "5.6.7.8:5000".parse().unwrap(),
-        ];
+        let addrs = vec!["1.2.3.4:5000".parse().unwrap(), "5.6.7.8:5000".parse().unwrap()];
         assert_eq!(classify_nat_type(&addrs), NatStatus::Symmetric);
     }
 
     #[test]
     fn empty_stun_servers_returns_unknown() {
-        let config = NatConfig {
-            stun_servers: vec![],
-            ..NatConfig::default()
-        };
+        let config = NatConfig { stun_servers: vec![], ..NatConfig::default() };
         assert_eq!(detect_nat_status_with_config(&config), NatStatus::Unknown);
     }
 

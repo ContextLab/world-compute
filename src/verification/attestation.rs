@@ -107,12 +107,7 @@ fn validate_chain_structure(certs: &[Vec<u8>]) -> Result<bool, WcError> {
 
     // Check that CA certs (all except leaf) have the CA basic constraint
     for (i, cert) in parsed_certs.iter().enumerate().skip(1) {
-        let is_ca = cert
-            .basic_constraints()
-            .ok()
-            .flatten()
-            .map(|bc| bc.value.ca)
-            .unwrap_or(false);
+        let is_ca = cert.basic_constraints().ok().flatten().map(|bc| bc.value.ca).unwrap_or(false);
         if !is_ca {
             tracing::warn!(
                 cert_index = i,

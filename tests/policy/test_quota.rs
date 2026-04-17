@@ -47,7 +47,10 @@ fn valid_manifest() -> JobManifest {
 fn quota_exceeded_rejected() {
     let ctx = SubmissionContext {
         submitter_peer_id: "peer-1".into(),
-        submitter_public_key: SigningKey::from_bytes(&[42u8; 32]).verifying_key().to_bytes().to_vec(),
+        submitter_public_key: SigningKey::from_bytes(&[42u8; 32])
+            .verifying_key()
+            .to_bytes()
+            .to_vec(),
         submitter_hp_score: 10,
         submitter_banned: false,
         epoch_submission_count: 101,
@@ -62,7 +65,10 @@ fn quota_exceeded_rejected() {
 fn within_quota_accepted() {
     let ctx = SubmissionContext {
         submitter_peer_id: "peer-1".into(),
-        submitter_public_key: SigningKey::from_bytes(&[42u8; 32]).verifying_key().to_bytes().to_vec(),
+        submitter_public_key: SigningKey::from_bytes(&[42u8; 32])
+            .verifying_key()
+            .to_bytes()
+            .to_vec(),
         submitter_hp_score: 10,
         submitter_banned: false,
         epoch_submission_count: 50,

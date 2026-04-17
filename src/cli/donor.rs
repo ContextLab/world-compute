@@ -47,10 +47,8 @@ pub enum DonorCommand {
 pub fn execute(cmd: &DonorCommand) -> String {
     match cmd {
         DonorCommand::Join { consent } => {
-            let classes: Vec<AcceptableUseClass> = consent
-                .split(',')
-                .filter_map(|s| parse_use_class(s.trim()))
-                .collect();
+            let classes: Vec<AcceptableUseClass> =
+                consent.split(',').filter_map(|s| parse_use_class(s.trim())).collect();
 
             if classes.is_empty() {
                 return "Error: no valid consent classes provided. Valid classes: scientific, public-good-ml, rendering, indexing, self-improvement, general".into();
@@ -72,12 +70,8 @@ pub fn execute(cmd: &DonorCommand) -> String {
         DonorCommand::Status => {
             "Donor status: agent daemon not running. Start with `worldcompute donor join`.".into()
         }
-        DonorCommand::Pause => {
-            "Pause: agent daemon not running. Nothing to pause.".into()
-        }
-        DonorCommand::Resume => {
-            "Resume: agent daemon not running. Nothing to resume.".into()
-        }
+        DonorCommand::Pause => "Pause: agent daemon not running. Nothing to pause.".into(),
+        DonorCommand::Resume => "Resume: agent daemon not running. Nothing to resume.".into(),
         DonorCommand::Leave => {
             "Leave: agent daemon not running. No cluster state to clean up.".into()
         }

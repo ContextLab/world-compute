@@ -39,19 +39,12 @@ impl SmsProviderConfig {
         let account_sid = std::env::var("TWILIO_ACCOUNT_SID").ok()?;
         let auth_token = std::env::var("TWILIO_AUTH_TOKEN").ok()?;
         let verify_service_sid = std::env::var("TWILIO_VERIFY_SID").ok()?;
-        Some(Self {
-            account_sid,
-            auth_token,
-            verify_service_sid,
-        })
+        Some(Self { account_sid, auth_token, verify_service_sid })
     }
 
     /// Twilio Verify API base URL for this service.
     fn verifications_url(&self) -> String {
-        format!(
-            "https://verify.twilio.com/v2/Services/{}/Verifications",
-            self.verify_service_sid
-        )
+        format!("https://verify.twilio.com/v2/Services/{}/Verifications", self.verify_service_sid)
     }
 
     /// Twilio Verify check URL for this service.
@@ -87,14 +80,11 @@ pub fn send_verification_code(phone_number: &str) -> Result<String, String> {
     if !response.status().is_success() {
         let status = response.status();
         let body = response.text().unwrap_or_default();
-        return Err(format!(
-            "Twilio API returned HTTP {status}: {body}"
-        ));
+        return Err(format!("Twilio API returned HTTP {status}: {body}"));
     }
 
-    let body: serde_json::Value = response
-        .json()
-        .map_err(|e| format!("Failed to parse Twilio response: {e}"))?;
+    let body: serde_json::Value =
+        response.json().map_err(|e| format!("Failed to parse Twilio response: {e}"))?;
 
     body.get("sid")
         .and_then(|v| v.as_str())
@@ -129,9 +119,7 @@ pub fn verify_code(phone_number: &str, code: &str) -> PhoneResult {
     {
         Ok(r) => r,
         Err(e) => {
-            return PhoneResult::ProviderUnavailable(format!(
-                "Failed to reach Twilio API: {e}"
-            ));
+            return PhoneResult::ProviderUnavailable(format!("Failed to reach Twilio API: {e}"));
         }
     };
 
@@ -156,10 +144,7 @@ pub fn verify_code(phone_number: &str, code: &str) -> PhoneResult {
         }
     };
 
-    let status = body
-        .get("status")
-        .and_then(|v| v.as_str())
-        .unwrap_or("unknown");
+    let status = body.get("status").and_then(|v| v.as_str()).unwrap_or("unknown");
 
     match status {
         "approved" => {

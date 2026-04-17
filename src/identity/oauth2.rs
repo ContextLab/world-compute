@@ -103,11 +103,7 @@ impl OAuth2ProviderConfig {
         let token_url = std::env::var(format!("OAUTH2_{prefix}_TOKEN_URL"))
             .unwrap_or_else(|_| provider.default_token_url().to_string());
 
-        let scopes = provider
-            .default_scopes()
-            .into_iter()
-            .map(String::from)
-            .collect();
+        let scopes = provider.default_scopes().into_iter().map(String::from).collect();
 
         Some(Self {
             provider,
@@ -125,8 +121,7 @@ impl OAuth2ProviderConfig {
         let client = BasicClient::new(
             ClientId::new(self.client_id.clone()),
             Some(ClientSecret::new(self.client_secret.clone())),
-            AuthUrl::new(self.auth_url.clone())
-                .map_err(|e| format!("Invalid auth URL: {e}"))?,
+            AuthUrl::new(self.auth_url.clone()).map_err(|e| format!("Invalid auth URL: {e}"))?,
             Some(
                 TokenUrl::new(self.token_url.clone())
                     .map_err(|e| format!("Invalid token URL: {e}"))?,
@@ -144,10 +139,7 @@ impl OAuth2ProviderConfig {
 #[derive(Debug, Clone)]
 pub enum OAuth2Result {
     /// Successfully verified — provider confirmed the account.
-    Verified {
-        provider: OAuth2Provider,
-        account_id: String,
-    },
+    Verified { provider: OAuth2Provider, account_id: String },
     /// Verification failed (e.g., invalid token, denied).
     Failed(String),
     /// Provider is unavailable (credentials missing or service unreachable).
@@ -187,11 +179,7 @@ pub fn generate_auth_url(
 /// This function performs the full OAuth2 authorization code exchange using
 /// the `oauth2` crate, then queries the provider's user-info endpoint to
 /// obtain the account identifier.
-pub fn exchange_code(
-    provider: OAuth2Provider,
-    redirect_uri: &str,
-    code: &str,
-) -> OAuth2Result {
+pub fn exchange_code(provider: OAuth2Provider, redirect_uri: &str, code: &str) -> OAuth2Result {
     let config = match OAuth2ProviderConfig::from_env(provider, redirect_uri) {
         Some(c) => c,
         None => {
@@ -211,9 +199,8 @@ pub fn exchange_code(
 
     // Exchange code for token using the oauth2 crate's built-in blocking HTTP client
     let http_client = oauth2::reqwest::http_client;
-    let token_result = client
-        .exchange_code(oauth2::AuthorizationCode::new(code.to_string()))
-        .request(http_client);
+    let token_result =
+        client.exchange_code(oauth2::AuthorizationCode::new(code.to_string())).request(http_client);
 
     let token_response = match token_result {
         Ok(t) => t,
@@ -224,10 +211,7 @@ pub fn exchange_code(
 
     // Fetch user info from provider-specific endpoint
     match fetch_account_id(provider, &access_token) {
-        Ok(account_id) => OAuth2Result::Verified {
-            provider,
-            account_id,
-        },
+        Ok(account_id) => OAuth2Result::Verified { provider, account_id },
         Err(e) => OAuth2Result::Failed(format!("Failed to fetch user info: {e}")),
     }
 }
@@ -238,15 +222,9 @@ fn fetch_account_id(provider: OAuth2Provider, access_token: &str) -> Result<Stri
 
     let (url, id_field) = match provider {
         OAuth2Provider::GitHub => ("https://api.github.com/user", "id"),
-        OAuth2Provider::Google => (
-            "https://www.googleapis.com/oauth2/v2/userinfo",
-            "id",
-        ),
+        OAuth2Provider::Google => ("https://www.googleapis.com/oauth2/v2/userinfo", "id"),
         OAuth2Provider::Twitter => ("https://api.twitter.com/2/users/me", "id"),
-        OAuth2Provider::Email => (
-            "https://www.googleapis.com/oauth2/v2/userinfo",
-            "email",
-        ),
+        OAuth2Provider::Email => ("https://www.googleapis.com/oauth2/v2/userinfo", "email"),
     };
 
     let response = http_client
@@ -258,22 +236,15 @@ fn fetch_account_id(provider: OAuth2Provider, access_token: &str) -> Result<Stri
         .map_err(|e| format!("HTTP request failed: {e}"))?;
 
     if !response.status().is_success() {
-        return Err(format!(
-            "Provider returned HTTP {}",
-            response.status()
-        ));
+        return Err(format!("Provider returned HTTP {}", response.status()));
     }
 
-    let body: serde_json::Value = response
-        .json()
-        .map_err(|e| format!("Failed to parse response: {e}"))?;
+    let body: serde_json::Value =
+        response.json().map_err(|e| format!("Failed to parse response: {e}"))?;
 
     // Twitter nests user data under "data"
-    let user_data = if provider == OAuth2Provider::Twitter {
-        body.get("data").unwrap_or(&body)
-    } else {
-        &body
-    };
+    let user_data =
+        if provider == OAuth2Provider::Twitter { body.get("data").unwrap_or(&body) } else { &body };
 
     user_data
         .get(id_field)
@@ -324,9 +295,7 @@ pub fn verify_oauth2(provider: OAuth2Provider, redirect_uri: &str) -> OAuth2Resu
                     // Return as "Failed" with the auth URL — the caller needs to
                     // redirect the user and then call exchange_code() with the code.
                     // In a non-interactive context, we cannot complete the flow.
-                    OAuth2Result::Failed(format!(
-                        "Authorization required. Visit: {url}"
-                    ))
+                    OAuth2Result::Failed(format!("Authorization required. Visit: {url}"))
                 }
             }
         }
@@ -348,10 +317,8 @@ mod tests {
     #[test]
     fn config_from_env_returns_none_when_missing() {
         // With no env vars set, config should be None
-        let config = OAuth2ProviderConfig::from_env(
-            OAuth2Provider::GitHub,
-            "https://localhost/callback",
-        );
+        let config =
+            OAuth2ProviderConfig::from_env(OAuth2Provider::GitHub, "https://localhost/callback");
         // This will be None unless someone has OAUTH2_GITHUB_CLIENT_ID set
         if std::env::var("OAUTH2_GITHUB_CLIENT_ID").is_err() {
             assert!(config.is_none());
@@ -425,11 +392,7 @@ mod tests {
     #[test]
     fn exchange_code_returns_unavailable_without_credentials() {
         if std::env::var("OAUTH2_GITHUB_CLIENT_ID").is_err() {
-            match exchange_code(
-                OAuth2Provider::GitHub,
-                "https://localhost/callback",
-                "fake-code",
-            ) {
+            match exchange_code(OAuth2Provider::GitHub, "https://localhost/callback", "fake-code") {
                 OAuth2Result::ProviderUnavailable(msg) => {
                     assert!(msg.contains("credentials not configured"));
                 }
@@ -441,10 +404,7 @@ mod tests {
     #[test]
     fn generate_auth_url_returns_error_without_credentials() {
         if std::env::var("OAUTH2_GITHUB_CLIENT_ID").is_err() {
-            let result = generate_auth_url(
-                OAuth2Provider::GitHub,
-                "https://localhost/callback",
-            );
+            let result = generate_auth_url(OAuth2Provider::GitHub, "https://localhost/callback");
             assert!(result.is_err());
             assert!(result.unwrap_err().contains("credentials not configured"));
         }

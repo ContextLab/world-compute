@@ -49,7 +49,8 @@ pub fn execute(cmd: &AdminCommand) -> String {
             )
         }
         AdminCommand::Resume => {
-            "Resume requested. Requires OnCallResponder role and active admin service connection.".into()
+            "Resume requested. Requires OnCallResponder role and active admin service connection."
+                .into()
         }
         AdminCommand::Ban { subject_id, reason } => {
             format!(

@@ -17,10 +17,7 @@ pub struct OtlpConfig {
 
 impl OtlpConfig {
     pub fn new(endpoint: impl Into<String>) -> Self {
-        Self {
-            endpoint: endpoint.into(),
-            service_name: "worldcompute".into(),
-        }
+        Self { endpoint: endpoint.into(), service_name: "worldcompute".into() }
     }
 }
 
@@ -72,9 +69,10 @@ fn init_otlp_tracer(
 
     let provider = opentelemetry_sdk::trace::TracerProvider::builder()
         .with_batch_exporter(exporter, opentelemetry_sdk::runtime::Tokio)
-        .with_resource(opentelemetry_sdk::Resource::new(vec![
-            opentelemetry::KeyValue::new("service.name", config.service_name.clone()),
-        ]))
+        .with_resource(opentelemetry_sdk::Resource::new(vec![opentelemetry::KeyValue::new(
+            "service.name",
+            config.service_name.clone(),
+        )]))
         .build();
 
     let tracer = provider.tracer("worldcompute");

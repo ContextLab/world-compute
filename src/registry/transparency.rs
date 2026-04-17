@@ -46,11 +46,7 @@ pub fn build_metadata() -> BuildMetadata {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TransparencyLogResult {
     /// Entry recorded with the given log index and Rekor entry UUID.
-    Recorded {
-        log_index: String,
-        entry_uuid: String,
-        timestamp: Timestamp,
-    },
+    Recorded { log_index: String, entry_uuid: String, timestamp: Timestamp },
     /// Log service unavailable.
     Unavailable(String),
 }
@@ -99,18 +95,14 @@ fn submit_to_rekor(body: &serde_json::Value) -> TransparencyLogResult {
     let resp = match client.post(&url).json(body).send() {
         Ok(r) => r,
         Err(e) => {
-            return TransparencyLogResult::Unavailable(format!(
-                "Rekor request failed: {e}"
-            ));
+            return TransparencyLogResult::Unavailable(format!("Rekor request failed: {e}"));
         }
     };
 
     if !resp.status().is_success() {
         let status = resp.status();
         let text = resp.text().unwrap_or_default();
-        return TransparencyLogResult::Unavailable(format!(
-            "Rekor returned HTTP {status}: {text}"
-        ));
+        return TransparencyLogResult::Unavailable(format!("Rekor returned HTTP {status}: {text}"));
     }
 
     // Rekor returns a JSON object where the single key is the entry UUID
@@ -131,11 +123,7 @@ fn submit_to_rekor(body: &serde_json::Value) -> TransparencyLogResult {
             .map(|i| i.to_string())
             .unwrap_or_else(|| uuid.clone());
 
-        TransparencyLogResult::Recorded {
-            log_index,
-            entry_uuid: uuid,
-            timestamp: Timestamp::now(),
-        }
+        TransparencyLogResult::Recorded { log_index, entry_uuid: uuid, timestamp: Timestamp::now() }
     } else {
         TransparencyLogResult::Unavailable("Rekor returned empty response".into())
     }

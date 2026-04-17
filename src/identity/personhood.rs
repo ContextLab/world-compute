@@ -67,8 +67,8 @@ pub fn brightid_link_url(context_id: &str) -> String {
 /// In production, it should be called at enrollment time and
 /// re-verified at trust score recalculation intervals.
 pub fn verify_personhood(context_id: &str) -> PersonhoodResult {
-    let base_url = std::env::var("BRIGHTID_NODE_URL")
-        .unwrap_or_else(|_| BRIGHTID_NODE_URL.to_string());
+    let base_url =
+        std::env::var("BRIGHTID_NODE_URL").unwrap_or_else(|_| BRIGHTID_NODE_URL.to_string());
     let url = format!("{base_url}/verifications/{BRIGHTID_CONTEXT}/{context_id}");
 
     // Use a blocking HTTP client for simplicity.
@@ -134,14 +134,11 @@ fn ureq_get_brightid(url: &str) -> Result<BrightIdVerification, String> {
         return Err(format!("BrightID returned status {status}"));
     }
 
-    let api_response: BrightIdApiResponse = response
-        .json()
-        .map_err(|e| format!("BrightID response parse failed: {e}"))?;
+    let api_response: BrightIdApiResponse =
+        response.json().map_err(|e| format!("BrightID response parse failed: {e}"))?;
 
     if let Some(true) = api_response.error {
-        return Err(
-            api_response.error_message.unwrap_or_else(|| "Unknown BrightID error".into())
-        );
+        return Err(api_response.error_message.unwrap_or_else(|| "Unknown BrightID error".into()));
     }
 
     api_response.data.ok_or_else(|| "BrightID response missing data field".into())

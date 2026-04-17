@@ -5,10 +5,10 @@
 //! placeholder so the rest of the system can be wired up without a live
 //! Rekor endpoint.
 
-use base64::Engine;
 use crate::error::{ErrorCode, WcError, WcResult};
 use crate::ledger::entry::MerkleRoot;
 use crate::types::Timestamp;
+use base64::Engine;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 
@@ -71,12 +71,8 @@ pub fn anchor_merkle_root(root: &MerkleRoot) -> WcResult<MerkleRootAnchor> {
     {
         Ok(resp) if resp.status().is_success() => {
             // Rekor returns { "<uuid>": { ... } }
-            let parsed: HashMap<String, serde_json::Value> =
-                resp.json().unwrap_or_default();
-            parsed
-                .into_keys()
-                .next()
-                .unwrap_or_else(|| offline_entry_id(&root.root_hash))
+            let parsed: HashMap<String, serde_json::Value> = resp.json().unwrap_or_default();
+            parsed.into_keys().next().unwrap_or_else(|| offline_entry_id(&root.root_hash))
         }
         _ => {
             // Network error or non-success status — fall back to offline ID.
@@ -125,10 +121,7 @@ pub fn verify_anchor(anchor: &MerkleRootAnchor) -> WcResult<bool> {
 
     // Validate that the entry UUID is a valid hex string (Rekor UUIDs and
     // our offline IDs are both hex-encoded).
-    let is_valid_hex = anchor
-        .rekor_entry_id
-        .chars()
-        .all(|c| c.is_ascii_hexdigit());
+    let is_valid_hex = anchor.rekor_entry_id.chars().all(|c| c.is_ascii_hexdigit());
 
     if !is_valid_hex {
         return Err(WcError::new(

@@ -272,15 +272,11 @@ pub fn manifest_signing_bytes(manifest: &JobManifest) -> Vec<u8> {
 fn verify_ed25519(public_key: &[u8], message: &[u8], signature: &[u8]) -> Result<bool, String> {
     use ed25519_dalek::{Signature, VerifyingKey};
 
-    let pk_bytes: [u8; 32] = public_key
-        .try_into()
-        .map_err(|_| "Invalid public key length")?;
+    let pk_bytes: [u8; 32] = public_key.try_into().map_err(|_| "Invalid public key length")?;
     let verifying_key =
         VerifyingKey::from_bytes(&pk_bytes).map_err(|e| format!("Invalid public key: {e}"))?;
 
-    let sig_bytes: [u8; 64] = signature
-        .try_into()
-        .map_err(|_| "Invalid signature length")?;
+    let sig_bytes: [u8; 64] = signature.try_into().map_err(|_| "Invalid signature length")?;
     let sig = Signature::from_bytes(&sig_bytes);
 
     use ed25519_dalek::Verifier;

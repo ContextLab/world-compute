@@ -12,23 +12,13 @@ fn generate_root_ca() -> (rcgen::CertifiedKey, Vec<u8>) {
     let mut params = rcgen::CertificateParams::new(vec![]).unwrap();
     params.is_ca = rcgen::IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
     params.distinguished_name = rcgen::DistinguishedName::new();
-    params
-        .distinguished_name
-        .push(rcgen::DnType::CommonName, "Test Root CA");
-    params
-        .distinguished_name
-        .push(rcgen::DnType::OrganizationName, "Test Org");
+    params.distinguished_name.push(rcgen::DnType::CommonName, "Test Root CA");
+    params.distinguished_name.push(rcgen::DnType::OrganizationName, "Test Org");
 
     let key_pair = rcgen::KeyPair::generate().unwrap();
     let cert = params.self_signed(&key_pair).unwrap();
     let der = cert.der().to_vec();
-    (
-        rcgen::CertifiedKey {
-            cert,
-            key_pair,
-        },
-        der,
-    )
+    (rcgen::CertifiedKey { cert, key_pair }, der)
 }
 
 /// Generate an intermediate CA certificate signed by the given issuer.
@@ -39,36 +29,21 @@ fn generate_intermediate_ca(
     let mut params = rcgen::CertificateParams::new(vec![]).unwrap();
     params.is_ca = rcgen::IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
     params.distinguished_name = rcgen::DistinguishedName::new();
-    params
-        .distinguished_name
-        .push(rcgen::DnType::CommonName, "Test Intermediate CA");
-    params
-        .distinguished_name
-        .push(rcgen::DnType::OrganizationName, "Test Org");
+    params.distinguished_name.push(rcgen::DnType::CommonName, "Test Intermediate CA");
+    params.distinguished_name.push(rcgen::DnType::OrganizationName, "Test Org");
 
     let key_pair = rcgen::KeyPair::generate().unwrap();
     let cert = params.signed_by(&key_pair, issuer_cert, issuer_key).unwrap();
     let der = cert.der().to_vec();
-    (
-        rcgen::CertifiedKey {
-            cert,
-            key_pair,
-        },
-        der,
-    )
+    (rcgen::CertifiedKey { cert, key_pair }, der)
 }
 
 /// Generate a leaf (end-entity) certificate signed by the given issuer.
-fn generate_leaf_cert(
-    issuer_cert: &rcgen::Certificate,
-    issuer_key: &rcgen::KeyPair,
-) -> Vec<u8> {
+fn generate_leaf_cert(issuer_cert: &rcgen::Certificate, issuer_key: &rcgen::KeyPair) -> Vec<u8> {
     let mut params = rcgen::CertificateParams::new(vec!["localhost".into()]).unwrap();
     params.is_ca = rcgen::IsCa::NoCa;
     params.distinguished_name = rcgen::DistinguishedName::new();
-    params
-        .distinguished_name
-        .push(rcgen::DnType::CommonName, "Test Leaf Cert");
+    params.distinguished_name.push(rcgen::DnType::CommonName, "Test Leaf Cert");
 
     let key_pair = rcgen::KeyPair::generate().unwrap();
     let cert = params.signed_by(&key_pair, issuer_cert, issuer_key).unwrap();
@@ -78,8 +53,7 @@ fn generate_leaf_cert(
 /// Build a valid 3-cert chain: leaf -> intermediate -> root.
 fn build_valid_chain() -> Vec<Vec<u8>> {
     let (root, root_der) = generate_root_ca();
-    let (intermediate, intermediate_der) =
-        generate_intermediate_ca(&root.cert, &root.key_pair);
+    let (intermediate, intermediate_der) = generate_intermediate_ca(&root.cert, &root.key_pair);
     let leaf_der = generate_leaf_cert(&intermediate.cert, &intermediate.key_pair);
     vec![leaf_der, intermediate_der, root_der]
 }
@@ -174,10 +148,7 @@ fn tpm2_misordered_chain_rejected() {
     let reversed: Vec<Vec<u8>> = chain.into_iter().rev().collect();
     let validator = Tpm2ChainValidator;
     let valid = validator.validate_chain(b"dummy-quote", &reversed).unwrap();
-    assert!(
-        !valid,
-        "Misordered chain (root-first) should be rejected"
-    );
+    assert!(!valid, "Misordered chain (root-first) should be rejected");
 }
 
 // ─── Garbage DER rejected with error ────────────────────────────────────
@@ -187,10 +158,7 @@ fn tpm2_garbage_der_returns_error() {
     let garbage = vec![vec![0xFF, 0xFE, 0xFD], vec![0x00, 0x01, 0x02]];
     let validator = Tpm2ChainValidator;
     let result = validator.validate_chain(b"dummy-quote", &garbage);
-    assert!(
-        result.is_err(),
-        "Garbage DER bytes should return an error"
-    );
+    assert!(result.is_err(), "Garbage DER bytes should return an error");
 }
 
 // ─── Two unrelated certs (issuer mismatch) ──────────────────────────────
@@ -203,23 +171,14 @@ fn sev_snp_unrelated_certs_rejected() {
     let mut params2 = rcgen::CertificateParams::new(vec![]).unwrap();
     params2.is_ca = rcgen::IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
     params2.distinguished_name = rcgen::DistinguishedName::new();
-    params2
-        .distinguished_name
-        .push(rcgen::DnType::CommonName, "Different Root CA");
-    params2
-        .distinguished_name
-        .push(rcgen::DnType::OrganizationName, "Other Org");
+    params2.distinguished_name.push(rcgen::DnType::CommonName, "Different Root CA");
+    params2.distinguished_name.push(rcgen::DnType::OrganizationName, "Other Org");
     let key2 = rcgen::KeyPair::generate().unwrap();
     let cert2 = params2.self_signed(&key2).unwrap();
     let root2_der = cert2.der().to_vec();
     let validator = SevSnpChainValidator;
-    let valid = validator
-        .validate_chain(b"dummy-quote", &[root1_der, root2_der])
-        .unwrap();
-    assert!(
-        !valid,
-        "Two unrelated certs should fail chain ordering check"
-    );
+    let valid = validator.validate_chain(b"dummy-quote", &[root1_der, root2_der]).unwrap();
+    assert!(!valid, "Two unrelated certs should fail chain ordering check");
 }
 
 // ─── Platform name correctness ──────────────────────────────────────────
