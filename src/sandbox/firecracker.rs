@@ -13,6 +13,8 @@ use crate::error::{ErrorCode, WcError};
 use crate::sandbox::egress::EgressPolicy;
 use crate::sandbox::{Sandbox, SandboxCapability};
 use crate::types::{Cid, DurationMs};
+#[cfg(target_os = "linux")]
+use std::path::Path;
 use std::path::PathBuf;
 
 /// Firecracker VM configuration.
@@ -43,6 +45,155 @@ impl Default for FirecrackerConfig {
             egress_policy: EgressPolicy::deny_all(),
         }
     }
+}
+
+/// Validated Firecracker VM configuration for API socket calls.
+#[derive(Debug, Clone)]
+pub struct FirecrackerVmConfig {
+    /// Number of vCPUs (must be >= 1).
+    pub vcpu_count: u32,
+    /// Memory in MiB (must be >= 128).
+    pub mem_size_mib: u32,
+    /// Path to the guest kernel image.
+    pub kernel_image_path: PathBuf,
+    /// Kernel boot arguments.
+    pub boot_args: String,
+    /// Path to the root filesystem image.
+    pub rootfs_path: PathBuf,
+    /// Host TAP device name for networking.
+    pub host_dev_name: String,
+}
+
+impl FirecrackerVmConfig {
+    /// Create and validate a VM configuration.
+    pub fn new(
+        vcpu_count: u32,
+        mem_size_mib: u32,
+        kernel_image_path: PathBuf,
+        rootfs_path: PathBuf,
+    ) -> Result<Self, WcError> {
+        if vcpu_count < 1 {
+            return Err(WcError::new(ErrorCode::InvalidManifest, "vcpu_count must be >= 1"));
+        }
+        if mem_size_mib < 128 {
+            return Err(WcError::new(ErrorCode::InvalidManifest, "mem_size_mib must be >= 128"));
+        }
+        Ok(Self {
+            vcpu_count,
+            mem_size_mib,
+            kernel_image_path,
+            boot_args: "console=ttyS0 reboot=k panic=1 pci=off".to_string(),
+            rootfs_path,
+            host_dev_name: "tap0".to_string(),
+        })
+    }
+}
+
+/// Send an HTTP PUT request over a Unix domain socket to the Firecracker API.
+///
+/// This uses `std::os::unix::net::UnixStream` to write a raw HTTP/1.1 PUT
+/// request and read the response status. No external HTTP dependencies needed.
+#[cfg(target_os = "linux")]
+fn api_put(socket_path: &Path, endpoint: &str, body: &str) -> Result<(), WcError> {
+    use std::io::{Read, Write};
+    use std::os::unix::net::UnixStream;
+
+    let mut stream = UnixStream::connect(socket_path).map_err(|e| {
+        WcError::new(
+            ErrorCode::SandboxUnavailable,
+            format!("Failed to connect to Firecracker API socket: {e}"),
+        )
+    })?;
+
+    // Set a timeout to avoid hanging indefinitely
+    stream.set_read_timeout(Some(std::time::Duration::from_secs(5))).ok();
+    stream.set_write_timeout(Some(std::time::Duration::from_secs(5))).ok();
+
+    let request = format!(
+        "PUT {} HTTP/1.1\r\nHost: localhost\r\nContent-Type: application/json\r\nContent-Length: {}\r\nAccept: application/json\r\n\r\n{}",
+        endpoint,
+        body.len(),
+        body,
+    );
+
+    stream.write_all(request.as_bytes()).map_err(|e| {
+        WcError::new(ErrorCode::Internal, format!("Failed to write to Firecracker API socket: {e}"))
+    })?;
+
+    // Read the response (we only need the status line)
+    let mut buf = [0u8; 4096];
+    let n = stream.read(&mut buf).map_err(|e| {
+        WcError::new(
+            ErrorCode::Internal,
+            format!("Failed to read from Firecracker API socket: {e}"),
+        )
+    })?;
+
+    let response = String::from_utf8_lossy(&buf[..n]);
+
+    // Parse status code from "HTTP/1.1 204 ..." or "HTTP/1.1 200 ..."
+    let status_code = response
+        .lines()
+        .next()
+        .and_then(|line| line.split_whitespace().nth(1))
+        .and_then(|code| code.parse::<u16>().ok())
+        .unwrap_or(0);
+
+    if !(200..300).contains(&status_code) {
+        return Err(WcError::new(
+            ErrorCode::Internal,
+            format!("Firecracker API PUT {endpoint} failed with status {status_code}: {response}"),
+        ));
+    }
+
+    tracing::debug!(endpoint, status_code, "Firecracker API PUT succeeded");
+    Ok(())
+}
+
+/// Configure the Firecracker VM via its API socket.
+///
+/// Sends the full configuration sequence:
+/// 1. PUT /machine-config
+/// 2. PUT /boot-source
+/// 3. PUT /drives/rootfs
+/// 4. PUT /network-interfaces/eth0
+/// 5. PUT /actions (InstanceStart)
+#[cfg(target_os = "linux")]
+fn configure_and_start_vm(
+    socket_path: &Path,
+    vm_config: &FirecrackerVmConfig,
+) -> Result<(), WcError> {
+    // 1. Machine configuration
+    let machine_cfg = format!(
+        r#"{{"vcpu_count":{},"mem_size_mib":{}}}"#,
+        vm_config.vcpu_count, vm_config.mem_size_mib,
+    );
+    api_put(socket_path, "/machine-config", &machine_cfg)?;
+
+    // 2. Boot source
+    let boot_source = format!(
+        r#"{{"kernel_image_path":"{}","boot_args":"{}"}}"#,
+        vm_config.kernel_image_path.display(),
+        vm_config.boot_args,
+    );
+    api_put(socket_path, "/boot-source", &boot_source)?;
+
+    // 3. Root drive
+    let drive = format!(
+        r#"{{"drive_id":"rootfs","path_on_host":"{}","is_root_device":true,"is_read_only":true}}"#,
+        vm_config.rootfs_path.display(),
+    );
+    api_put(socket_path, "/drives/rootfs", &drive)?;
+
+    // 4. Network interface
+    let net_iface =
+        format!(r#"{{"iface_id":"eth0","host_dev_name":"{}"}}"#, vm_config.host_dev_name,);
+    api_put(socket_path, "/network-interfaces/eth0", &net_iface)?;
+
+    // 5. Start the instance
+    api_put(socket_path, "/actions", r#"{"action_type":"InstanceStart"}"#)?;
+
+    Ok(())
 }
 
 /// Firecracker microVM sandbox state.
@@ -224,10 +375,27 @@ impl Sandbox for FirecrackerSandbox {
 
             self.fc_pid = Some(child.id());
 
-            // TODO: Configure VM via API socket (PUT /machine-config, PUT /boot-source,
-            // PUT /drives/rootfs, PUT /network-interfaces/eth0), then PUT /actions {type: InstanceStart}
+            // Wait briefly for the API socket to become available
+            for _ in 0..50 {
+                if self.api_socket.exists() {
+                    break;
+                }
+                std::thread::sleep(std::time::Duration::from_millis(100));
+            }
 
-            tracing::info!(pid = child.id(), "Firecracker process started");
+            // Build validated VM config
+            let rootfs_path = self.work_dir.join("rootfs.ext4");
+            let vm_config = FirecrackerVmConfig::new(
+                self.config.vcpu_count,
+                self.config.mem_size_mib,
+                self.config.kernel_image.clone(),
+                rootfs_path,
+            )?;
+
+            // Configure VM and start instance via API socket
+            configure_and_start_vm(&self.api_socket, &vm_config)?;
+
+            tracing::info!(pid = child.id(), "Firecracker process started and configured");
             self.running = true;
             Ok(())
         }
@@ -271,10 +439,13 @@ impl Sandbox for FirecrackerSandbox {
                 "Creating Firecracker snapshot"
             );
 
-            // TODO: HTTP PUT to API socket for snapshot creation
-            // For now, write placeholder to verify path logic
-            std::fs::write(&snapshot_path, b"snapshot-placeholder")?;
-            std::fs::write(&mem_path, b"mem-placeholder")?;
+            // Send snapshot creation request via API socket
+            let snapshot_body = format!(
+                r#"{{"snapshot_type":"Full","snapshot_path":"{}","mem_file_path":"{}"}}"#,
+                snapshot_path.display(),
+                mem_path.display(),
+            );
+            api_put(&self.api_socket, "/snapshot/create", &snapshot_body)?;
         }
 
         let elapsed = start.elapsed();
@@ -385,5 +556,72 @@ mod tests {
         } else {
             assert!(!FirecrackerSandbox::kvm_available());
         }
+    }
+
+    #[test]
+    fn vm_config_valid() {
+        let cfg = FirecrackerVmConfig::new(
+            2,
+            256,
+            PathBuf::from("/boot/vmlinux"),
+            PathBuf::from("/tmp/rootfs.ext4"),
+        );
+        assert!(cfg.is_ok());
+        let cfg = cfg.unwrap();
+        assert_eq!(cfg.vcpu_count, 2);
+        assert_eq!(cfg.mem_size_mib, 256);
+        assert_eq!(cfg.boot_args, "console=ttyS0 reboot=k panic=1 pci=off");
+        assert_eq!(cfg.host_dev_name, "tap0");
+    }
+
+    #[test]
+    fn vm_config_rejects_zero_vcpus() {
+        let result = FirecrackerVmConfig::new(
+            0,
+            256,
+            PathBuf::from("/boot/vmlinux"),
+            PathBuf::from("/tmp/rootfs.ext4"),
+        );
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("vcpu_count"), "Error should mention vcpu_count: {err}");
+    }
+
+    #[test]
+    fn vm_config_rejects_low_memory() {
+        let result = FirecrackerVmConfig::new(
+            1,
+            64,
+            PathBuf::from("/boot/vmlinux"),
+            PathBuf::from("/tmp/rootfs.ext4"),
+        );
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(
+            err.to_string().contains("mem_size_mib"),
+            "Error should mention mem_size_mib: {err}"
+        );
+    }
+
+    #[test]
+    fn vm_config_accepts_minimum_values() {
+        let result = FirecrackerVmConfig::new(
+            1,
+            128,
+            PathBuf::from("/boot/vmlinux"),
+            PathBuf::from("/tmp/rootfs.ext4"),
+        );
+        assert!(result.is_ok());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn api_put_fails_on_missing_socket() {
+        let result = api_put(
+            Path::new("/tmp/nonexistent-wc-test.sock"),
+            "/machine-config",
+            r#"{"vcpu_count":1,"mem_size_mib":128}"#,
+        );
+        assert!(result.is_err());
     }
 }

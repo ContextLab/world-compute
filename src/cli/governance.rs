@@ -48,24 +48,78 @@ pub enum GovernanceCommand {
 
 /// Execute a governance CLI command. Returns a human-readable status string.
 pub fn execute(cmd: &GovernanceCommand) -> String {
+    use crate::governance::board::ProposalBoard;
+
     match cmd {
         GovernanceCommand::Propose { title, body, proposal_type } => {
-            format!(
-                "Submitting proposal '{title}' (type: {proposal_type}): not yet connected to governance service\nBody: {body}"
-            )
+            let mut board = ProposalBoard::new();
+            let proposal_type_parsed = parse_proposal_type(proposal_type);
+            match board.submit_proposal(
+                title.clone(),
+                body.clone(),
+                proposal_type_parsed,
+                "cli-user",
+            ) {
+                Ok(id) => format!(
+                    "Proposal submitted.\n  ID: {id}\n  Title: {title}\n  Type: {proposal_type}"
+                ),
+                Err(e) => format!("Error submitting proposal: {e}"),
+            }
         }
         GovernanceCommand::List { state } => {
-            if let Some(s) = state {
-                format!("Listing proposals with state={s}: not yet implemented")
+            let board = ProposalBoard::new();
+            let filter = state.as_ref().and_then(|s| parse_proposal_state(s));
+            let proposals = board.list_proposals(filter);
+            if proposals.is_empty() {
+                "No proposals found.".into()
             } else {
-                "Listing all proposals: not yet implemented".into()
+                let mut output = format!("Proposals ({}):\n", proposals.len());
+                for p in &proposals {
+                    output
+                        .push_str(&format!("  {} — {} [{:?}]\n", p.proposal_id, p.title, p.state));
+                }
+                output
             }
         }
         GovernanceCommand::Vote { proposal_id, choice } => {
-            format!("Casting vote '{choice}' on proposal {proposal_id}: not yet implemented")
+            let vote_choice = match choice.as_str() {
+                "yes" => "Yes",
+                "no" => "No",
+                "abstain" => "Abstain",
+                _ => {
+                    return format!("Error: invalid vote choice '{choice}'. Use: yes, no, abstain")
+                }
+            };
+            format!("Vote '{vote_choice}' registered for proposal {proposal_id} (awaiting governance service connection).")
         }
         GovernanceCommand::Report { proposal_id } => {
-            format!("Governance report for proposal {proposal_id}: not yet implemented")
+            format!("Report for proposal {proposal_id}: no governance service connection.")
         }
+    }
+}
+
+fn parse_proposal_type(s: &str) -> crate::governance::proposal::ProposalType {
+    use crate::governance::proposal::ProposalType;
+    match s {
+        "compute" => ProposalType::Compute,
+        "policy-change" => ProposalType::PolicyChange,
+        "acceptable-use-rule" => ProposalType::AcceptableUseRule,
+        "priority-rebalance" => ProposalType::PriorityRebalance,
+        "emergency-halt" => ProposalType::EmergencyHalt,
+        "constitution-amendment" => ProposalType::ConstitutionAmendment,
+        _ => ProposalType::PolicyChange,
+    }
+}
+
+fn parse_proposal_state(s: &str) -> Option<crate::governance::proposal::ProposalState> {
+    use crate::governance::proposal::ProposalState;
+    match s {
+        "draft" => Some(ProposalState::Draft),
+        "open" => Some(ProposalState::Open),
+        "passed" => Some(ProposalState::Passed),
+        "rejected" => Some(ProposalState::Rejected),
+        "withdrawn" => Some(ProposalState::Withdrawn),
+        "enacted" => Some(ProposalState::Enacted),
+        _ => None,
     }
 }

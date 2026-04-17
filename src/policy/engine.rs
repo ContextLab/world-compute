@@ -210,7 +210,7 @@ mod tests {
 
     fn test_manifest() -> JobManifest {
         let cid = compute_cid(b"test workload image").unwrap();
-        JobManifest {
+        let mut manifest = JobManifest {
             manifest_cid: None,
             name: "test-job".into(),
             workload_type: WorkloadType::WasmModule,
@@ -232,14 +232,24 @@ mod tests {
             verification: VerificationMethod::ReplicatedQuorum,
             acceptable_use_classes: vec![crate::acceptable_use::AcceptableUseClass::Scientific],
             max_wallclock_ms: 3_600_000,
-            submitter_signature: vec![1u8; 64], // non-zero
-        }
+            submitter_signature: vec![0u8; 64], // placeholder — signed below
+        };
+
+        // Sign with a real Ed25519 key
+        use ed25519_dalek::{Signer, SigningKey};
+        let signing_key = SigningKey::from_bytes(&[42u8; 32]);
+        let message = crate::policy::rules::manifest_signing_bytes(&manifest);
+        let signature = signing_key.sign(&message);
+        manifest.submitter_signature = signature.to_bytes().to_vec();
+        manifest
     }
 
     fn test_context() -> SubmissionContext {
+        use ed25519_dalek::SigningKey;
+        let signing_key = SigningKey::from_bytes(&[42u8; 32]);
         SubmissionContext {
             submitter_peer_id: "12D3KooWTestPeerId".into(),
-            submitter_public_key: vec![0u8; 32],
+            submitter_public_key: signing_key.verifying_key().to_bytes().to_vec(),
             submitter_hp_score: 10,
             submitter_banned: false,
             epoch_submission_count: 0,

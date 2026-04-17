@@ -60,6 +60,52 @@ impl AppleVfSandbox {
         cfg!(target_os = "macos")
     }
 
+    /// Call the Swift helper binary via subprocess.
+    ///
+    /// The helper binary (`wc-apple-vf-helper`) accepts JSON commands on stdin
+    /// and returns JSON results on stdout. This avoids unsafe FFI to
+    /// Objective-C/Swift and allows the helper to be code-signed independently.
+    #[cfg(target_os = "macos")]
+    fn call_helper(&self, json_command: &str) -> Result<String, WcError> {
+        use std::io::Write;
+        use std::process::{Command, Stdio};
+
+        let helper_path =
+            std::env::var("WC_APPLE_VF_HELPER").unwrap_or_else(|_| "wc-apple-vf-helper".into());
+
+        let mut child = Command::new(&helper_path)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_err(|e| {
+                WcError::new(
+                    ErrorCode::SandboxUnavailable,
+                    format!("Cannot start Apple VF helper '{helper_path}': {e}. Set WC_APPLE_VF_HELPER to the correct path."),
+                )
+            })?;
+
+        if let Some(mut stdin) = child.stdin.take() {
+            stdin.write_all(json_command.as_bytes()).map_err(|e| {
+                WcError::new(ErrorCode::Internal, format!("Cannot write to helper stdin: {e}"))
+            })?;
+        }
+
+        let output = child.wait_with_output().map_err(|e| {
+            WcError::new(ErrorCode::Internal, format!("Helper process failed: {e}"))
+        })?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(WcError::new(
+                ErrorCode::Internal,
+                format!("Apple VF helper exited with {}: {stderr}", output.status),
+            ));
+        }
+
+        Ok(String::from_utf8_lossy(&output.stdout).into_owned())
+    }
+
     /// Configure PF rules for network isolation on macOS.
     fn configure_network(&self) -> Result<(), WcError> {
         if !self.config.egress_policy.egress_allowed {
@@ -114,38 +160,29 @@ impl Sandbox for AppleVfSandbox {
     fn start(&mut self) -> Result<(), WcError> {
         #[cfg(target_os = "macos")]
         {
-            // Real implementation:
-            // 1. Create VZVirtualMachineConfiguration with:
-            //    - VZLinuxBootLoader (kernel + initrd from workload)
-            //    - VZVirtioBlockDeviceConfiguration (rootfs disk)
-            //    - VZVirtioNetworkDeviceConfiguration (isolated NAT or null)
-            //    - VZVirtioMemoryBalloonDeviceConfiguration
-            // 2. Validate configuration
-            // 3. Create VZVirtualMachine and call start()
-            // 4. Wait for guest agent readiness
-
-            // For now, we use the Swift bridge or command-line tooling:
-            tracing::info!(
-                work_dir = %self.work_dir.display(),
-                "Starting Apple VF virtual machine"
-            );
-            // TODO: Bridge to Swift Virtualization.framework API via FFI or
-            // subprocess calling a Swift helper binary
+            let config_json = serde_json::json!({
+                "command": "start",
+                "cpu_count": self.config.cpu_count,
+                "mem_bytes": self.config.mem_bytes,
+                "disk_path": self.work_dir.join("disk.img").display().to_string(),
+                "work_dir": self.work_dir.display().to_string(),
+            });
+            self.call_helper(&config_json.to_string())?;
         }
 
         self.running = true;
-        tracing::info!("Apple VF sandbox started");
+        tracing::info!(work_dir = %self.work_dir.display(), "Apple VF sandbox started");
         Ok(())
     }
 
     fn freeze(&mut self) -> Result<(), WcError> {
-        // VZVirtualMachine.pause() — suspends the VM's vCPUs.
-        // On macOS, this is an async operation that completes quickly.
-        // Must complete within 10ms (FR-040).
         #[cfg(target_os = "macos")]
         {
-            tracing::debug!("Calling VZVirtualMachine.pause()");
-            // TODO: FFI call to VZVirtualMachine.pause(completionHandler:)
+            let cmd = serde_json::json!({
+                "command": "pause",
+                "work_dir": self.work_dir.display().to_string(),
+            });
+            self.call_helper(&cmd.to_string())?;
         }
 
         self.frozen = true;
@@ -155,17 +192,22 @@ impl Sandbox for AppleVfSandbox {
 
     fn checkpoint(&mut self, budget: DurationMs) -> Result<Cid, WcError> {
         let start = std::time::Instant::now();
+        let state_path = self.work_dir.join("vm-state.bin");
 
         #[cfg(target_os = "macos")]
         {
-            let state_path = self.work_dir.join("vm-state.bin");
-            tracing::info!(
-                state = %state_path.display(),
-                budget_ms = budget.0,
-                "Saving VM state via VZVirtualMachine.saveMachineStateTo"
-            );
-            // TODO: VZVirtualMachine.saveMachineStateTo(url:completionHandler:)
-            std::fs::write(&state_path, b"vm-state-placeholder")?;
+            let cmd = serde_json::json!({
+                "command": "checkpoint",
+                "state_path": state_path.display().to_string(),
+                "work_dir": self.work_dir.display().to_string(),
+            });
+            self.call_helper(&cmd.to_string())?;
+        }
+
+        #[cfg(not(target_os = "macos"))]
+        {
+            // On non-macOS, write a placeholder for testing
+            std::fs::write(&state_path, b"vm-state-non-macos")?;
         }
 
         let elapsed = start.elapsed();
@@ -173,7 +215,7 @@ impl Sandbox for AppleVfSandbox {
             tracing::warn!(elapsed_ms = elapsed.as_millis() as u64, "Checkpoint exceeded budget");
         }
 
-        let state_data = std::fs::read(self.work_dir.join("vm-state.bin")).unwrap_or_default();
+        let state_data = std::fs::read(&state_path).unwrap_or_default();
         crate::data_plane::cid_store::compute_cid(&state_data)
             .map_err(|e| WcError::new(ErrorCode::Internal, format!("CID computation failed: {e}")))
     }
@@ -181,8 +223,11 @@ impl Sandbox for AppleVfSandbox {
     fn terminate(&mut self) -> Result<(), WcError> {
         #[cfg(target_os = "macos")]
         {
-            tracing::info!("Calling VZVirtualMachine.stop()");
-            // TODO: VZVirtualMachine.stop(completionHandler:)
+            let cmd = serde_json::json!({
+                "command": "stop",
+                "work_dir": self.work_dir.display().to_string(),
+            });
+            let _ = self.call_helper(&cmd.to_string()); // Best-effort on terminate
         }
 
         self.running = false;

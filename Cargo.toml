@@ -83,6 +83,15 @@ tracing-opentelemetry = "0.28"
 # WASM runtime
 wasmtime = "27"
 
+# HTTP client (BrightID, OAuth2, Rekor, Apple DeviceCheck, Twilio)
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "blocking"] }
+
+# OAuth2 authorization code flow
+oauth2 = "4"
+
+# X.509 certificate chain parsing (attestation)
+x509-parser = "0.16"
+
 # Misc
 regex-lite = "0.1"
 thiserror = "2"
@@ -91,6 +100,9 @@ chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 hex = "0.4"
 base64 = "0.22"
+
+[dev-dependencies]
+rcgen = "0.13"
 
 [build-dependencies]
 tonic-build = "0.12"

@@ -5,7 +5,10 @@
 //! Per FR-S051: all workload artifacts MUST carry provenance attestations.
 
 use crate::types::Timestamp;
+use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
+use std::collections::HashMap;
 
 /// Provenance attestation linking an artifact to its build pipeline.
 /// Per FR-S051 and data-model.md.
@@ -42,10 +45,88 @@ pub fn build_metadata() -> BuildMetadata {
 /// Result of a transparency log submission.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TransparencyLogResult {
-    /// Entry recorded with the given log index.
-    Recorded { log_index: String, timestamp: Timestamp },
+    /// Entry recorded with the given log index and Rekor entry UUID.
+    Recorded { log_index: String, entry_uuid: String, timestamp: Timestamp },
     /// Log service unavailable.
     Unavailable(String),
+}
+
+/// Return the Rekor base URL, configurable via `REKOR_URL` env var.
+fn rekor_base_url() -> String {
+    std::env::var("REKOR_URL").unwrap_or_else(|_| "https://rekor.sigstore.dev".into())
+}
+
+/// Build a hashedrekord JSON body for Rekor.
+fn build_hashedrekord_body(artifact_hash_hex: &str, signature_b64: &str) -> serde_json::Value {
+    serde_json::json!({
+        "apiVersion": "0.0.1",
+        "kind": "hashedrekord",
+        "spec": {
+            "data": {
+                "hash": {
+                    "algorithm": "sha256",
+                    "value": artifact_hash_hex
+                }
+            },
+            "signature": {
+                "content": signature_b64,
+                "publicKey": {
+                    "content": ""
+                }
+            }
+        }
+    })
+}
+
+/// Submit an entry to the Rekor transparency log and parse the response.
+fn submit_to_rekor(body: &serde_json::Value) -> TransparencyLogResult {
+    let url = format!("{}/api/v1/log/entries", rekor_base_url());
+
+    let client = match reqwest::blocking::Client::builder()
+        .timeout(std::time::Duration::from_secs(30))
+        .build()
+    {
+        Ok(c) => c,
+        Err(e) => {
+            return TransparencyLogResult::Unavailable(format!("HTTP client error: {e}"));
+        }
+    };
+
+    let resp = match client.post(&url).json(body).send() {
+        Ok(r) => r,
+        Err(e) => {
+            return TransparencyLogResult::Unavailable(format!("Rekor request failed: {e}"));
+        }
+    };
+
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let text = resp.text().unwrap_or_default();
+        return TransparencyLogResult::Unavailable(format!("Rekor returned HTTP {status}: {text}"));
+    }
+
+    // Rekor returns a JSON object where the single key is the entry UUID
+    // and the value contains logIndex, body, etc.
+    let parsed: HashMap<String, serde_json::Value> = match resp.json() {
+        Ok(v) => v,
+        Err(e) => {
+            return TransparencyLogResult::Unavailable(format!(
+                "Failed to parse Rekor response: {e}"
+            ));
+        }
+    };
+
+    if let Some((uuid, entry)) = parsed.into_iter().next() {
+        let log_index = entry
+            .get("logIndex")
+            .and_then(|v| v.as_i64())
+            .map(|i| i.to_string())
+            .unwrap_or_else(|| uuid.clone());
+
+        TransparencyLogResult::Recorded { log_index, entry_uuid: uuid, timestamp: Timestamp::now() }
+    } else {
+        TransparencyLogResult::Unavailable("Rekor returned empty response".into())
+    }
 }
 
 /// Submit an artifact signature to the transparency log.
@@ -57,13 +138,16 @@ pub fn record_artifact_signature(
     signature: &[u8],
     provenance: &ProvenanceAttestation,
 ) -> TransparencyLogResult {
-    // TODO(T096): Integrate with Sigstore Rekor REST API:
-    // POST https://rekor.sigstore.dev/api/v1/log/entries
-    // with hashedrekord type containing artifact hash + signature
-    let _ = (artifact_cid, signature, provenance);
-    TransparencyLogResult::Unavailable(
-        "Sigstore Rekor integration pending (T096) — entries logged locally".into(),
-    )
+    let _ = provenance; // provenance metadata is for local audit; Rekor gets hash+sig
+
+    // Compute SHA-256 of the artifact CID string (content identifier).
+    let mut hasher = Sha256::new();
+    hasher.update(artifact_cid.as_bytes());
+    let artifact_hash_hex = format!("{:x}", hasher.finalize());
+
+    let signature_b64 = BASE64.encode(signature);
+    let body = build_hashedrekord_body(&artifact_hash_hex, &signature_b64);
+    submit_to_rekor(&body)
 }
 
 /// Submit a policy decision to the transparency log.
@@ -74,10 +158,20 @@ pub fn record_policy_decision(
     verdict: &str,
     policy_version: &str,
 ) -> TransparencyLogResult {
-    let _ = (decision_id, verdict, policy_version);
-    TransparencyLogResult::Unavailable(
-        "Sigstore Rekor integration pending (T096) — decisions logged locally".into(),
-    )
+    // Hash the decision payload for the Rekor entry.
+    let mut hasher = Sha256::new();
+    hasher.update(decision_id.as_bytes());
+    hasher.update(b":");
+    hasher.update(verdict.as_bytes());
+    hasher.update(b":");
+    hasher.update(policy_version.as_bytes());
+    let decision_hash_hex = format!("{:x}", hasher.finalize());
+
+    // Use the decision hash as a pseudo-signature (policy decisions are
+    // self-attested; the transparency log provides tamper-evidence).
+    let signature_b64 = BASE64.encode(decision_hash_hex.as_bytes());
+    let body = build_hashedrekord_body(&decision_hash_hex, &signature_b64);
+    submit_to_rekor(&body)
 }
 
 /// Release channel configuration per FR-S053.

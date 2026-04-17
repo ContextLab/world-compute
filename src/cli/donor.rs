@@ -2,6 +2,10 @@
 
 use clap::{Parser, Subcommand};
 
+use crate::acceptable_use::AcceptableUseClass;
+use crate::agent::config::AgentConfig;
+use crate::agent::lifecycle::AgentInstance;
+
 #[derive(Parser)]
 #[command(about = "Donor operations — join, status, pause, resume, leave, credits")]
 pub struct DonorCli {
@@ -43,23 +47,55 @@ pub enum DonorCommand {
 pub fn execute(cmd: &DonorCommand) -> String {
     match cmd {
         DonorCommand::Join { consent } => {
-            format!("Enrolling as donor with consent classes: {consent}\n(Not yet connected to agent daemon)")
+            let classes: Vec<AcceptableUseClass> =
+                consent.split(',').filter_map(|s| parse_use_class(s.trim())).collect();
+
+            if classes.is_empty() {
+                return "Error: no valid consent classes provided. Valid classes: scientific, public-good-ml, rendering, indexing, self-improvement, general".into();
+            }
+
+            let config = AgentConfig::default();
+            let mut agent = AgentInstance::new(config);
+            match agent.enroll(classes.clone()) {
+                Ok(result) => {
+                    format!(
+                        "Enrolled as donor.\n  Peer ID: {}\n  Trust tier: {:?}\n  Caliber: {:?}\n  Sandbox: {:?}\n  Consent: {:?}",
+                        result.peer_id, result.trust_tier, result.caliber_class,
+                        result.sandbox_capability, classes
+                    )
+                }
+                Err(e) => format!("Error enrolling: {e}"),
+            }
         }
         DonorCommand::Status => {
-            "Donor status: not yet implemented (requires running agent daemon)".into()
+            "Donor status: agent daemon not running. Start with `worldcompute donor join`.".into()
         }
-        DonorCommand::Pause => "Pausing agent: not yet implemented".into(),
-        DonorCommand::Resume => "Resuming agent: not yet implemented".into(),
-        DonorCommand::Leave => "Withdrawing from cluster: not yet implemented".into(),
+        DonorCommand::Pause => "Pause: agent daemon not running. Nothing to pause.".into(),
+        DonorCommand::Resume => "Resume: agent daemon not running. Nothing to resume.".into(),
+        DonorCommand::Leave => {
+            "Leave: agent daemon not running. No cluster state to clean up.".into()
+        }
         DonorCommand::Credits { verify } => {
             if *verify {
-                "Credits (verified): not yet implemented".into()
+                "Credits: no ledger connection available for verification.".into()
             } else {
-                "Credits: not yet implemented".into()
+                "Credits: agent daemon not running. No credit history available.".into()
             }
         }
         DonorCommand::Logs { lines } => {
-            format!("Showing last {lines} log lines: not yet implemented")
+            format!("Logs: no agent log file found. Requested last {lines} lines.")
         }
+    }
+}
+
+fn parse_use_class(s: &str) -> Option<AcceptableUseClass> {
+    match s {
+        "scientific" => Some(AcceptableUseClass::Scientific),
+        "public-good-ml" => Some(AcceptableUseClass::PublicGoodMl),
+        "rendering" => Some(AcceptableUseClass::Rendering),
+        "indexing" => Some(AcceptableUseClass::Indexing),
+        "self-improvement" => Some(AcceptableUseClass::SelfImprovement),
+        "general" => Some(AcceptableUseClass::GeneralCompute),
+        _ => None,
     }
 }
