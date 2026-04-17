@@ -75,8 +75,10 @@ mod tests {
 
     #[test]
     fn submit_returns_manifest_path_in_message() {
-        let msg = execute(&JobCommand::Submit { manifest_path: "/tmp/job.json".into() });
-        assert!(msg.contains("/tmp/job.json"));
+        let test_path = std::env::temp_dir().join("job.json");
+        let test_path_str = test_path.to_string_lossy().to_string();
+        let msg = execute(&JobCommand::Submit { manifest_path: test_path_str.clone() });
+        assert!(msg.contains(&test_path_str));
     }
 
     #[test]

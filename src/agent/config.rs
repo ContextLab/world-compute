@@ -23,7 +23,7 @@ pub struct AgentConfig {
 impl Default for AgentConfig {
     fn default() -> Self {
         Self {
-            work_dir: PathBuf::from("/tmp/worldcompute"),
+            work_dir: std::env::temp_dir().join("worldcompute"),
             cpu_cap_percent: 80,
             storage_cap_bytes: 10 * 1024 * 1024 * 1024, // 10 GB
             otel_endpoint: None,

@@ -204,7 +204,7 @@ mod tests {
     #[test]
     fn wasm_engine_initializes() {
         let store = CidStore::new();
-        let sandbox = WasmSandbox::new(std::path::PathBuf::from("/tmp/wc-test-wasm"), store);
+        let sandbox = WasmSandbox::new(std::env::temp_dir().join("wc-test-wasm"), store);
         assert!(sandbox.is_ok());
     }
 
@@ -212,7 +212,7 @@ mod tests {
     fn wasm_create_fails_for_missing_cid() {
         let store = CidStore::new();
         let mut sandbox =
-            WasmSandbox::new(std::path::PathBuf::from("/tmp/wc-test-wasm-missing"), store).unwrap();
+            WasmSandbox::new(std::env::temp_dir().join("wc-test-wasm-missing"), store).unwrap();
         let cid = crate::data_plane::cid_store::compute_cid(b"nonexistent").unwrap();
         assert!(sandbox.create(&cid).is_err());
     }
@@ -224,7 +224,7 @@ mod tests {
         let cid = store.put(&wasm_bytes).unwrap();
 
         let mut sandbox =
-            WasmSandbox::new(std::path::PathBuf::from("/tmp/wc-test-wasm-run"), store).unwrap();
+            WasmSandbox::new(std::env::temp_dir().join("wc-test-wasm-run"), store).unwrap();
         assert!(sandbox.create(&cid).is_ok());
         assert!(sandbox.start().is_ok());
         assert!(sandbox.terminate().is_ok());
@@ -237,7 +237,7 @@ mod tests {
         let cid = store.put(bad_bytes).unwrap();
 
         let mut sandbox =
-            WasmSandbox::new(std::path::PathBuf::from("/tmp/wc-test-wasm-bad"), store).unwrap();
+            WasmSandbox::new(std::env::temp_dir().join("wc-test-wasm-bad"), store).unwrap();
         let result = sandbox.create(&cid);
         assert!(result.is_err());
         assert!(result.unwrap_err().to_string().contains("compilation failed"));
@@ -250,8 +250,7 @@ mod tests {
         let cid = store.put(&wasm_bytes).unwrap();
 
         let mut sandbox =
-            WasmSandbox::new(std::path::PathBuf::from("/tmp/wc-test-wasm-lifecycle"), store)
-                .unwrap();
+            WasmSandbox::new(std::env::temp_dir().join("wc-test-wasm-lifecycle"), store).unwrap();
         assert!(sandbox.create(&cid).is_ok());
         assert!(sandbox.start().is_ok());
         assert!(sandbox.freeze().is_ok());

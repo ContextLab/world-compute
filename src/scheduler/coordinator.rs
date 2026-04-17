@@ -446,7 +446,7 @@ mod tests {
 
     #[test]
     fn raft_storage_with_wal() {
-        let wal_path = std::path::PathBuf::from("/tmp/wc-test-raft-wal.json");
+        let wal_path = std::env::temp_dir().join("wc-test-raft-wal.json");
         let mut storage = RaftCoordinatorStorage::with_wal(wal_path.clone());
         let entry = RaftLogEntry { term: 1, index: 1, action: CoordinatorAction::Noop };
         assert!(storage.append(entry).is_ok());
