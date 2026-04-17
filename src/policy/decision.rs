@@ -45,6 +45,10 @@ pub struct PolicyDecision {
     pub llm_advisory_flag: Option<String>,
     /// True if LLM flagged but policy approved (or vice versa).
     pub llm_disagrees: bool,
+    /// Result of artifact CID lookup against ApprovedArtifact registry
+    pub artifact_registry_result: Option<String>,
+    /// Result of egress endpoint validation
+    pub egress_validation_result: Option<String>,
     /// When the evaluation occurred.
     pub timestamp: Timestamp,
 }
@@ -68,6 +72,8 @@ impl PolicyDecision {
             reject_reason: None,
             llm_advisory_flag: None,
             llm_disagrees: false,
+            artifact_registry_result: None,
+            egress_validation_result: None,
             timestamp: Timestamp::now(),
         }
     }
@@ -91,6 +97,8 @@ impl PolicyDecision {
             reject_reason: Some(reason),
             llm_advisory_flag: None,
             llm_disagrees: false,
+            artifact_registry_result: None,
+            egress_validation_result: None,
             timestamp: Timestamp::now(),
         }
     }

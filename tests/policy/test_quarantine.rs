@@ -32,6 +32,8 @@ fn test_manifest() -> JobManifest {
         acceptable_use_classes: vec![worldcompute::acceptable_use::AcceptableUseClass::Scientific],
         max_wallclock_ms: 3_600_000,
         submitter_signature: vec![1u8; 64],
+        allowed_endpoints: Vec::new(),
+        confidentiality_level: None,
     }
 }
 

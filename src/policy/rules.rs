@@ -7,6 +7,13 @@ use crate::policy::decision::PolicyCheck;
 use crate::policy::engine::SubmissionContext;
 use crate::scheduler::manifest::JobManifest;
 
+/// Approved endpoint patterns for egress allowlist validation.
+/// Default is empty list (default-deny).
+#[derive(Debug, Clone, Default)]
+pub struct EgressAllowlist {
+    pub approved_endpoints: Vec<String>,
+}
+
 /// Step 2: Verify submitter identity is registered and meets HP threshold.
 pub fn check_submitter_identity(ctx: &SubmissionContext) -> PolicyCheck {
     if ctx.submitter_peer_id.is_empty() {
@@ -323,6 +330,8 @@ mod tests {
             acceptable_use_classes: vec![crate::acceptable_use::AcceptableUseClass::Scientific],
             max_wallclock_ms: 3_600_000,
             submitter_signature: vec![0u8; 64], // placeholder — signed below
+            allowed_endpoints: Vec::new(),
+            confidentiality_level: None,
         };
 
         // Generate a real Ed25519 key pair and sign the manifest

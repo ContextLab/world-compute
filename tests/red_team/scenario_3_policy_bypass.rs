@@ -39,6 +39,8 @@ fn bypass_manifest(sig: Vec<u8>) -> worldcompute::scheduler::manifest::JobManife
         acceptable_use_classes: vec![worldcompute::acceptable_use::AcceptableUseClass::Scientific],
         max_wallclock_ms: 3_600_000,
         submitter_signature: sig,
+        allowed_endpoints: Vec::new(),
+        confidentiality_level: None,
     }
 }
 

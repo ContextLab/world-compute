@@ -97,6 +97,8 @@ mod tests {
             acceptable_use_classes: classes,
             max_wallclock_ms: 3_600_000,
             submitter_signature: vec![0u8; 64],
+            allowed_endpoints: Vec::new(),
+            confidentiality_level: None,
         }
     }
 

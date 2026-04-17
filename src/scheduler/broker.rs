@@ -187,6 +187,36 @@ impl Broker {
     }
 }
 
+/// Status of a task lease.
+#[derive(Debug, Clone)]
+pub enum LeaseStatus {
+    /// Lease is currently active.
+    Active,
+    /// Lease has expired (TTL elapsed without renewal).
+    Expired,
+    /// Lease was explicitly released by the holder.
+    Released,
+}
+
+/// A time-bounded lease granting a node exclusive rights to execute a task.
+#[derive(Debug, Clone)]
+pub struct Lease {
+    /// Unique identifier for this lease.
+    pub lease_id: String,
+    /// The task this lease covers.
+    pub task_id: String,
+    /// The node holding the lease.
+    pub node_id: crate::types::PeerId,
+    /// When the lease was originally issued.
+    pub issued_at: crate::types::Timestamp,
+    /// Time-to-live in milliseconds.
+    pub ttl_ms: u64,
+    /// When the lease was last renewed, if ever.
+    pub renewed_at: Option<crate::types::Timestamp>,
+    /// Current status of the lease.
+    pub status: LeaseStatus,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

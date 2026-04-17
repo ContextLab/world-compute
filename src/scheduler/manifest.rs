@@ -40,6 +40,12 @@ pub struct JobManifest {
     pub max_wallclock_ms: u64,
     /// Submitter's signature over the canonical manifest bytes.
     pub submitter_signature: Vec<u8>,
+    /// Declared egress endpoints for policy validation
+    #[serde(default)]
+    pub allowed_endpoints: Vec<String>,
+    /// Data confidentiality classification
+    #[serde(default)]
+    pub confidentiality_level: Option<String>,
 }
 
 /// Workflow template — a DAG of task templates.
@@ -136,6 +142,8 @@ mod tests {
             acceptable_use_classes: vec![AcceptableUseClass::Scientific],
             max_wallclock_ms: 3_600_000,
             submitter_signature: vec![1u8; 64],
+            allowed_endpoints: Vec::new(),
+            confidentiality_level: None,
         }
     }
 

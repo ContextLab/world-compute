@@ -31,17 +31,17 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T008 Define `InclusionProof` struct (leaf_hash, tree_size, proof_hashes, signed_tree_head) in src/ledger/transparency.rs per data-model.md
-- [ ] T009 [P] Define `ConfidentialBundle` struct (ciphertext_cid, cipher, nonce, wrapped_key, confidentiality_level, attestation_requirement) in src/data_plane/confidential.rs per data-model.md
-- [ ] T010 [P] Define `Lease` struct (lease_id, task_id, node_id, issued_at, ttl_ms, renewed_at, status) with state transitions in src/scheduler/broker.rs per data-model.md
-- [ ] T011 [P] Define `CreditDecayEvent` struct (account_id, balance_before, balance_after, decay_rate, floor, timestamp) in src/credits/decay.rs per data-model.md
-- [ ] T012 [P] Define `MeshExpert` struct (expert_id, model_name, tokenizer, vram_mb, max_batch_size, health, last_heartbeat, latency_p50_ms) in src/agent/mesh_llm/expert.rs per data-model.md
-- [ ] T013 [P] Define `ActionTier` enum (ReadOnly, Suggest, SandboxTest, DeployMinor, DeployMajor) with approval requirements in src/agent/mesh_llm/safety.rs per data-model.md
-- [ ] T014 [P] Define `EgressAllowlist` struct (approved_endpoints, default_action=Deny) in src/policy/rules.rs per data-model.md
-- [ ] T015 [P] Define `StorageCap` struct (node_id, cap_bytes, used_bytes, last_gc_at) in src/data_plane/cid_store.rs per data-model.md
-- [ ] T016 [P] Add `allowed_endpoints: Vec<String>` and `confidentiality_level: Option<ConfidentialityLevel>` fields to JobManifest in src/scheduler/manifest.rs per data-model.md
-- [ ] T017 [P] Add `artifact_registry_result` and `egress_validation_result` fields to PolicyDecision in src/policy/engine.rs per data-model.md
-- [ ] T018 Run `cargo test` and `cargo clippy --lib -- -D warnings` to verify zero regressions
+- [x] T008 Define `InclusionProof` struct (leaf_hash, tree_size, proof_hashes, signed_tree_head) in src/ledger/transparency.rs per data-model.md
+- [x] T009 [P] Define `ConfidentialBundle` struct (ciphertext_cid, cipher, nonce, wrapped_key, confidentiality_level, attestation_requirement) in src/data_plane/confidential.rs per data-model.md
+- [x] T010 [P] Define `Lease` struct (lease_id, task_id, node_id, issued_at, ttl_ms, renewed_at, status) with state transitions in src/scheduler/broker.rs per data-model.md
+- [x] T011 [P] Define `CreditDecayEvent` struct (account_id, balance_before, balance_after, decay_rate, floor, timestamp) in src/credits/decay.rs per data-model.md
+- [x] T012 [P] Define `MeshExpert` struct (expert_id, model_name, tokenizer, vram_mb, max_batch_size, health, last_heartbeat, latency_p50_ms) in src/agent/mesh_llm/expert.rs per data-model.md
+- [x] T013 [P] Define `ActionTier` enum (ReadOnly, Suggest, SandboxTest, DeployMinor, DeployMajor) with approval requirements in src/agent/mesh_llm/safety.rs per data-model.md
+- [x] T014 [P] Define `EgressAllowlist` struct (approved_endpoints, default_action=Deny) in src/policy/rules.rs per data-model.md
+- [x] T015 [P] Define `StorageCap` struct (node_id, cap_bytes, used_bytes, last_gc_at) in src/data_plane/cid_store.rs per data-model.md
+- [x] T016 [P] Add `allowed_endpoints: Vec<String>` and `confidentiality_level: Option<ConfidentialityLevel>` fields to JobManifest in src/scheduler/manifest.rs per data-model.md
+- [x] T017 [P] Add `artifact_registry_result` and `egress_validation_result` fields to PolicyDecision in src/policy/engine.rs per data-model.md
+- [x] T018 Run `cargo test` and `cargo clippy --lib -- -D warnings` to verify zero regressions
 
 **Checkpoint**: Foundation ready — user story implementation can now begin in parallel
 

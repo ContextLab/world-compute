@@ -12,6 +12,30 @@ use base64::Engine;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 
+/// Signed tree head from the transparency log.
+#[derive(Debug, Clone)]
+pub struct SignedTreeHead {
+    /// Number of entries in the tree.
+    pub tree_size: u64,
+    /// Root hash of the Merkle tree.
+    pub root_hash: [u8; 32],
+    /// Signature over the tree head by the log operator.
+    pub signature: Vec<u8>,
+}
+
+/// Merkle inclusion proof for a transparency log entry.
+#[derive(Debug, Clone)]
+pub struct InclusionProof {
+    /// SHA-256 hash of the log entry (leaf).
+    pub leaf_hash: [u8; 32],
+    /// Size of the tree when the proof was generated.
+    pub tree_size: u64,
+    /// Merkle path hashes from the leaf to the root.
+    pub proof_hashes: Vec<[u8; 32]>,
+    /// The signed tree head at the time of proof generation.
+    pub signed_tree_head: SignedTreeHead,
+}
+
 /// An anchored Merkle root record, as returned by Sigstore Rekor.
 #[derive(Debug, Clone)]
 pub struct MerkleRootAnchor {

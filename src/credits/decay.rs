@@ -34,6 +34,23 @@ pub fn apply_decay(
     NcuAmount::from_ncu(decayed.max(floor))
 }
 
+/// Record of a single credit decay application for audit/replay.
+#[derive(Debug, Clone)]
+pub struct CreditDecayEvent {
+    /// The account whose balance was decayed.
+    pub account_id: crate::types::PeerId,
+    /// Balance before decay was applied.
+    pub balance_before: crate::types::NcuAmount,
+    /// Balance after decay was applied.
+    pub balance_after: crate::types::NcuAmount,
+    /// The decay rate used (derived from half-life).
+    pub decay_rate: f64,
+    /// The floor that was enforced.
+    pub floor: crate::types::NcuAmount,
+    /// When the decay was applied.
+    pub timestamp: crate::types::Timestamp,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,18 +1,27 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1776259111493,
+  "lastScanned": 1776395205300,
   "projectRoot": "/Users/jmanning/world-compute",
   "techStack": {
-    "languages": [],
+    "languages": [
+      {
+        "name": "Rust",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "Cargo.toml"
+        ]
+      }
+    ],
     "frameworks": [],
-    "packageManager": null,
+    "packageManager": "cargo",
     "runtime": null
   },
   "build": {
-    "buildCommand": null,
-    "testCommand": null,
-    "lintCommand": null,
-    "devCommand": null,
+    "buildCommand": "cargo build",
+    "testCommand": "cargo test",
+    "lintCommand": "cargo clippy",
+    "devCommand": "cargo run",
     "scripts": {}
   },
   "conventions": {
@@ -24,313 +33,414 @@
   "structure": {
     "isMonorepo": false,
     "workspaces": [],
-    "mainDirectories": [],
+    "mainDirectories": [
+      "docs",
+      "src",
+      "tests"
+    ],
     "gitBranches": {
       "defaultBranch": "main",
       "branchingStrategy": null
     }
   },
   "customNotes": [],
-  "directoryMap": {},
+  "directoryMap": {
+    "adapters": {
+      "path": "adapters",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1776395205231,
+      "keyFiles": []
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 0,
+      "lastAccessed": 1776395205231,
+      "keyFiles": []
+    },
+    "gui": {
+      "path": "gui",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1776395205231,
+      "keyFiles": []
+    },
+    "notes": {
+      "path": "notes",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1776395205232,
+      "keyFiles": [
+        "session-2026-04-15.md",
+        "session-2026-04-16-implement.md",
+        "session-2026-04-16.md"
+      ]
+    },
+    "proto": {
+      "path": "proto",
+      "purpose": null,
+      "fileCount": 6,
+      "lastAccessed": 1776395205235,
+      "keyFiles": [
+        "admin.proto",
+        "cluster.proto",
+        "donor.proto",
+        "governance.proto",
+        "mesh_llm.proto"
+      ]
+    },
+    "specs": {
+      "path": "specs",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1776395205237,
+      "keyFiles": []
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 5,
+      "lastAccessed": 1776395205237,
+      "keyFiles": [
+        "cli_dispatch.rs",
+        "error.rs",
+        "lib.rs",
+        "main.rs",
+        "types.rs"
+      ]
+    },
+    "target": {
+      "path": "target",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1776395205238,
+      "keyFiles": [
+        "CACHEDIR.TAG"
+      ]
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 11,
+      "lastAccessed": 1776395205238,
+      "keyFiles": [
+        "egress.rs",
+        "governance.rs",
+        "identity.rs",
+        "incident.rs",
+        "policy.rs"
+      ]
+    },
+    "gui/src": {
+      "path": "gui/src",
+      "purpose": "Source code",
+      "fileCount": 1,
+      "lastAccessed": 1776395205239,
+      "keyFiles": [
+        "index.html"
+      ]
+    }
+  },
   "hotPaths": [
     {
-      "path": "specs/001-world-compute-core/spec.md",
-      "accessCount": 68,
-      "lastAccessed": 1776341725756,
-      "type": "file"
+      "path": "tests",
+      "accessCount": 9,
+      "lastAccessed": 1776396576046,
+      "type": "directory"
     },
     {
-      "path": "README.md",
-      "accessCount": 56,
-      "lastAccessed": 1776368296776,
-      "type": "file"
+      "path": "src",
+      "accessCount": 8,
+      "lastAccessed": 1776396575588,
+      "type": "directory"
     },
     {
-      "path": "specs/001-world-compute-core/whitepaper.md",
-      "accessCount": 34,
-      "lastAccessed": 1776351079527,
-      "type": "file"
+      "path": "",
+      "accessCount": 7,
+      "lastAccessed": 1776395506387,
+      "type": "directory"
     },
     {
-      "path": ".specify/memory/constitution.md",
-      "accessCount": 23,
-      "lastAccessed": 1776341713356,
-      "type": "file"
-    },
-    {
-      "path": "src/verification/attestation.rs",
-      "accessCount": 13,
-      "lastAccessed": 1776368088474,
-      "type": "file"
-    },
-    {
-      "path": "src/error.rs",
-      "accessCount": 12,
-      "lastAccessed": 1776347614572,
+      "path": "src/policy/rules.rs",
+      "accessCount": 7,
+      "lastAccessed": 1776400128761,
       "type": "file"
     },
     {
       "path": "Cargo.toml",
-      "accessCount": 10,
-      "lastAccessed": 1776348242954,
-      "type": "file"
-    },
-    {
-      "path": "src/lib.rs",
-      "accessCount": 10,
-      "lastAccessed": 1776368059138,
-      "type": "file"
-    },
-    {
-      "path": "src/types.rs",
-      "accessCount": 9,
-      "lastAccessed": 1776347613606,
+      "accessCount": 5,
+      "lastAccessed": 1776399614175,
       "type": "file"
     },
     {
       "path": "specs/001-world-compute-core/tasks.md",
-      "accessCount": 8,
-      "lastAccessed": 1776307968852,
-      "type": "file"
-    },
-    {
-      "path": "specs/001-world-compute-core/design/architecture-overview.md",
-      "accessCount": 7,
-      "lastAccessed": 1776307945259,
-      "type": "file"
-    },
-    {
-      "path": "specs/001-world-compute-core/research/09-mesh-llm.md",
-      "accessCount": 7,
-      "lastAccessed": 1776341708509,
-      "type": "file"
-    },
-    {
-      "path": "specs/001-world-compute-core/research/07-governance-testing-ux.md",
-      "accessCount": 6,
-      "lastAccessed": 1776300700501,
-      "type": "file"
-    },
-    {
-      "path": "specs/001-world-compute-core/research/06-fairness-and-credits.md",
-      "accessCount": 6,
-      "lastAccessed": 1776304659970,
-      "type": "file"
-    },
-    {
-      "path": "specs/001-world-compute-core/research/01-job-management.md",
-      "accessCount": 6,
-      "lastAccessed": 1776304692961,
-      "type": "file"
-    },
-    {
-      "path": "specs/001-world-compute-core/plan.md",
-      "accessCount": 6,
-      "lastAccessed": 1776307881335,
-      "type": "file"
-    },
-    {
-      "path": "src/credits/ncu.rs",
-      "accessCount": 6,
-      "lastAccessed": 1776340597246,
-      "type": "file"
-    },
-    {
-      "path": "specs/001-world-compute-core/research/04-storage.md",
-      "accessCount": 5,
-      "lastAccessed": 1776300652185,
-      "type": "file"
-    },
-    {
-      "path": "specs/001-world-compute-core/research/05-discovery-and-bootstrap.md",
-      "accessCount": 5,
-      "lastAccessed": 1776304693346,
-      "type": "file"
-    },
-    {
-      "path": "specs/001-world-compute-core/research/03-sandboxing.md",
       "accessCount": 4,
-      "lastAccessed": 1776294518662,
+      "lastAccessed": 1776395605951,
       "type": "file"
     },
     {
-      "path": "specs/001-world-compute-core/research/02-trust-and-verification.md",
-      "accessCount": 4,
-      "lastAccessed": 1776300647760,
-      "type": "directory"
-    },
-    {
-      "path": "specs/001-world-compute-core/data-model.md",
-      "accessCount": 4,
-      "lastAccessed": 1776306915306,
+      "path": "specs/003-stub-replacement/tasks.md",
+      "accessCount": 3,
+      "lastAccessed": 1776395619465,
       "type": "file"
     },
     {
       "path": "adapters/kubernetes/Cargo.toml",
       "accessCount": 3,
-      "lastAccessed": 1776340102610,
+      "lastAccessed": 1776399600749,
       "type": "file"
     },
     {
-      "path": "adapters/cloud/Cargo.toml",
+      "path": "src/ledger/transparency.rs",
       "accessCount": 3,
-      "lastAccessed": 1776340103689,
+      "lastAccessed": 1776399757931,
       "type": "file"
     },
     {
-      "path": "adapters/slurm/src/main.rs",
+      "path": "src/policy/engine.rs",
       "accessCount": 3,
-      "lastAccessed": 1776340124502,
+      "lastAccessed": 1776399843556,
       "type": "file"
     },
     {
-      "path": "adapters/kubernetes/src/main.rs",
-      "accessCount": 3,
-      "lastAccessed": 1776340145449,
-      "type": "file"
-    },
-    {
-      "path": "adapters/cloud/src/main.rs",
-      "accessCount": 3,
-      "lastAccessed": 1776340159051,
-      "type": "file"
-    },
-    {
-      "path": "gui/src-tauri/src/main.rs",
-      "accessCount": 3,
-      "lastAccessed": 1776340595806,
-      "type": "file"
-    },
-    {
-      "path": "src/verification/trust_score.rs",
-      "accessCount": 3,
-      "lastAccessed": 1776341670619,
-      "type": "file"
-    },
-    {
-      "path": ".specify/templates/tasks-template.md",
-      "accessCount": 3,
-      "lastAccessed": 1776346877405,
-      "type": "file"
-    },
-    {
-      "path": "src/main.rs",
-      "accessCount": 3,
-      "lastAccessed": 1776368059690,
-      "type": "file"
-    },
-    {
-      "path": "specs/001-world-compute-core/research/08-priority-redesign.md",
+      "path": "specs/001-world-compute-core/whitepaper.md",
       "accessCount": 2,
-      "lastAccessed": 1776306062709,
+      "lastAccessed": 1776395592680,
       "type": "file"
     },
     {
-      "path": "specs/001-world-compute-core/quickstart.md",
+      "path": "notes/session-2026-04-16-implement.md",
       "accessCount": 2,
-      "lastAccessed": 1776306898629,
+      "lastAccessed": 1776395611697,
       "type": "file"
     },
     {
-      "path": "proto/governance.proto",
+      "path": "src/scheduler/coordinator.rs",
       "accessCount": 2,
-      "lastAccessed": 1776340125017,
+      "lastAccessed": 1776396556822,
       "type": "file"
     },
     {
-      "path": "gui/src-tauri/Cargo.toml",
-      "accessCount": 2,
-      "lastAccessed": 1776340570956,
-      "type": "file"
-    },
-    {
-      "path": "src/credits/caliber.rs",
-      "accessCount": 2,
-      "lastAccessed": 1776340599999,
-      "type": "file"
-    },
-    {
-      "path": ".specify/extensions.yml",
-      "accessCount": 2,
-      "lastAccessed": 1776341583176,
-      "type": "file"
-    },
-    {
-      "path": ".specify/templates/spec-template.md",
-      "accessCount": 2,
-      "lastAccessed": 1776341583523,
-      "type": "file"
-    },
-    {
-      "path": ".specify/templates/plan-template.md",
+      "path": "src/incident/containment.rs",
       "accessCount": 1,
-      "lastAccessed": 1776259612847,
+      "lastAccessed": 1776395506380,
       "type": "file"
     },
     {
-      "path": "specs/001-world-compute-core/checklists/requirements.md",
+      "path": "src/verification/attestation.rs",
       "accessCount": 1,
-      "lastAccessed": 1776295107403,
+      "lastAccessed": 1776395506500,
       "type": "file"
     },
     {
-      "path": "specs/001-world-compute-core/research.md",
+      "path": "CLAUDE.md",
       "accessCount": 1,
-      "lastAccessed": 1776303869637,
+      "lastAccessed": 1776395506551,
       "type": "file"
     },
     {
-      "path": "specs/001-world-compute-core/contracts/README.md",
+      "path": "src/agent/lifecycle.rs",
       "accessCount": 1,
-      "lastAccessed": 1776306897913,
+      "lastAccessed": 1776395506694,
       "type": "file"
     },
     {
-      "path": "specs/001-world-compute-core/contracts",
+      "path": "src/sandbox/firecracker.rs",
       "accessCount": 1,
-      "lastAccessed": 1776306919966,
-      "type": "directory"
-    },
-    {
-      "path": "rustfmt.toml",
-      "accessCount": 1,
-      "lastAccessed": 1776308278124,
+      "lastAccessed": 1776395506928,
       "type": "file"
     },
     {
-      "path": "clippy.toml",
+      "path": "specs/002-safety-hardening/tasks.md",
       "accessCount": 1,
-      "lastAccessed": 1776308279186,
+      "lastAccessed": 1776395507463,
       "type": "file"
     },
     {
-      "path": "adapters/slurm/Cargo.toml",
+      "path": "src/preemption/supervisor.rs",
       "accessCount": 1,
-      "lastAccessed": 1776308285946,
+      "lastAccessed": 1776395509363,
+      "type": "file"
+    },
+    {
+      "path": "src/error.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395509588,
+      "type": "file"
+    },
+    {
+      "path": "src/sandbox/gpu.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395509797,
+      "type": "file"
+    },
+    {
+      "path": "notes/session-2026-04-15.md",
+      "accessCount": 1,
+      "lastAccessed": 1776395511035,
       "type": "file"
     },
     {
       "path": "proto/donor.proto",
       "accessCount": 1,
-      "lastAccessed": 1776308537384,
+      "lastAccessed": 1776395513367,
+      "type": "file"
+    },
+    {
+      "path": "specs/001-world-compute-core/plan.md",
+      "accessCount": 1,
+      "lastAccessed": 1776395513516,
       "type": "file"
     },
     {
       "path": "proto/submitter.proto",
       "accessCount": 1,
-      "lastAccessed": 1776308547197,
+      "lastAccessed": 1776395513651,
       "type": "file"
     },
     {
       "path": "proto/cluster.proto",
       "accessCount": 1,
-      "lastAccessed": 1776308555291,
+      "lastAccessed": 1776395513782,
+      "type": "file"
+    },
+    {
+      "path": "specs/003-stub-replacement/plan.md",
+      "accessCount": 1,
+      "lastAccessed": 1776395513920,
+      "type": "file"
+    },
+    {
+      "path": "proto/governance.proto",
+      "accessCount": 1,
+      "lastAccessed": 1776395513987,
       "type": "file"
     },
     {
       "path": "proto/admin.proto",
       "accessCount": 1,
-      "lastAccessed": 1776308572151,
+      "lastAccessed": 1776395514206,
+      "type": "file"
+    },
+    {
+      "path": "proto/mesh_llm.proto",
+      "accessCount": 1,
+      "lastAccessed": 1776395514240,
+      "type": "file"
+    },
+    {
+      "path": "tests/sandbox/test_wasm_hello.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395515036,
+      "type": "file"
+    },
+    {
+      "path": "tests/adversarial/test_flood_resilience.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395515283,
+      "type": "file"
+    },
+    {
+      "path": "tests/identity/test_personhood.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395515357,
+      "type": "file"
+    },
+    {
+      "path": "adapters/slurm/Cargo.toml",
+      "accessCount": 1,
+      "lastAccessed": 1776395516942,
+      "type": "file"
+    },
+    {
+      "path": "adapters/cloud/Cargo.toml",
+      "accessCount": 1,
+      "lastAccessed": 1776395517363,
+      "type": "file"
+    },
+    {
+      "path": "gui/src-tauri/Cargo.toml",
+      "accessCount": 1,
+      "lastAccessed": 1776395517488,
+      "type": "file"
+    },
+    {
+      "path": "tests/sandbox.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395523647,
+      "type": "file"
+    },
+    {
+      "path": "tests/egress.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395523833,
+      "type": "file"
+    },
+    {
+      "path": "tests/governance.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395524153,
+      "type": "file"
+    },
+    {
+      "path": "tests/identity.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395524275,
+      "type": "file"
+    },
+    {
+      "path": "tests/incident.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395524531,
+      "type": "file"
+    },
+    {
+      "path": "adapters/slurm/src/main.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395531277,
+      "type": "file"
+    },
+    {
+      "path": "adapters/kubernetes/src/main.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395531487,
+      "type": "file"
+    },
+    {
+      "path": "gui/src-tauri/src/main.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395531657,
+      "type": "file"
+    },
+    {
+      "path": "gui/src-tauri/src/commands.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395531846,
+      "type": "file"
+    },
+    {
+      "path": "adapters/cloud/src/main.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395536800,
+      "type": "file"
+    },
+    {
+      "path": "tests/sandbox/test_firecracker_vm.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395546530,
+      "type": "file"
+    },
+    {
+      "path": "tests/incident/test_auth.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395546733,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_rekor_transparency.rs",
+      "accessCount": 1,
+      "lastAccessed": 1776395547017,
       "type": "file"
     }
   ],

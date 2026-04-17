@@ -9,6 +9,8 @@ World Compute is a decentralized, volunteer-built compute federation. The codeba
 ## Active Technologies
 - Rust stable (tested on 1.95.0) + libp2p 0.54, tonic 0.12, ed25519-dalek 2, wasmtime 27, openraft 0.9, opentelemetry 0.27, clap 4 (003-stub-replacement)
 - CID-addressed content store (cid 0.11, multihash 0.19), erasure-coded (reed-solomon-erasure 6) (003-stub-replacement)
+- Rust stable (tested on 1.95.0) + libp2p 0.54, tonic 0.12, ed25519-dalek 2, wasmtime 27, openraft 0.9, opentelemetry 0.27, clap 4, reqwest 0.12, oauth2 4, x509-parser 0.16, reed-solomon-erasure 6, cid 0.11, multihash 0.19 (004-full-implementation)
+- CID-addressed content store (SHA-256), erasure-coded RS(10,18) (004-full-implementation)
 
 - **Language**: Rust (stable, tested on 1.95.0)
 - **Networking**: rust-libp2p 0.54 (QUIC, TCP, mDNS, Kademlia, gossipsub)
@@ -124,7 +126,7 @@ Two GitHub Actions workflows:
 - `safety-hardening-ci.yml` — multi-platform (Linux/macOS/Windows) with Principle V evidence artifacts
 
 ## Recent Changes
+- 004-full-implementation: Added Rust stable (tested on 1.95.0) + libp2p 0.54, tonic 0.12, ed25519-dalek 2, wasmtime 27, openraft 0.9, opentelemetry 0.27, clap 4, reqwest 0.12, oauth2 4, x509-parser 0.16, reed-solomon-erasure 6, cid 0.11, multihash 0.19
 
 - **003-stub-replacement** (2026-04-16): Replaced all implementation stubs (#7, #8–#26). 77 tasks, 489+ tests. Added reqwest, oauth2, x509-parser, rcgen dependencies. Wired CLI, sandboxes, attestation, identity, transparency, telemetry, consensus, network.
 - **002-safety-hardening** (2026-04-16): Red team review (#4). Policy engine, attestation, governance, incident response, egress, identity hardening. 110 tasks, PR #6.
-- **001-world-compute-core** (2026-04-15): Initial architecture and implementation across 11 phases.

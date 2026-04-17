@@ -13,6 +13,15 @@ const SHA2_256: u64 = 0x12;
 /// CID codec for raw binary data.
 const RAW_CODEC: u64 = 0x55;
 
+/// Per-donor storage cap tracking for garbage collection.
+#[derive(Debug, Clone)]
+pub struct StorageCap {
+    pub node_id: crate::types::PeerId,
+    pub cap_bytes: u64,
+    pub used_bytes: u64,
+    pub last_gc_at: crate::types::Timestamp,
+}
+
 /// In-memory CID-addressed object store.
 /// Production will use a disk-backed store with LRU eviction.
 #[derive(Debug, Clone)]

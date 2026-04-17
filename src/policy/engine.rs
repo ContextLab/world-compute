@@ -233,6 +233,8 @@ mod tests {
             acceptable_use_classes: vec![crate::acceptable_use::AcceptableUseClass::Scientific],
             max_wallclock_ms: 3_600_000,
             submitter_signature: vec![0u8; 64], // placeholder — signed below
+            allowed_endpoints: Vec::new(),
+            confidentiality_level: None,
         };
 
         // Sign with a real Ed25519 key
