@@ -6,7 +6,8 @@
 
 use crate::error::{ErrorCode, WcError, WcResult};
 use crate::scheduler::ResourceEnvelope;
-use crate::types::PeerIdStr;
+use crate::types::{AttestationQuote, PeerIdStr};
+use crate::verification::attestation::{self, MeasurementRegistry};
 use serde::{Deserialize, Serialize};
 
 /// Information about a node registered with the broker.
@@ -20,6 +21,10 @@ pub struct NodeInfo {
     pub capacity: ResourceEnvelope,
     /// Trust tier (1 = basic, 2 = attested, 3 = TEE).
     pub trust_tier: u8,
+    /// Whether this node's attestation has been verified.
+    pub attestation_verified: bool,
+    /// When attestation was last verified (microseconds since epoch).
+    pub attestation_verified_at: Option<u64>,
 }
 
 /// Minimum resource requirements for task placement.
@@ -46,6 +51,8 @@ pub struct Broker {
     pub node_roster: Vec<NodeInfo>,
     /// Standby pool — nodes registered but currently unavailable (draining, etc.).
     pub standby_pool: Vec<NodeInfo>,
+    /// Frozen hosts — removed from scheduling due to incident response.
+    pub frozen_hosts: Vec<PeerIdStr>,
 }
 
 impl Broker {
@@ -56,6 +63,7 @@ impl Broker {
             region_code: region_code.into(),
             node_roster: Vec::new(),
             standby_pool: Vec::new(),
+            frozen_hosts: Vec::new(),
         }
     }
 
@@ -109,6 +117,10 @@ impl Broker {
             .map(|node| node.peer_id.clone())
             .collect();
 
+        // Exclude frozen hosts (incident response)
+        let eligible: Vec<PeerIdStr> =
+            eligible.into_iter().filter(|p| !self.frozen_hosts.contains(p)).collect();
+
         if eligible.is_empty() {
             return Err(WcError::new(
                 ErrorCode::NoEligibleNodes,
@@ -117,6 +129,61 @@ impl Broker {
         }
 
         Ok(eligible)
+    }
+
+    /// Register a node with attestation verification (T041).
+    ///
+    /// Per FR-S010/FR-S011: verifies the node's attestation quote against
+    /// the measurement registry before admitting it to the active roster.
+    /// Nodes with invalid attestation are rejected. Nodes with no attestation
+    /// (empty quote) are classified as T0 (trust_tier = 0).
+    pub fn register_node_with_attestation(
+        &mut self,
+        mut node_info: NodeInfo,
+        quote: &AttestationQuote,
+        registry: &MeasurementRegistry,
+    ) -> WcResult<()> {
+        // Verify attestation
+        let verified =
+            attestation::verify_attestation_with_registry(quote, registry).unwrap_or(false);
+
+        if !verified {
+            // If quote is non-empty but invalid, reject entirely
+            if !quote.quote_bytes.is_empty() {
+                return Err(WcError::new(
+                    ErrorCode::AttestationFailed,
+                    format!(
+                        "Node {} presented invalid attestation — rejected (not downgraded to T0)",
+                        node_info.peer_id
+                    ),
+                ));
+            }
+            // Empty quote → classify as T0
+            node_info.trust_tier = 0;
+            node_info.attestation_verified = false;
+        } else {
+            node_info.attestation_verified = true;
+            node_info.attestation_verified_at = Some(crate::types::Timestamp::now().0);
+        }
+
+        self.register_node(node_info)
+    }
+
+    /// Freeze a host — remove from scheduling pool (incident response).
+    pub fn freeze_host(&mut self, peer_id: &PeerIdStr) {
+        if !self.frozen_hosts.contains(peer_id) {
+            self.frozen_hosts.push(peer_id.clone());
+        }
+    }
+
+    /// Unfreeze a host — restore to scheduling pool.
+    pub fn unfreeze_host(&mut self, peer_id: &PeerIdStr) {
+        self.frozen_hosts.retain(|p| p != peer_id);
+    }
+
+    /// Check if a host is frozen.
+    pub fn is_host_frozen(&self, peer_id: &PeerIdStr) -> bool {
+        self.frozen_hosts.contains(peer_id)
     }
 }
 
@@ -142,6 +209,8 @@ mod tests {
             region_code: "us-east-1".to_string(),
             capacity: test_envelope(cpu, ram),
             trust_tier: 1,
+            attestation_verified: false,
+            attestation_verified_at: None,
         }
     }
 
@@ -226,5 +295,85 @@ mod tests {
         };
         let err = broker.match_task(&reqs).unwrap_err();
         assert_eq!(err.code(), Some(ErrorCode::NoEligibleNodes));
+    }
+
+    #[test]
+    fn frozen_host_excluded_from_matching() {
+        let mut broker = Broker::new("broker-001", "us-east-1");
+        broker.register_node(test_node("peer-frozen", 8000, 16 * 1024 * 1024 * 1024)).unwrap();
+        broker.register_node(test_node("peer-active", 8000, 16 * 1024 * 1024 * 1024)).unwrap();
+
+        broker.freeze_host(&"peer-frozen".to_string());
+
+        let reqs = TaskRequirements {
+            min_cpu_millicores: 1000,
+            min_ram_bytes: 1,
+            min_scratch_bytes: 1,
+            min_trust_tier: 1,
+        };
+        let matched = broker.match_task(&reqs).unwrap();
+        assert_eq!(matched.len(), 1);
+        assert_eq!(matched[0], "peer-active");
+    }
+
+    #[test]
+    fn unfreeze_host_restores_matching() {
+        let mut broker = Broker::new("broker-001", "us-east-1");
+        broker.register_node(test_node("peer-1", 8000, 16 * 1024 * 1024 * 1024)).unwrap();
+        broker.freeze_host(&"peer-1".to_string());
+        assert!(broker.is_host_frozen(&"peer-1".to_string()));
+
+        broker.unfreeze_host(&"peer-1".to_string());
+        assert!(!broker.is_host_frozen(&"peer-1".to_string()));
+
+        let reqs = TaskRequirements {
+            min_cpu_millicores: 1000,
+            min_ram_bytes: 1,
+            min_scratch_bytes: 1,
+            min_trust_tier: 1,
+        };
+        assert_eq!(broker.match_task(&reqs).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn attestation_with_empty_quote_classifies_t0() {
+        use crate::types::{AttestationQuote, AttestationType};
+        use crate::verification::attestation::MeasurementRegistry;
+
+        let mut broker = Broker::new("broker-001", "us-east-1");
+        let registry = MeasurementRegistry::new();
+        let mut node = test_node("peer-noattest", 8000, 16 * 1024 * 1024 * 1024);
+        node.trust_tier = 2; // claims T2
+
+        let empty_quote = AttestationQuote {
+            quote_type: AttestationType::Tpm2,
+            quote_bytes: Vec::new(),
+            platform_info: "test".into(),
+        };
+
+        broker.register_node_with_attestation(node, &empty_quote, &registry).unwrap();
+        // Should have been downgraded to T0
+        assert_eq!(broker.node_roster[0].trust_tier, 0);
+        assert!(!broker.node_roster[0].attestation_verified);
+    }
+
+    #[test]
+    fn attestation_with_invalid_quote_rejected() {
+        use crate::types::{AttestationQuote, AttestationType};
+        use crate::verification::attestation::MeasurementRegistry;
+
+        let mut broker = Broker::new("broker-001", "us-east-1");
+        let registry = MeasurementRegistry::new();
+        let node = test_node("peer-bad", 8000, 16 * 1024 * 1024 * 1024);
+
+        // Non-empty but garbage quote
+        let bad_quote = AttestationQuote {
+            quote_type: AttestationType::Tpm2,
+            quote_bytes: vec![0xFF, 0xFE, 0xFD, 0xFC, 0x00],
+            platform_info: "test".into(),
+        };
+
+        let result = broker.register_node_with_attestation(node, &bad_quote, &registry);
+        assert!(result.is_err(), "Invalid attestation should reject the node");
     }
 }

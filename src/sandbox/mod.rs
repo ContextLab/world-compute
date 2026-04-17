@@ -4,6 +4,7 @@
 //! sandbox. Process-only sandboxes are NOT sufficient.
 
 pub mod apple_vf;
+pub mod egress;
 pub mod firecracker;
 pub mod gpu;
 pub mod hyperv;

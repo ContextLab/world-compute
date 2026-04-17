@@ -1,29 +1,130 @@
 # world-compute Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-15
+Last updated: 2026-04-16
+
+## Project Overview
+
+World Compute is a decentralized, volunteer-built compute federation. The codebase is a Rust workspace with 94 source files, 422 passing tests, and 20 library modules. The CLI compiles but subcommands are not yet functional — all print "not yet implemented." Safety-critical library modules (policy engine, attestation, governance, egress, incident response) are implemented and tested.
 
 ## Active Technologies
 
-- Rust (latest stable, currently 1.82+), per FR-006 (001-world-compute-core)
+- **Language**: Rust (stable, tested on 1.95.0)
+- **Networking**: rust-libp2p 0.54 (QUIC, TCP, mDNS, Kademlia, gossipsub)
+- **Crypto**: ed25519-dalek 2, sha2 0.10
+- **gRPC**: tonic 0.12, prost 0.13
+- **Async**: tokio 1 (full features)
+- **WASM**: wasmtime 27
+- **Serialization**: serde, serde_json, serde_yaml, ciborium (CBOR)
+- **Content addressing**: cid 0.11, multihash 0.19
+- **Erasure coding**: reed-solomon-erasure 6
+- **Consensus**: openraft 0.9
+- **Observability**: opentelemetry 0.27, tracing 0.1
+- **CLI**: clap 4 (derive)
+- **GUI**: Tauri (gui/src-tauri)
 
 ## Project Structure
 
 ```text
-src/
-tests/
+src/                        # 94 Rust source files, 20 modules
+  acceptable_use/           # Workload classification and filtering
+  agent/                    # Donor agent lifecycle, identity, mesh LLM
+  cli/                      # CLI subcommands (donor, job, cluster, governance, admin)
+  credits/                  # NCU caliber classes
+  data_plane/               # CID store, erasure coding, staging
+  governance/               # Proposals, voting, roles, admin service, humanity points
+  identity/                 # BrightID personhood, OAuth2, phone verification
+  incident/                 # Containment actions, audit records
+  ledger/                   # CRDT ledger, transparency anchoring
+  network/                  # P2P discovery, gossip, NAT, TLS, rate limiting
+  policy/                   # Deterministic policy engine (10-step pipeline)
+  preemption/               # Sovereignty events, idle detection, supervisor
+  registry/                 # Approved artifact registry, release channels
+  sandbox/                  # VM drivers (Firecracker, AppleVF, HyperV, WASM), egress
+  scheduler/                # Job/task state machines, broker, coordinator, manifest
+  telemetry/                # OpenTelemetry, PII redaction
+  verification/             # Attestation (TPM2/SEV-SNP/TDX), trust score, quorum
+  error.rs                  # 20 error codes with gRPC + HTTP mapping
+  types.rs                  # Core types (Cid, PeerId, NcuAmount, TrustScore, Timestamp)
+tests/                      # 44 integration test files
+  egress/                   # Default-deny, private ranges, LAN blocking, runtime fetch
+  governance/               # Separation of duties, quorum, timelock, admin auth
+  identity/                 # Personhood, OAuth2, revocation, uniqueness
+  incident/                 # Freeze, quarantine, audit, auth, cascade timing
+  policy/                   # Dispatch attestation, artifact check, quota, quarantine, LLM
+  sandbox/                  # Isolation, cleanup
+  red_team/                 # 5 adversarial scenarios (SC-S008)
+proto/                      # 6 gRPC proto files (donor, submitter, cluster, governance, admin, mesh_llm)
+specs/
+  001-world-compute-core/   # Original spec, plan, research, data model, contracts
+  002-safety-hardening/     # Red team response — 110 tasks, all complete
+adapters/                   # Slurm, Kubernetes, cloud adapter crates
+gui/src-tauri/              # Tauri GUI scaffold
 ```
 
 ## Commands
 
-cargo test && cargo clippy
+```sh
+# Build and test
+cargo test                  # 422 tests (319 lib + 103 integration)
+cargo clippy --lib -- -D warnings  # Zero warnings enforced
+
+# Build only
+cargo build                 # Builds the worldcompute binary
+cargo build --lib           # Library only (faster)
+
+# Run (CLI is scaffolded, subcommands not functional)
+./target/debug/worldcompute --help
+```
 
 ## Code Style
 
-Rust (latest stable, currently 1.82+), per FR-006: Follow standard conventions
+- Rust stable, standard conventions
+- All public items have doc comments (//!)
+- Module-level doc comments explain the FR/SC requirements
+- Tests are inline (#[cfg(test)]) and in tests/ directory
+- Clippy with -D warnings (zero warnings policy)
+- No unsafe code
+
+## Architecture Decisions
+
+- **Policy engine wraps validate_manifest()** as one step in a 10-step pipeline (not replaces)
+- **Identity verification at enrollment**, re-verified at trust score recalculation intervals
+- **BrightID** is the primary proof-of-personhood provider (decentralized, free, no biometrics)
+- **Invalid attestation quotes are rejected**, not silently downgraded to T0 (empty quotes downgrade)
+- **GovernanceRole default expiration**: 90 days, renewable
+- **ConstitutionAmendment time-lock**: 7-day mandatory review period
+- **Safety-critical votes**: require HP >= 5 (EmergencyHalt, ConstitutionAmendment)
+- **Default-deny network egress** at sandbox level for all platforms
+- **Separation of duties**: WorkloadApprover + ArtifactSigner prohibited on same identity
+- **Release channels**: dev → staging → production only (no dev → production skip)
+
+## Constitution
+
+The project is governed by a ratified constitution at `.specify/memory/constitution.md` with 5 binding principles:
+1. **Safety First** — VM-level isolation, no host access, code-signed agents
+2. **Robustness** — erasure coding, checkpoint/resume, self-healing
+3. **Fairness & Donor Sovereignty** — sub-second preemption, credit reciprocity
+4. **Efficiency & Self-Improvement** — energy-aware scheduling, mesh LLM
+5. **Direct Testing** — real hardware tests required, no mocks for production
+
+## Known Stubs (76 references)
+
+The codebase has ~76 TODO/stub references. Key categories:
+- **CLI**: All 5 subcommand groups (donor, job, cluster, governance, admin) print "not yet implemented"
+- **Sandbox**: VM API calls (Firecracker socket config, Apple VZ FFI, WASM loading)
+- **Attestation**: Full certificate-chain validation (TPM endorsement key, AMD ARK/ASK/VCEK, Intel DCAP)
+- **Identity**: HTTP client for BrightID, OAuth2 adapters, phone verification
+- **Infrastructure**: Sigstore Rekor, OpenTelemetry OTLP, Raft consensus, NAT detection, DNS seeds
+
+Tracked in GitHub issue #7 with 19 sub-issues (#8-#26).
+
+## CI
+
+Two GitHub Actions workflows:
+- `ci.yml` — basic build + test
+- `safety-hardening-ci.yml` — multi-platform (Linux/macOS/Windows) with Principle V evidence artifacts
 
 ## Recent Changes
 
-- 001-world-compute-core: Added Rust (latest stable, currently 1.82+), per FR-006
-
-<!-- MANUAL ADDITIONS START -->
-<!-- MANUAL ADDITIONS END -->
+- **002-safety-hardening** (2026-04-16): Addressed red team review (#4). Added policy engine, attestation enforcement, governance separation, incident response, egress blocking, identity hardening, supply chain controls. 110 tasks, 422 tests, red team exercise (26 adversarial tests). PR #6.
+- **001-world-compute-core** (2026-04-15): Initial architecture and implementation across 11 phases.

@@ -11,7 +11,23 @@
 
 > **Honesty notice — please read before going further.**
 >
-> This repository contains a ratified governing constitution, a full seven-stage research package (~28,600 words), a detailed feature specification, and this README. It does not contain any runnable code, compiled binaries, testnet infrastructure, or deployable agent. World Compute is a pre-implementation project as of 2026-04-15. Every CLI example and installation instruction in this document is aspirational and labeled accordingly. The design described here is complete and serious; the implementation has not started.
+> This repository contains a ratified governing constitution, a full research package (~28,600 words), detailed feature specifications, and substantial library code (391 tests passing across safety-critical modules). **However, there is no runnable agent, no working CLI, no testnet, and no deployable binary.** The CLI compiles but all commands print "not yet implemented." The library modules (policy engine, attestation verification, governance, incident response, egress enforcement) work as tested Rust code but are not wired into a running daemon.
+>
+> **What exists and works (as of 2026-04-16):**
+> - Library crate with 422 passing tests covering safety-critical paths
+> - Deterministic policy engine (10-step evaluation pipeline)
+> - Attestation verification (TPM2/SEV-SNP/TDX — measurement validation and signature binding; full CA certificate-chain validation is pluggable but not yet integrated)
+> - Governance separation of duties, quorum thresholds, time-locks
+> - Network egress blocking (RFC1918, link-local, cloud metadata)
+> - Incident response containment primitives with audit trails
+> - CI on Linux/macOS/Windows via GitHub Actions
+>
+> **What does NOT exist yet:**
+> - A running agent daemon
+> - Working CLI subcommands (all print "not yet implemented")
+> - P2P networking between nodes
+> - Actual job execution inside sandboxes
+> - Any form of testnet or multi-node deployment
 >
 > If you want to help build it, see [Contributing](#contributing). If you want to be notified when it becomes installable, watch this repository.
 
@@ -68,7 +84,7 @@ Five constitutional principles govern every design decision. They are not aspira
 
 ## Status
 
-World Compute has completed its initial implementation across all 11 phases. Updated 2026-04-16.
+World Compute has completed library-level implementation across core and safety modules. The CLI and agent daemon are scaffolded but not yet functional. Updated 2026-04-16.
 
 ### Design artifacts (complete)
 
@@ -83,6 +99,7 @@ World Compute has completed its initial implementation across all 11 phases. Upd
 | Quickstart direct-test plan (7 adversarial tests) | Complete | `specs/001-world-compute-core/quickstart.md` |
 | Implementation plan + task list (151 tasks) | Complete | `specs/001-world-compute-core/plan.md`, `tasks.md` |
 | Whitepaper v0.2 (PDF) | Complete | `specs/001-world-compute-core/whitepaper.pdf` |
+| Safety hardening spec (30 FRs, 10 SCs, red team response) | Complete | `specs/002-safety-hardening/` |
 | This README + proposed API reference | Complete | `README.md` |
 
 ### Implementation (in progress)
@@ -92,8 +109,16 @@ World Compute has completed its initial implementation across all 11 phases. Upd
 | Cargo workspace + protos + CI | Complete | — | `Cargo.toml`, `proto/`, `.github/workflows/ci.yml` |
 | Core types (NcuAmount, TrustScore, Cid, etc.) | Complete | — | `src/types.rs` |
 | Error model (20 codes, gRPC + HTTP mapping) | Complete | — | `src/error.rs` |
-| Sandbox trait + 4 platform drivers + GPU check | Complete | 3 tests | `src/sandbox/` |
-| Preemption supervisor (<10ms SIGSTOP) | Complete | 5 tests | `src/preemption/` |
+| Sandbox trait + 4 platform drivers + GPU check | Complete | 18 inline tests | `src/sandbox/` |
+| Sandbox egress enforcement (default-deny) | Complete | 6 inline + 21 integration | `src/sandbox/egress.rs` |
+| Deterministic policy engine (10-step pipeline) | Complete | 14 inline + 14 integration | `src/policy/` |
+| Attestation verification (TPM2/SEV-SNP/TDX) | Complete | 13 inline tests | `src/verification/attestation.rs` |
+| Governance (roles, quorum, time-lock, halt auth) | Complete | 52 inline + 15 integration | `src/governance/` |
+| Incident response containment | Complete | 3 inline + 9 integration | `src/incident/` |
+| Approved artifact registry + release channels | Complete | 10 inline tests | `src/registry/` |
+| Identity (DonorId, BrightID, OAuth2 stubs) | Complete | 6 inline + 13 integration | `src/identity/`, `src/agent/donor.rs` |
+| Red team adversarial exercise (5 scenarios) | Complete | 26 integration tests | `tests/red_team/` |
+| Preemption supervisor (<10ms SIGSTOP) | Complete | 6 inline tests | `src/preemption/` |
 | P2P discovery (mDNS + Kademlia DHT) | Complete | 4 tests | `src/network/discovery.rs` |
 | Agent lifecycle (enroll, heartbeat, pause, withdraw) | Complete | 7 tests | `src/agent/lifecycle.rs` |
 | Cryptographic attestation (5 types) | Complete | 2 tests | `src/verification/attestation.rs` |
@@ -137,9 +162,9 @@ World Compute has completed its initial implementation across all 11 phases. Upd
 | Build info (reproducible builds) | Complete | 1 test | `src/agent/build_info.rs` |
 | Desktop GUI (Tauri scaffold) | Complete | — | `gui/` |
 | CLI (donor + job + governance + admin) | Complete | — | `src/cli/` |
-| Adversarial tests (4 stubs, #[ignore]) | Complete | — | `tests/adversarial/` |
+| Adversarial tests (original 4 + red team 26) | Complete | 26 red team tests | `tests/adversarial/`, `tests/red_team/` |
 
-**Total: 8,421 lines Rust across 84 files, 228 real tests (0 mocks), all passing.**
+**Total: ~11,700 lines Rust across 94 source files + 44 test files, 422 real tests (0 mocks), all passing.**
 
 ### Remaining (operational, not code)
 
@@ -894,13 +919,27 @@ Principle I of the constitution makes security not a feature but the preconditio
 
 Any discovered sandbox escape, privilege escalation, or host-data exfiltration is a P0 incident. The constitution requires that affected agent versions be remotely disabled, new job dispatches halted cluster-wide, and public disclosure made within 72 hours of mitigation (and within 30 days of detection even if mitigation is delayed).
 
+### Safety hardening (002-safety-hardening)
+
+Following an independent red team review ([issue #4](https://github.com/ContextLab/world-compute/issues/4)), the project underwent a comprehensive safety hardening pass. Key additions:
+
+- **Deterministic policy engine**: Every job submission passes through a 10-step evaluation pipeline before scheduling. The policy engine wraps `validate_manifest()` with identity, signature, artifact registry, workload class, quota, egress allowlist, data classification, and ban checks. All decisions produce auditable `PolicyDecision` records.
+- **Attestation enforcement**: TPM2 PCR measurement validation, SEV-SNP report verification, and TDX quote verification replace previous stubs. Nodes presenting invalid attestation are rejected (not silently downgraded). A `MeasurementRegistry` maps agent versions to expected measurements with a rolling acceptance window.
+- **Default-deny network egress**: All sandbox drivers enforce default-deny outbound networking. RFC1918, link-local, cloud metadata (169.254.169.254), loopback, and multicast destinations are blocked. Jobs requesting network access must declare approved endpoints validated by the policy engine.
+- **Governance separation of duties**: No single identity can hold both WorkloadApprover and ArtifactSigner roles, or ArtifactSigner and PolicyDeployer. Safety-critical proposals (EmergencyHalt, ConstitutionAmendment) require elevated Humanity Points (HP >= 5) and ConstitutionAmendment proposals enforce a mandatory 7-day review period. `halt()` requires the OnCallResponder role.
+- **Incident response**: Containment primitives (FreezeHost, QuarantineWorkloadClass, BlockSubmitter, RevokeArtifact, DrainHostPool) with full audit trails. Quarantined workload classes are rejected by the policy engine. All actions require OnCallResponder authorization.
+- **Approved artifact registry**: Workload artifacts are checked by CID against a registry that enforces signer != approver per separation of duties. Revoked artifacts are rejected.
+- **Identity hardening**: `DonorId` is a strongly-typed identifier derived from the Ed25519 public key hash, ensuring uniqueness and format consistency. Proof-of-personhood and OAuth2 verification stubs are in place for Humanity Points.
+
+The full safety hardening specification, implementation plan, and 108-task breakdown are in `specs/002-safety-hardening/`.
+
 Before the project establishes a formal security contact, use GitHub's private vulnerability reporting feature for sensitive findings, or open a public issue tagged `security` for non-sensitive disclosures. A formal security contact address and written incident-disclosure policy will be published before the Phase 3 public alpha.
 
 ---
 
 ## Contributing
 
-World Compute is in the pre-code phase. The most valuable contributions right now are:
+World Compute has substantial library code (~11,700 lines, 422 tests) but no functional CLI or running agent. The most valuable contributions right now are:
 
 - **Review and critique the research.** All seven research documents are in `specs/001-world-compute-core/research/`. Factual corrections, omitted prior art, and design tradeoff challenges are welcome as GitHub issues or pull requests against the research documents.
 - **Review and critique the spec.** `specs/001-world-compute-core/spec.md` is the feature specification. Gaps, inconsistencies with the research findings, and missing requirements are valuable.
@@ -931,7 +970,7 @@ There is no donation channel today. When the legal entity is incorporated, a don
 
 ## Roadmap
 
-All phases are targets. None are completed as of 2026-04-15.
+Current status: **Pre-Phase 0.** Library modules are tested but the agent daemon is not yet functional. Phase 0 requires a working single-machine agent.
 
 | Phase | Label | Key milestones |
 |-|-|-|
@@ -1011,7 +1050,7 @@ Operating costs — security audits, developer salaries, CI infrastructure, test
 
 **When can I install it?**
 
-You cannot yet. This is a pre-code project as of 2026-04-15. No agent binary, CLI, testnet, or hosted service exists. Watch this repository for updates. The roadmap above describes the phase gates that must be cleared before any public installation is offered.
+You cannot yet. The project has library code and passing tests but no functional CLI, agent daemon, or testnet as of 2026-04-16. The binary compiles (`cargo build`) but all CLI subcommands print "not yet implemented." Watch this repository for updates. The roadmap above describes the phase gates that must be cleared before any public installation is offered.
 
 **Where do I send money?**
 
