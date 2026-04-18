@@ -324,7 +324,10 @@ enum Commands {
     Status,
 }
 
+// `#[allow]` because `fn main` is declared after this test module by convention
+// in this file; clippy's items-after-test-module lint would otherwise flag it.
 #[cfg(test)]
+#[allow(clippy::items_after_test_module)]
 mod tests {
     use super::*;
 
