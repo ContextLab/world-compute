@@ -186,18 +186,40 @@ pub async fn start_daemon(
     swarm.listen_on(tcp_addr)?;
     swarm.listen_on(quic_addr)?;
 
+    // Collect bootstrap addresses: user-supplied (priority) + public libp2p
+    // bootstrap relays (default fallback). If the user supplied any bootstrap
+    // peers, those are used alone; otherwise we fall back to the discovery
+    // config defaults (which include the public libp2p bootstrap relays).
+    let effective_bootstrap: Vec<String> = if config.bootstrap_peers.is_empty() {
+        discovery_config.bootstrap_seeds.clone()
+    } else {
+        config.bootstrap_peers.clone()
+    };
+
+    // Track bootstrap relay peer IDs so we can request relay reservations once
+    // connected (AutoRelay pattern — listen on /p2p/<relay>/p2p-circuit).
+    let mut bootstrap_relay_peers: Vec<(PeerId, Multiaddr)> = Vec::new();
+
     // Dial bootstrap peers. These give us:
     // - Initial DHT contact (for routing table)
     // - Potential relay servers (for NAT traversal)
     // - Observed-address feedback (via identify, for autonat)
-    for addr_str in &config.bootstrap_peers {
+    for addr_str in &effective_bootstrap {
         match addr_str.parse::<Multiaddr>() {
             Ok(addr) => {
+                // Extract peer ID if present (needed for relay reservation).
+                let peer = addr.iter().find_map(|p| match p {
+                    libp2p::multiaddr::Protocol::P2p(peer) => Some(peer),
+                    _ => None,
+                });
                 tracing::info!(%addr, "Dialing bootstrap peer");
                 if let Err(e) = swarm.dial(addr.clone()) {
                     tracing::warn!(%addr, "Failed to dial bootstrap: {e}");
                 } else {
                     println!("  Dialing bootstrap: {addr}");
+                    if let Some(p) = peer {
+                        bootstrap_relay_peers.push((p, addr));
+                    }
                 }
             }
             Err(e) => {
@@ -302,7 +324,37 @@ pub async fn start_daemon(
                                 println!("  NAT status: PUBLIC (reachable at {addr})");
                             }
                             autonat::NatStatus::Private => {
-                                println!("  NAT status: PRIVATE (will use relay + DCUtR)");
+                                println!("  NAT status: PRIVATE — requesting relay reservations");
+                                // AutoRelay: for each bootstrap relay we know, listen on
+                                // /<relay>/p2p-circuit. libp2p's relay client sends a
+                                // RESERVE request to the relay and, once granted, makes us
+                                // reachable at /ip4/.../p2p/<relay>/p2p-circuit/p2p/<us>.
+                                // Other peers can then dial that multiaddr to reach us,
+                                // and DCUtR will try to upgrade the relayed connection
+                                // to a direct one via hole-punching.
+                                for (relay_peer, relay_addr) in &bootstrap_relay_peers {
+                                    // Build relay-circuit listen addr: <relay_addr>/p2p-circuit
+                                    let circuit_addr = relay_addr.clone()
+                                        .with(libp2p::multiaddr::Protocol::P2pCircuit);
+                                    match swarm.listen_on(circuit_addr.clone()) {
+                                        Ok(listener_id) => {
+                                            tracing::info!(
+                                                %relay_peer,
+                                                %circuit_addr,
+                                                ?listener_id,
+                                                "Requesting relay reservation"
+                                            );
+                                            println!("  Requesting relay reservation via {relay_peer}");
+                                        }
+                                        Err(e) => {
+                                            tracing::warn!(
+                                                %relay_peer,
+                                                %circuit_addr,
+                                                "Relay reservation request failed: {e}"
+                                            );
+                                        }
+                                    }
+                                }
                             }
                             autonat::NatStatus::Unknown => {
                                 tracing::debug!("AutoNAT: status still unknown");
@@ -313,7 +365,19 @@ pub async fn start_daemon(
                         tracing::debug!(?event, "Relay server event");
                     }
                     SwarmEvent::Behaviour(NodeBehaviourEvent::RelayClient(event)) => {
-                        tracing::debug!(?event, "Relay client event");
+                        match &event {
+                            relay::client::Event::ReservationReqAccepted { relay_peer_id, .. } => {
+                                println!("  Relay reservation accepted by {relay_peer_id}");
+                                tracing::info!(%relay_peer_id, "Relay reservation accepted");
+                            }
+                            relay::client::Event::OutboundCircuitEstablished { relay_peer_id, .. } => {
+                                tracing::info!(%relay_peer_id, "Outbound relay circuit established");
+                            }
+                            relay::client::Event::InboundCircuitEstablished { src_peer_id, .. } => {
+                                println!("  Peer {src_peer_id} reached us via relay circuit");
+                                tracing::info!(%src_peer_id, "Inbound relay circuit established");
+                            }
+                        }
                     }
                     SwarmEvent::Behaviour(NodeBehaviourEvent::Offer(
                         request_response::Event::Message {

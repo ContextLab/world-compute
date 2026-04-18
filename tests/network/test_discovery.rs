@@ -17,14 +17,19 @@ fn dns_seed_parsing() {
     for seed in BOOTSTRAP_DNS_SEEDS {
         assert!(
             seed.starts_with("/dnsaddr/"),
-            "Bootstrap seed must be /dnsaddr/ multiaddr: {seed}"
+            "Project bootstrap seed must be /dnsaddr/ multiaddr: {seed}"
         );
     }
-    // DiscoveryConfig also picks up seeds
+    // DiscoveryConfig picks up BOOTSTRAP_DNS_SEEDS plus the public libp2p
+    // bootstrap relays (PUBLIC_LIBP2P_BOOTSTRAP_RELAYS), which includes both
+    // /dnsaddr/ and /ip4/ entries.
     let config = DiscoveryConfig::default();
     assert!(!config.bootstrap_seeds.is_empty());
     for seed in &config.bootstrap_seeds {
-        assert!(seed.starts_with("/dnsaddr/"));
+        assert!(
+            seed.starts_with("/dnsaddr/") || seed.starts_with("/ip4/") || seed.starts_with("/ip6/"),
+            "Bootstrap seed must be a /dnsaddr/, /ip4/, or /ip6/ multiaddr: {seed}"
+        );
     }
 }
 
