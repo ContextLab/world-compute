@@ -204,15 +204,15 @@
       "type": "file"
     },
     {
-      "path": "src/error.rs",
-      "accessCount": 10,
-      "lastAccessed": 1776433723313,
+      "path": "gui/src-tauri/src/commands.rs",
+      "accessCount": 11,
+      "lastAccessed": 1776546004221,
       "type": "file"
     },
     {
-      "path": "gui/src-tauri/src/commands.rs",
-      "accessCount": 9,
-      "lastAccessed": 1776434044181,
+      "path": "src/error.rs",
+      "accessCount": 10,
+      "lastAccessed": 1776433723313,
       "type": "file"
     },
     {

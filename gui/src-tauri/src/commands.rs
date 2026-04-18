@@ -4,6 +4,12 @@
 //! with the gui feature). Without the feature, they are plain functions that
 //! return serde_json::Value for testing and the scaffold main.
 
+// These functions are wired into `tauri::generate_handler!` only when the
+// `gui` feature is active. Without the feature the binary is a scaffold and
+// these functions appear dead to the compiler. They're also exercised by the
+// inline unit tests below.
+#![allow(dead_code)]
+
 use serde_json::{json, Value};
 
 // Library imports for real implementations
