@@ -38,7 +38,7 @@ fn fill_cap_gc_then_accept() {
     // Fill with data
     let cid1 = store.put(&[0u8; 100]).unwrap();
     track_storage(&mut cap, 100).unwrap();
-    let cid2 = store.put(&[1u8; 100]).unwrap();
+    let _cid2 = store.put(&[1u8; 100]).unwrap();
     track_storage(&mut cap, 100).unwrap();
 
     // Cap is full — reject

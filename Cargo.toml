@@ -36,6 +36,9 @@ libp2p = { version = "0.54", features = [
     "dns",
     "identify",
     "ping",
+    "autonat",
+    "request-response",
+    "cbor",
     "ed25519",
     "macros",
 ] }

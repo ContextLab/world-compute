@@ -18,7 +18,7 @@ fn cert_issuance_produces_valid_cert() {
     // Cert should expire approximately 90 days from now
     let days_until = (cert.not_after - chrono::Utc::now()).num_days();
     assert!(
-        days_until >= 89 && days_until <= 91,
+        (89..=91).contains(&days_until),
         "cert should expire in ~90 days, got {days_until}"
     );
 }

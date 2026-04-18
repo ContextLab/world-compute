@@ -4,6 +4,7 @@ use rand::Rng;
 
 /// Result of a single simulation round.
 #[derive(Debug)]
+#[allow(dead_code)] // exposed for test inspection; not all fields read in every test
 pub struct SimulationResult {
     pub nodes_alive: usize,
     pub nodes_churned: usize,

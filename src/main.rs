@@ -41,6 +41,18 @@ async fn main() -> anyhow::Result<()> {
         }
     }
 
+    // Check if this is a remote job submission (job submit --executor <addr>)
+    if let Commands::Job(ref job_cli) = cli.command {
+        if let worldcompute::cli::submitter::JobCommand::Submit { executor: Some(_), .. } =
+            &job_cli.command
+        {
+            worldcompute::cli::submitter::execute_remote_submit(&job_cli.command)
+                .await
+                .map_err(|e| anyhow::anyhow!("Remote dispatch error: {e}"))?;
+            return Ok(());
+        }
+    }
+
     // Non-daemon commands — execute and print output
     let output = match cli.command {
         Commands::Donor(donor_cli) => worldcompute::cli::donor::execute(&donor_cli.command),

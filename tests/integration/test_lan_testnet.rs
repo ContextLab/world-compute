@@ -6,10 +6,9 @@
 
 use std::time::Instant;
 use worldcompute::data_plane::cid_store::{compute_cid, CidStore};
-use worldcompute::preemption::supervisor::{PreemptionResult, PreemptionSupervisor};
+use worldcompute::preemption::supervisor::PreemptionSupervisor;
 use worldcompute::scheduler::broker::{Broker, NodeInfo, TaskRequirements};
 use worldcompute::scheduler::ResourceEnvelope;
-use worldcompute::types::Timestamp;
 
 fn test_envelope(cpu: u64, ram: u64) -> ResourceEnvelope {
     ResourceEnvelope {

@@ -178,9 +178,8 @@ fn tpm2_tampered_intermediate_cert_rejected() {
     let validator = Tpm2ChainValidator;
     let result = validator.validate_chain(b"dummy-quote", &chain);
     // Tampered cert should either return Ok(false) or Err (parse failure).
-    match result {
-        Ok(valid) => assert!(!valid, "Tampered chain must be rejected"),
-        Err(_) => {} // Parse error is also acceptable for corrupted DER
+    if let Ok(valid) = result {
+        assert!(!valid, "Tampered chain must be rejected");
     }
 }
 
@@ -194,9 +193,8 @@ fn tpm2_tampered_leaf_cert_rejected() {
 
     let validator = Tpm2ChainValidator;
     let result = validator.validate_chain(b"dummy-quote", &chain);
-    match result {
-        Ok(valid) => assert!(!valid, "Tampered leaf cert must be rejected"),
-        Err(_) => {} // Parse error is acceptable
+    if let Ok(valid) = result {
+        assert!(!valid, "Tampered leaf cert must be rejected");
     }
 }
 
@@ -239,9 +237,8 @@ fn tdx_ecdsa_wrong_root_fingerprint_detected() {
     let mid = tampered_chain[root_idx].len() / 2;
     tampered_chain[root_idx][mid] ^= 0xFF;
     let result = validator.validate_chain(b"dummy-quote", &tampered_chain);
-    match result {
-        Ok(valid) => assert!(!valid, "Tampered root cert must be rejected"),
-        Err(_) => {} // Parse error is acceptable
+    if let Ok(valid) = result {
+        assert!(!valid, "Tampered root cert must be rejected");
     }
 }
 
@@ -279,8 +276,7 @@ fn tpm2_expired_cert_detected_even_with_valid_structure() {
     // But the validator should reject it due to expiry.
     let validator = Tpm2ChainValidator;
     let result = validator.validate_chain(b"dummy-quote", &chain);
-    match result {
-        Ok(valid) => assert!(!valid, "Expired chain must fail validation"),
-        Err(_) => {} // Also acceptable
+    if let Ok(valid) = result {
+        assert!(!valid, "Expired chain must fail validation");
     }
 }

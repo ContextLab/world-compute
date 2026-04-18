@@ -113,12 +113,12 @@ fn disjoint_as_selection() {
     // All selected should have different AS numbers
     let as_numbers: Vec<u32> = selected.iter().map(|n| n.autonomous_system).collect();
     let unique: std::collections::HashSet<u32> = as_numbers.iter().copied().collect();
-    assert_eq!(unique.len(), 3, "All replicas must be from different AS: {:?}", as_numbers);
+    assert_eq!(unique.len(), 3, "All replicas must be from different AS: {as_numbers:?}");
 }
 
 #[test]
 fn disjoint_selection_fewer_than_requested() {
-    let nodes = vec![gpu_node("n1", 100), gpu_node("n2", 100)];
+    let nodes = [gpu_node("n1", 100), gpu_node("n2", 100)];
     let refs: Vec<&NodeCapability> = nodes.iter().collect();
     // Request 3 but only 1 distinct AS available
     let selected = select_disjoint_replicas(&refs, 3);

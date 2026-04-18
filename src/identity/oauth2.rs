@@ -353,8 +353,7 @@ mod tests {
                         verify_oauth2(provider, "https://localhost/callback"),
                         OAuth2Result::ProviderUnavailable(_)
                     ),
-                    "Provider {:?} should be unavailable without env vars",
-                    provider
+                    "Provider {provider:?} should be unavailable without env vars"
                 );
             }
         }
@@ -370,8 +369,7 @@ mod tests {
         ] {
             assert!(
                 !provider.default_scopes().is_empty(),
-                "Provider {:?} should have default scopes",
-                provider
+                "Provider {provider:?} should have default scopes"
             );
         }
     }
