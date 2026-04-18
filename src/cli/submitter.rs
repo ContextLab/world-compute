@@ -183,15 +183,12 @@ pub async fn execute_remote_submit(cmd: &JobCommand) -> Result<(), Box<dyn std::
         loop {
             let event = swarm.select_next_some().await;
             match event {
-                SwarmEvent::ConnectionEstablished { peer_id, .. } => {
-                    if peer_id == executor_peer && !sent {
-                        println!("Connected to executor {peer_id}. Sending dispatch...");
-                        swarm
-                            .behaviour_mut()
-                            .dispatch
-                            .send_request(&executor_peer, request.clone());
-                        sent = true;
-                    }
+                SwarmEvent::ConnectionEstablished { peer_id, .. }
+                    if peer_id == executor_peer && !sent =>
+                {
+                    println!("Connected to executor {peer_id}. Sending dispatch...");
+                    swarm.behaviour_mut().dispatch.send_request(&executor_peer, request.clone());
+                    sent = true;
                 }
                 SwarmEvent::Behaviour(ClientBehaviourEvent::Dispatch(
                     request_response::Event::Message {

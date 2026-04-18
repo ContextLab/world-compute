@@ -186,16 +186,22 @@
       "type": "file"
     },
     {
+      "path": "tests",
+      "accessCount": 14,
+      "lastAccessed": 1776521491483,
+      "type": "directory"
+    },
+    {
       "path": "src/policy/rules.rs",
       "accessCount": 13,
       "lastAccessed": 1776402161323,
       "type": "file"
     },
     {
-      "path": "tests",
-      "accessCount": 13,
-      "lastAccessed": 1776402433532,
-      "type": "directory"
+      "path": "src/sandbox/gpu.rs",
+      "accessCount": 11,
+      "lastAccessed": 1776521485491,
+      "type": "file"
     },
     {
       "path": "src/error.rs",
@@ -249,12 +255,6 @@
       "path": "tests/test_rekor_transparency.rs",
       "accessCount": 4,
       "lastAccessed": 1776400693830,
-      "type": "file"
-    },
-    {
-      "path": "src/sandbox/gpu.rs",
-      "accessCount": 4,
-      "lastAccessed": 1776401294387,
       "type": "file"
     },
     {

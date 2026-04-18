@@ -9,6 +9,11 @@ fn check_linux_gpu_returns_vec() {
     let _ = gpus.len();
 }
 
+// These tests simulate Linux sysfs structure with PCI IDs containing colons
+// (e.g., "0000:03:00.0"). Windows path semantics reject those characters, so
+// the tests are Unix-only. GPU enumeration on non-Linux hosts always returns
+// an empty list (see src/sandbox/gpu.rs), so there's nothing to exercise.
+#[cfg(unix)]
 #[test]
 fn enumerate_gpus_at_fake_sysfs() {
     let tmp = std::env::temp_dir().join("wc-t062-gpu-enum");
@@ -31,6 +36,7 @@ fn enumerate_gpus_at_fake_sysfs() {
     let _ = std::fs::remove_dir_all(&tmp);
 }
 
+#[cfg(unix)]
 #[test]
 fn iommu_singleton_group_allows_passthrough() {
     let tmp = std::env::temp_dir().join("wc-t062-iommu-single");
@@ -45,6 +51,7 @@ fn iommu_singleton_group_allows_passthrough() {
     let _ = std::fs::remove_dir_all(&tmp);
 }
 
+#[cfg(unix)]
 #[test]
 fn iommu_shared_group_rejects_passthrough() {
     let tmp = std::env::temp_dir().join(format!("wc-t062-iommu-shared-{}", std::process::id()));

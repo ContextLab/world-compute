@@ -216,6 +216,10 @@ mod tests {
         assert!(gpus.is_empty());
     }
 
+    // Tests below simulate Linux sysfs structure, which uses PCI IDs containing
+    // colons (e.g. "0000:01:00.0"). Windows rejects those characters in paths,
+    // so these tests are gated to Unix only.
+    #[cfg(unix)]
     #[test]
     fn enumerate_gpus_finds_vga_class() {
         let tmp = std::env::temp_dir().join("wc-test-gpu-enum");
@@ -236,6 +240,7 @@ mod tests {
         let _ = std::fs::remove_dir_all(&tmp);
     }
 
+    #[cfg(unix)]
     #[test]
     fn iommu_singleton_with_one_device() {
         let tmp = std::env::temp_dir().join("wc-test-iommu-single");
@@ -250,6 +255,7 @@ mod tests {
         let _ = std::fs::remove_dir_all(&tmp);
     }
 
+    #[cfg(unix)]
     #[test]
     fn iommu_non_singleton_rejects() {
         let tmp = std::env::temp_dir().join("wc-test-iommu-multi");
@@ -264,6 +270,7 @@ mod tests {
         let _ = std::fs::remove_dir_all(&tmp);
     }
 
+    #[cfg(unix)]
     #[test]
     fn iommu_missing_group_returns_error() {
         let tmp = std::env::temp_dir().join("wc-test-iommu-missing");
