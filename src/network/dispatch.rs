@@ -104,10 +104,8 @@ pub enum TaskStatus {
 
 /// Build the TaskOffer request-response behaviour.
 pub fn build_offer_behaviour() -> request_response::cbor::Behaviour<TaskOffer, TaskOfferResponse> {
-    let protocols = std::iter::once((
-        StreamProtocol::new(PROTOCOL_TASK_OFFER),
-        ProtocolSupport::Full,
-    ));
+    let protocols =
+        std::iter::once((StreamProtocol::new(PROTOCOL_TASK_OFFER), ProtocolSupport::Full));
     let config = request_response::Config::default()
         .with_request_timeout(Duration::from_secs(10))
         .with_max_concurrent_streams(100);
@@ -117,10 +115,8 @@ pub fn build_offer_behaviour() -> request_response::cbor::Behaviour<TaskOffer, T
 /// Build the TaskDispatch request-response behaviour.
 pub fn build_dispatch_behaviour(
 ) -> request_response::cbor::Behaviour<TaskDispatchRequest, TaskDispatchResponse> {
-    let protocols = std::iter::once((
-        StreamProtocol::new(PROTOCOL_TASK_DISPATCH),
-        ProtocolSupport::Full,
-    ));
+    let protocols =
+        std::iter::once((StreamProtocol::new(PROTOCOL_TASK_DISPATCH), ProtocolSupport::Full));
     // Dispatch has a much longer timeout — the executor is actually running the job.
     let config = request_response::Config::default()
         .with_request_timeout(Duration::from_secs(600))
@@ -153,8 +149,7 @@ mod tests {
         let mut bytes = Vec::new();
         ciborium::ser::into_writer(&offer, &mut bytes).expect("serialize");
         assert!(!bytes.is_empty());
-        let decoded: TaskOffer =
-            ciborium::de::from_reader(&bytes[..]).expect("deserialize");
+        let decoded: TaskOffer = ciborium::de::from_reader(&bytes[..]).expect("deserialize");
         assert_eq!(decoded.task_id, offer.task_id);
         assert_eq!(decoded.needs_gpu, offer.needs_gpu);
     }

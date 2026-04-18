@@ -95,20 +95,12 @@ fn bootstrap_dns_seeds_constant_matches_config_prefix() {
     );
     // Project seeds come first.
     for (i, seed) in BOOTSTRAP_DNS_SEEDS.iter().enumerate() {
-        assert_eq!(
-            *seed,
-            config.bootstrap_seeds[i].as_str(),
-            "Project seed {i} mismatch"
-        );
+        assert_eq!(*seed, config.bootstrap_seeds[i].as_str(), "Project seed {i} mismatch");
     }
     // Public libp2p relays follow.
     for (i, seed) in PUBLIC_LIBP2P_BOOTSTRAP_RELAYS.iter().enumerate() {
         let config_idx = BOOTSTRAP_DNS_SEEDS.len() + i;
-        assert_eq!(
-            *seed,
-            config.bootstrap_seeds[config_idx].as_str(),
-            "Public relay {i} mismatch"
-        );
+        assert_eq!(*seed, config.bootstrap_seeds[config_idx].as_str(), "Public relay {i} mismatch");
     }
 }
 

@@ -58,14 +58,11 @@ struct ClientBehaviour {
     dispatch: request_response::cbor::Behaviour<TaskDispatchRequest, TaskDispatchResponse>,
 }
 
-fn build_dispatch_behaviour() -> request_response::cbor::Behaviour<TaskDispatchRequest, TaskDispatchResponse> {
+fn build_dispatch_behaviour(
+) -> request_response::cbor::Behaviour<TaskDispatchRequest, TaskDispatchResponse> {
     request_response::cbor::Behaviour::new(
-        std::iter::once((
-            StreamProtocol::new(PROTOCOL_TASK_DISPATCH),
-            ProtocolSupport::Full,
-        )),
-        request_response::Config::default()
-            .with_request_timeout(Duration::from_secs(60)),
+        std::iter::once((StreamProtocol::new(PROTOCOL_TASK_DISPATCH), ProtocolSupport::Full)),
+        request_response::Config::default().with_request_timeout(Duration::from_secs(60)),
     )
 }
 
@@ -151,11 +148,7 @@ fn make_test_manifest(workload_cid: cid::Cid) -> JobManifest {
 fn execute_wasm_task(req: &TaskDispatchRequest) -> TaskDispatchResponse {
     use std::time::Instant;
     let start = Instant::now();
-    let wasm = req
-        .inline_inputs
-        .iter()
-        .find(|(n, _)| n == "workload")
-        .map(|(_, b)| b.clone());
+    let wasm = req.inline_inputs.iter().find(|(n, _)| n == "workload").map(|(_, b)| b.clone());
     let Some(bytes) = wasm else {
         return TaskDispatchResponse {
             task_id: req.task_id.clone(),
@@ -170,8 +163,7 @@ fn execute_wasm_task(req: &TaskDispatchRequest) -> TaskDispatchResponse {
     config.consume_fuel(true);
     let engine = wasmtime::Engine::new(&config).expect("engine");
     match worldcompute::sandbox::wasm::compile_module(&engine, &bytes) {
-        Ok(module) => match worldcompute::sandbox::wasm::run_module(&engine, &module, 10_000_000)
-        {
+        Ok(module) => match worldcompute::sandbox::wasm::run_module(&engine, &module, 10_000_000) {
             Ok(output) => TaskDispatchResponse {
                 task_id: req.task_id.clone(),
                 status: TaskStatus::Succeeded,
@@ -214,9 +206,7 @@ async fn three_node_relay_circuit_wasm_dispatch() {
     let r_kp = identity::Keypair::generate_ed25519();
     let r_peer = PeerId::from(r_kp.public());
     let mut r_swarm = build_relay_swarm(r_kp);
-    r_swarm
-        .listen_on("/ip4/127.0.0.1/tcp/0".parse().unwrap())
-        .expect("relay listen");
+    r_swarm.listen_on("/ip4/127.0.0.1/tcp/0".parse().unwrap()).expect("relay listen");
 
     // Wait for relay to obtain a concrete listen address.
     let r_addr: Multiaddr = timeout(Duration::from_secs(10), async {
@@ -238,16 +228,12 @@ async fn three_node_relay_circuit_wasm_dispatch() {
     let a_kp = identity::Keypair::generate_ed25519();
     let a_peer = PeerId::from(a_kp.public());
     let mut a_swarm = build_client_swarm(a_kp);
-    a_swarm
-        .listen_on("/ip4/127.0.0.1/tcp/0".parse().unwrap())
-        .expect("A listen");
+    a_swarm.listen_on("/ip4/127.0.0.1/tcp/0".parse().unwrap()).expect("A listen");
 
     // ─── Spawn client B — will dial A through R ──────────────────────────
     let b_kp = identity::Keypair::generate_ed25519();
     let mut b_swarm = build_client_swarm(b_kp);
-    b_swarm
-        .listen_on("/ip4/127.0.0.1/tcp/0".parse().unwrap())
-        .expect("B listen");
+    b_swarm.listen_on("/ip4/127.0.0.1/tcp/0".parse().unwrap()).expect("B listen");
 
     // A dials R and requests a relay reservation.
     a_swarm.dial(r_addr_with_peer.clone()).expect("A->R dial");
@@ -266,8 +252,7 @@ async fn three_node_relay_circuit_wasm_dispatch() {
         0x00, 0x61, 0x73, 0x6d, // magic
         0x01, 0x00, 0x00, 0x00, // version 1
     ];
-    let workload_cid =
-        worldcompute::data_plane::cid_store::compute_cid(&wasm_bytes).expect("cid");
+    let workload_cid = worldcompute::data_plane::cid_store::compute_cid(&wasm_bytes).expect("cid");
     let dispatch_request = TaskDispatchRequest {
         task_id: "nat-test-001".into(),
         manifest: make_test_manifest(workload_cid),
@@ -429,8 +414,5 @@ async fn three_node_relay_circuit_wasm_dispatch() {
         "Dispatch via relay should succeed: {:?}",
         response.error
     );
-    println!(
-        "✓ Cross-NAT dispatch succeeded: {}ms via relay circuit",
-        response.duration_ms
-    );
+    println!("✓ Cross-NAT dispatch succeeded: {}ms via relay circuit", response.duration_ms);
 }

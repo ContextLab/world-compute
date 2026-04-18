@@ -24,8 +24,7 @@ use libp2p::{
     autonat, dcutr,
     futures::StreamExt,
     gossipsub::{self, IdentTopic},
-    identify, identity, ping, relay,
-    request_response,
+    identify, identity, ping, relay, request_response,
     swarm::{NetworkBehaviour, SwarmEvent},
     Multiaddr, PeerId, SwarmBuilder,
 };
@@ -493,7 +492,9 @@ pub async fn start_daemon(
 fn evaluate_offer(offer: &TaskOffer) -> bool {
     // Real implementation would consult the scheduler's broker state; for now,
     // accept any task within reasonable bounds.
-    offer.min_cpu_cores <= 64 && offer.min_memory_mb <= 512 * 1024 && offer.max_wallclock_ms <= 600_000
+    offer.min_cpu_cores <= 64
+        && offer.min_memory_mb <= 512 * 1024
+        && offer.max_wallclock_ms <= 600_000
 }
 
 /// Report current load as a fraction 0.0–1.0. Stub returns 0.1 (mostly idle).
@@ -731,11 +732,8 @@ mod tests {
             submitter_signature: vec![1u8; 64],
         };
 
-        let req = TaskDispatchRequest {
-            task_id: "t-real".into(),
-            manifest,
-            inline_inputs: Vec::new(),
-        };
+        let req =
+            TaskDispatchRequest { task_id: "t-real".into(), manifest, inline_inputs: Vec::new() };
 
         let resp = execute_dispatched_task(&req, &store);
         assert_eq!(resp.status, TaskStatus::Succeeded, "err={:?}", resp.error);
@@ -799,12 +797,7 @@ mod tests {
 
     #[test]
     fn relay_circuit_multiaddr_format() {
-        let addr = relay_circuit_multiaddr(
-            "203.0.113.1",
-            19999,
-            "12D3KooWRelay",
-            "12D3KooWTarget",
-        );
+        let addr = relay_circuit_multiaddr("203.0.113.1", 19999, "12D3KooWRelay", "12D3KooWTarget");
         assert_eq!(
             addr,
             "/ip4/203.0.113.1/tcp/19999/p2p/12D3KooWRelay/p2p-circuit/p2p/12D3KooWTarget"

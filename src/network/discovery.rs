@@ -92,7 +92,8 @@ impl Default for DiscoveryConfig {
         let seeds: Vec<String> = std::env::var("WORLDCOMPUTE_BOOTSTRAP_SEEDS")
             .map(|s| s.split(',').map(|s| s.trim().to_string()).collect())
             .unwrap_or_else(|_| {
-                let mut v: Vec<String> = BOOTSTRAP_DNS_SEEDS.iter().map(|s| s.to_string()).collect();
+                let mut v: Vec<String> =
+                    BOOTSTRAP_DNS_SEEDS.iter().map(|s| s.to_string()).collect();
                 v.extend(PUBLIC_LIBP2P_BOOTSTRAP_RELAYS.iter().map(|s| s.to_string()));
                 v
             });

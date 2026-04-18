@@ -46,8 +46,7 @@ fn build_swarm(keypair: identity::Keypair) -> libp2p::Swarm<TestBehaviour> {
                     StreamProtocol::new(PROTOCOL_TASK_DISPATCH),
                     ProtocolSupport::Full,
                 )),
-                request_response::Config::default()
-                    .with_request_timeout(Duration::from_secs(30)),
+                request_response::Config::default().with_request_timeout(Duration::from_secs(30)),
             ),
             identify: identify::Behaviour::new(identify::Config::new(
                 "/test/1.0.0".into(),
@@ -96,8 +95,8 @@ async fn distributed_wasm_job_dispatch_end_to_end() {
         0x00, 0x61, 0x73, 0x6d, // magic
         0x01, 0x00, 0x00, 0x00, // version 1
     ];
-    let workload_cid = worldcompute::data_plane::cid_store::compute_cid(&wasm_bytes)
-        .expect("compute cid");
+    let workload_cid =
+        worldcompute::data_plane::cid_store::compute_cid(&wasm_bytes).expect("compute cid");
 
     // Executor daemon
     let executor_kp = identity::Keypair::generate_ed25519();
@@ -173,8 +172,7 @@ async fn distributed_wasm_job_dispatch_end_to_end() {
     })
     .await;
 
-    let response: TaskDispatchResponse =
-        result.expect("timed out waiting for dispatch response");
+    let response: TaskDispatchResponse = result.expect("timed out waiting for dispatch response");
     assert_eq!(response.task_id, "dist-test-001");
     assert_eq!(
         response.status,
@@ -191,11 +189,8 @@ fn execute_task_for_test(req: &TaskDispatchRequest) -> TaskDispatchResponse {
     use worldcompute::network::dispatch::TaskStatus;
 
     let start = Instant::now();
-    let wasm_bytes = req
-        .inline_inputs
-        .iter()
-        .find(|(n, _)| n == "workload")
-        .map(|(_, b)| b.clone());
+    let wasm_bytes =
+        req.inline_inputs.iter().find(|(n, _)| n == "workload").map(|(_, b)| b.clone());
 
     let wasm_bytes = match wasm_bytes {
         Some(b) => b,

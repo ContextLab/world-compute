@@ -115,8 +115,8 @@ pub async fn execute_remote_submit(cmd: &JobCommand) -> Result<(), Box<dyn std::
     // Parse the manifest from disk.
     let manifest_json = std::fs::read_to_string(&manifest_path)
         .map_err(|e| format!("reading manifest '{manifest_path}': {e}"))?;
-    let manifest: JobManifest = serde_json::from_str(&manifest_json)
-        .map_err(|e| format!("parsing manifest JSON: {e}"))?;
+    let manifest: JobManifest =
+        serde_json::from_str(&manifest_json).map_err(|e| format!("parsing manifest JSON: {e}"))?;
 
     // Optional inline workload.
     let inline_inputs: Vec<(String, Vec<u8>)> = if let Some(path) = workload_path {
@@ -161,8 +161,7 @@ pub async fn execute_remote_submit(cmd: &JobCommand) -> Result<(), Box<dyn std::
                     StreamProtocol::new(PROTOCOL_TASK_DISPATCH),
                     ProtocolSupport::Full,
                 )),
-                request_response::Config::default()
-                    .with_request_timeout(Duration::from_secs(300)),
+                request_response::Config::default().with_request_timeout(Duration::from_secs(300)),
             ),
             identify: identify::Behaviour::new(identify::Config::new(
                 "/worldcompute/1.0.0".into(),

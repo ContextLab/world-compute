@@ -17,10 +17,7 @@ fn cert_issuance_produces_valid_cert() {
     assert!(!cert.key_der.is_empty(), "issued key DER must not be empty");
     // Cert should expire approximately 90 days from now
     let days_until = (cert.not_after - chrono::Utc::now()).num_days();
-    assert!(
-        (89..=91).contains(&days_until),
-        "cert should expire in ~90 days, got {days_until}"
-    );
+    assert!((89..=91).contains(&days_until), "cert should expire in ~90 days, got {days_until}");
 }
 
 #[test]
