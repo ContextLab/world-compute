@@ -135,9 +135,13 @@ pub struct LoadedModel {
 
 /// Attempt to load a model from the given configuration.
 ///
-/// This is a placeholder — in production this would use
-/// `candle_transformers::models::llama::Llama::load(...)`.
-/// Returns `Err` if the model file does not exist.
+/// NOTE: this autoregressive-ensemble path is the scaffolding from spec 004
+/// and is architecturally superseded by the distributed-diffusion module
+/// (see user story 6 / FR-022 in the spec-005 plan). Real inference wiring
+/// belongs in the diffusion path, not here; this function remains only for
+/// structural compatibility with existing tests until the AR module is
+/// removed wholesale in a future commit. Returns `Err` if the model file
+/// does not exist.
 pub fn load_model(config: &ModelConfig) -> Result<LoadedModel, String> {
     let path = std::path::Path::new(&config.model_path);
     if !path.exists() {

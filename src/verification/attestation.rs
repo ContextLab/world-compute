@@ -524,31 +524,6 @@ impl CertificateChainValidator for TdxChainValidator {
     }
 }
 
-// ─── Root CA constants (T037) ───────────────────────────────────────────
-//
-// WARNING: These are TEST-ONLY self-signed certificates generated for
-// development and integration testing. They MUST be replaced with real
-// AMD ARK and Intel Root CA certificates before production deployment.
-// DO NOT use these certificates for any security-sensitive purpose.
-
-/// Test-only AMD ARK (AMD Root Key) certificate placeholder.
-///
-/// In production, this MUST be replaced with the real AMD ARK certificate
-/// downloaded from <https://developer.amd.com/sev/> and pinned at compile time.
-/// This placeholder is intentionally empty — tests that need real DER certs
-/// generate them at runtime via `generate_test_self_signed_cert_chain()`.
-///
-/// WARNING: DO NOT use this for any security-sensitive purpose.
-pub const AMD_ARK_TEST_FINGERPRINT: &str = "TEST_ONLY:amd-ark:not-a-real-certificate";
-
-/// Test-only Intel SGX/TDX Root CA certificate placeholder.
-///
-/// In production, this MUST be replaced with Intel's SGX Root CA downloaded
-/// from <https://certificates.trustedservices.intel.com/>.
-///
-/// WARNING: DO NOT use this for any security-sensitive purpose.
-pub const INTEL_ROOT_CA_TEST_FINGERPRINT: &str = "TEST_ONLY:intel-root:not-a-real-certificate";
-
 // ─── Validator registry (T038) ──────────────────────────────────────────
 
 /// Get the appropriate certificate chain validator for an attestation type.

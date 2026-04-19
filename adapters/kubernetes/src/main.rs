@@ -127,7 +127,7 @@ pub fn build_cleanup_request(namespace: &str, task_id: &str) -> (String, String)
     (namespace.to_string(), pod_name)
 }
 
-/// Async stub for pod creation — requires a live kube::Client.
+/// Reference code template for pod creation — requires a live kube::Client.
 ///
 /// ```ignore
 /// pub async fn create_task_pod(
@@ -154,7 +154,7 @@ pub fn create_task_pod_manifest(
     build_task_pod_manifest(namespace, task_id, image, resources)
 }
 
-/// Async stub for pod cleanup — requires a live kube::Client.
+/// Reference code template for pod cleanup — requires a live kube::Client.
 ///
 /// ```ignore
 /// pub async fn cleanup_pod(

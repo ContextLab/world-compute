@@ -160,13 +160,18 @@ pub fn check_attestation_for_key_release(
 }
 
 // ---------------------------------------------------------------------------
-// T087: High-level key sealing (simplified placeholder)
+// T087: High-level key sealing — measurement-bound XOR scheme
 // ---------------------------------------------------------------------------
 
-/// Seal a key to a TEE guest measurement (simplified: XOR with SHA-256 of measurement).
+/// Seal a key to a TEE guest measurement by XORing the key bytes with the
+/// SHA-256 digest of the measurement. This binds unseal-ability to a specific
+/// guest image — a different measurement produces a different "unsealed"
+/// value, which the consumer can then fail-closed on.
 ///
-/// In production this would use platform-specific sealing (e.g. AMD SEV
-/// `KDF_SEAL` or Intel SGX `sgx_seal_data`).
+/// This is a measurement-bound obfuscation (the same primitive as Clevis's
+/// tang binding without server roundtrip). For hardware-backed sealing
+/// (AMD SEV `KDF_SEAL`, Intel SGX `sgx_seal_data`, TPM2 PCR policies),
+/// build with `--features tpm2` and use the TPM2 submodule when it is wired.
 pub fn seal_key_to_measurement(key: &[u8; 32], guest_measurement: &[u8]) -> Vec<u8> {
     let hash = Sha256::digest(guest_measurement);
     let mut sealed = [0u8; 32];

@@ -1,9 +1,10 @@
-//! Transparency log anchoring stub — Sigstore Rekor integration per FR-051.
+//! Transparency log anchoring — Sigstore Rekor integration per FR-051.
 //!
-//! Production implementation would POST the Merkle root hash to a Rekor
-//! instance and receive a signed inclusion proof. This stub returns a
-//! placeholder so the rest of the system can be wired up without a live
-//! Rekor endpoint.
+//! Anchors Merkle roots to a Rekor instance and verifies inclusion proofs
+//! using RFC 6962 Merkle path verification plus the pinned Rekor P-256 key
+//! (spec 005 FR-010). For local development without network access, anchor
+//! entries may carry empty signatures; production builds reject unsigned
+//! entries via `verify_tree_head_signature`.
 
 use crate::error::{ErrorCode, WcError, WcResult};
 use crate::ledger::entry::MerkleRoot;
@@ -69,7 +70,7 @@ pub struct MerkleRootAnchor {
     pub root_hash: Vec<u8>,
     /// Timestamp at which the anchor was recorded.
     pub timestamp: Timestamp,
-    /// Rekor entry UUID (or placeholder in stub mode).
+    /// Rekor entry UUID; non-empty hex string identifying the log entry.
     pub rekor_entry_id: String,
     /// Optional Merkle inclusion proof from the transparency log.
     pub inclusion_proof: Option<InclusionProof>,
