@@ -412,20 +412,43 @@ impl CertificateChainValidator for SevSnpChainValidator {
             return Ok(false);
         }
 
-        // SEV-SNP specific: verify root cert fingerprint matches AMD ARK.
+        // SEV-SNP: verify root cert fingerprint matches AMD ARK-Milan OR
+        // ARK-Genoa. Production builds accept ONLY these two pinned roots;
+        // test builds ALSO accept the zero sentinel to allow local development
+        // without live AMD hardware (spec 005 FR-008, FR-009, FR-011a).
         let root_der = certs.last().unwrap();
         let root_fingerprint: [u8; 32] = Sha256::digest(root_der).into();
 
-        // In production, AMD_ARK_SHA256_FINGERPRINT would contain the real fingerprint.
-        // When the pinned fingerprint is all-zeros (placeholder), skip the check.
-        if AMD_ARK_SHA256_FINGERPRINT != [0u8; 32] && root_fingerprint != AMD_ARK_SHA256_FINGERPRINT
-        {
+        let matches_milan = root_fingerprint == AMD_ARK_SHA256_FINGERPRINT;
+        let matches_genoa = root_fingerprint == AMD_ARK_GENOA_SHA256_FINGERPRINT;
+
+        #[cfg(feature = "production")]
+        if !matches_milan && !matches_genoa {
             tracing::warn!(
-                expected = %hex::encode(AMD_ARK_SHA256_FINGERPRINT),
+                expected_milan = %hex::encode(AMD_ARK_SHA256_FINGERPRINT),
+                expected_genoa = %hex::encode(AMD_ARK_GENOA_SHA256_FINGERPRINT),
                 actual = %hex::encode(root_fingerprint),
-                "SEV-SNP root cert does not match pinned AMD ARK fingerprint"
+                "SEV-SNP root cert does not match any pinned AMD ARK fingerprint"
             );
             return Ok(false);
+        }
+
+        #[cfg(not(feature = "production"))]
+        {
+            // Dev/test builds: permit the zero-sentinel bypass so tests can
+            // exercise chain structure without real AMD hardware. Production
+            // builds NEVER take this branch (compile-time excluded).
+            let milan_is_sentinel = AMD_ARK_SHA256_FINGERPRINT == [0u8; 32];
+            let genoa_is_sentinel = AMD_ARK_GENOA_SHA256_FINGERPRINT == [0u8; 32];
+            if !milan_is_sentinel && !genoa_is_sentinel && !matches_milan && !matches_genoa {
+                tracing::warn!(
+                    expected_milan = %hex::encode(AMD_ARK_SHA256_FINGERPRINT),
+                    expected_genoa = %hex::encode(AMD_ARK_GENOA_SHA256_FINGERPRINT),
+                    actual = %hex::encode(root_fingerprint),
+                    "SEV-SNP root cert does not match any pinned AMD ARK fingerprint (dev build)"
+                );
+                return Ok(false);
+            }
         }
 
         // Certificate expiry check (T024)
@@ -457,21 +480,34 @@ impl CertificateChainValidator for TdxChainValidator {
             return Ok(false);
         }
 
-        // TDX-specific: verify root cert fingerprint matches Intel SGX/TDX root CA.
+        // TDX: verify root cert fingerprint matches Intel SGX/TDX root CA.
+        // Production builds accept ONLY the pinned fingerprint; test builds
+        // also accept the zero sentinel (spec 005 FR-008, FR-009, FR-011a).
         let root_der = certs.last().unwrap();
         let root_fingerprint: [u8; 32] = Sha256::digest(root_der).into();
+        let matches_pinned = root_fingerprint == INTEL_ROOT_CA_SHA256_FINGERPRINT;
 
-        // In production, INTEL_ROOT_CA_SHA256_FINGERPRINT would contain the real fingerprint.
-        // When the pinned fingerprint is all-zeros (placeholder), skip the check.
-        if INTEL_ROOT_CA_SHA256_FINGERPRINT != [0u8; 32]
-            && root_fingerprint != INTEL_ROOT_CA_SHA256_FINGERPRINT
-        {
+        #[cfg(feature = "production")]
+        if !matches_pinned {
             tracing::warn!(
                 expected = %hex::encode(INTEL_ROOT_CA_SHA256_FINGERPRINT),
                 actual = %hex::encode(root_fingerprint),
                 "TDX root cert does not match pinned Intel root CA fingerprint"
             );
             return Ok(false);
+        }
+
+        #[cfg(not(feature = "production"))]
+        {
+            let pinned_is_sentinel = INTEL_ROOT_CA_SHA256_FINGERPRINT == [0u8; 32];
+            if !pinned_is_sentinel && !matches_pinned {
+                tracing::warn!(
+                    expected = %hex::encode(INTEL_ROOT_CA_SHA256_FINGERPRINT),
+                    actual = %hex::encode(root_fingerprint),
+                    "TDX root cert does not match pinned Intel root CA fingerprint (dev build)"
+                );
+                return Ok(false);
+            }
         }
 
         // Certificate expiry check (T024)
