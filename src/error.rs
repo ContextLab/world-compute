@@ -81,12 +81,12 @@ impl ErrorCode {
             Self::AlreadyExists => 6,                // ALREADY_EXISTS
             Self::PermissionDenied => 7,             // PERMISSION_DENIED
             // spec 005 additions
-            Self::UnsupportedPlatform => 12,         // UNIMPLEMENTED
-            Self::DialFailureWithDetail => 14,       // UNAVAILABLE
+            Self::UnsupportedPlatform => 12,   // UNIMPLEMENTED
+            Self::DialFailureWithDetail => 14, // UNAVAILABLE
             Self::ReservationAcquisitionFailed => 14, // UNAVAILABLE
-            Self::ParaDiGMSNonconvergence => 10,     // ABORTED
-            Self::AttestationRootMismatch => 16,     // UNAUTHENTICATED
-            Self::PlaceholderDetected => 9,          // FAILED_PRECONDITION
+            Self::ParaDiGMSNonconvergence => 10, // ABORTED
+            Self::AttestationRootMismatch => 16, // UNAUTHENTICATED
+            Self::PlaceholderDetected => 9,    // FAILED_PRECONDITION
         }
     }
 
@@ -114,12 +114,12 @@ impl ErrorCode {
             Self::AlreadyExists => 409,
             Self::PermissionDenied => 403,
             // spec 005 additions
-            Self::UnsupportedPlatform => 501,           // Not Implemented
-            Self::DialFailureWithDetail => 503,         // Service Unavailable
-            Self::ReservationAcquisitionFailed => 503,  // Service Unavailable
-            Self::ParaDiGMSNonconvergence => 409,       // Conflict (convergence)
-            Self::AttestationRootMismatch => 401,       // Unauthorized
-            Self::PlaceholderDetected => 422,           // Unprocessable Entity
+            Self::UnsupportedPlatform => 501,   // Not Implemented
+            Self::DialFailureWithDetail => 503, // Service Unavailable
+            Self::ReservationAcquisitionFailed => 503, // Service Unavailable
+            Self::ParaDiGMSNonconvergence => 409, // Conflict (convergence)
+            Self::AttestationRootMismatch => 401, // Unauthorized
+            Self::PlaceholderDetected => 422,   // Unprocessable Entity
         }
     }
 }

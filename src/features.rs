@@ -12,10 +12,10 @@
 
 #[cfg(feature = "production")]
 const _: () = {
+    use crate::ledger::transparency::REKOR_PUBLIC_KEY;
     use crate::verification::attestation::{
         AMD_ARK_SHA256_FINGERPRINT, INTEL_ROOT_CA_SHA256_FINGERPRINT,
     };
-    use crate::ledger::transparency::REKOR_PUBLIC_KEY;
 
     assert!(
         !is_all_zero(&AMD_ARK_SHA256_FINGERPRINT),

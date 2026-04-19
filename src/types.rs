@@ -202,7 +202,7 @@ impl ExpertId {
         Self(uuid::Uuid::new_v4().to_string())
     }
 
-    pub fn from_str(s: impl Into<String>) -> Self {
+    pub fn parse(s: impl Into<String>) -> Self {
         Self(s.into())
     }
 
@@ -262,7 +262,7 @@ mod spec_005_type_tests {
     fn expert_id_round_trip() {
         let a = ExpertId::new();
         let s = a.as_str().to_owned();
-        let b = ExpertId::from_str(&s);
+        let b = ExpertId::parse(&s);
         assert_eq!(a, b);
     }
 

@@ -206,7 +206,9 @@ fn verify_tree_head_signature(sth: &SignedTreeHead) -> WcResult<bool> {
     }
 
     // Parse the pinned uncompressed P-256 point.
-    use p256::ecdsa::{signature::Verifier as _, Signature as P256Signature, VerifyingKey as P256VerifyingKey};
+    use p256::ecdsa::{
+        signature::Verifier as _, Signature as P256Signature, VerifyingKey as P256VerifyingKey,
+    };
     let p256_key = P256VerifyingKey::from_sec1_bytes(&REKOR_P256_UNCOMPRESSED).map_err(|e| {
         WcError::new(
             ErrorCode::LedgerVerificationFailed,

@@ -108,10 +108,10 @@ mod tests {
     use std::str::FromStr;
 
     fn test_addr(suffix: &str) -> Multiaddr {
-        Multiaddr::from_str(&format!("/ip4/10.0.0.1/tcp/4001/p2p/{suffix}/p2p-circuit/p2p/{suffix}"))
-            .unwrap_or_else(|_| {
-                Multiaddr::from_str("/ip4/10.0.0.1/tcp/4001").unwrap()
-            })
+        Multiaddr::from_str(&format!(
+            "/ip4/10.0.0.1/tcp/4001/p2p/{suffix}/p2p-circuit/p2p/{suffix}"
+        ))
+        .unwrap_or_else(|_| Multiaddr::from_str("/ip4/10.0.0.1/tcp/4001").unwrap())
     }
 
     #[test]
@@ -164,8 +164,7 @@ mod tests {
         let mut r = RelayReservation::requesting(peer, test_addr("abc"));
         r.mark_active(300);
         r.mark_lost();
-        let after_window =
-            r.lost_at.unwrap() + ChronoDuration::seconds(MAX_REACQUIRE_SECONDS + 1);
+        let after_window = r.lost_at.unwrap() + ChronoDuration::seconds(MAX_REACQUIRE_SECONDS + 1);
         assert!(!r.within_reacquire_budget(after_window));
     }
 

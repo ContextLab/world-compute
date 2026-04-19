@@ -61,8 +61,7 @@ impl DohFallback {
             ns_group.push(ns.clone());
         }
 
-        let resolver_config =
-            ResolverConfig::from_parts(None, vec![], ns_group);
+        let resolver_config = ResolverConfig::from_parts(None, vec![], ns_group);
         let mut opts = ResolverOpts::default();
         opts.timeout = config.timeout;
         opts.attempts = 2;

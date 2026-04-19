@@ -79,11 +79,9 @@ impl WssTransportConfig {
     /// Validate invariant: SSL-inspection allowed requires middlebox_pin_check off.
     pub fn validate(&self) -> Result<(), String> {
         if self.allow_ssl_inspection && self.middlebox_pin_check {
-            return Err(
-                "allow_ssl_inspection=true requires middlebox_pin_check=false \
+            return Err("allow_ssl_inspection=true requires middlebox_pin_check=false \
                  (cannot both pin-check and allow inspection)"
-                    .into(),
-            );
+                .into());
         }
         Ok(())
     }
@@ -124,7 +122,7 @@ mod tests {
             enabled: true,
             listen_on_443: false,
             fallback_priority: 2,
-            middlebox_pin_check: true, // conflicts
+            middlebox_pin_check: true,  // conflicts
             allow_ssl_inspection: true, // conflicts
         };
         assert!(cfg.validate().is_err());

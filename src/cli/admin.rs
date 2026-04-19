@@ -90,12 +90,10 @@ pub fn execute(cmd: &AdminCommand) -> String {
                  Daemon mode is required for this command to collect real dial data."
             )
         }
-        AdminCommand::DriftCheck => {
-            "Drift check requested. Wraps scripts/drift-check.sh.\n  \
+        AdminCommand::DriftCheck => "Drift check requested. Wraps scripts/drift-check.sh.\n  \
              Compares pinned AMD/Intel/Rekor values against upstream.\n  \
              Exit 0 = all pins match. Non-zero = mismatch detected."
-                .into()
-        }
+            .into(),
         AdminCommand::VerifyRelease { binary, signature } => {
             format!(
                 "Verify release requested.\n  Binary: {binary}\n  Signature: {signature}\n  \

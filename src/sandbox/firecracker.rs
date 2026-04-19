@@ -274,10 +274,7 @@ fn assemble_rootfs_real(
     {
         let _ = rootfs_path;
         let _ = layer_bytes;
-        return Err(WcError::new(
-            ErrorCode::UnsupportedPlatform,
-            "real rootfs assembly is Linux-only",
-        ));
+        Err(WcError::new(ErrorCode::UnsupportedPlatform, "real rootfs assembly is Linux-only"))?
     }
 
     #[cfg(target_os = "linux")]
@@ -312,21 +309,14 @@ fn assemble_rootfs_real(
         drop(file);
 
         // 2. mkfs.ext4.
-        let mkfs = Command::new("mkfs.ext4")
-            .args(["-F", "-q"])
-            .arg(rootfs_path)
-            .output()
-            .map_err(|e| {
-                WcError::new(ErrorCode::Internal, format!("mkfs.ext4 invocation failed: {e}"))
-            })?;
+        let mkfs = Command::new("mkfs.ext4").args(["-F", "-q"]).arg(rootfs_path).output().map_err(
+            |e| WcError::new(ErrorCode::Internal, format!("mkfs.ext4 invocation failed: {e}")),
+        )?;
         if !mkfs.status.success() {
             let _ = std::fs::remove_file(rootfs_path);
             return Err(WcError::new(
                 ErrorCode::Internal,
-                format!(
-                    "mkfs.ext4 failed: {}",
-                    String::from_utf8_lossy(&mkfs.stderr).trim_end()
-                ),
+                format!("mkfs.ext4 failed: {}", String::from_utf8_lossy(&mkfs.stderr).trim_end()),
             ));
         }
 
@@ -340,14 +330,10 @@ fn assemble_rootfs_real(
             let _ = std::fs::remove_file(rootfs_path);
             return Err(WcError::new(
                 ErrorCode::Internal,
-                format!(
-                    "losetup failed: {}",
-                    String::from_utf8_lossy(&loop_out.stderr).trim_end()
-                ),
+                format!("losetup failed: {}", String::from_utf8_lossy(&loop_out.stderr).trim_end()),
             ));
         }
-        let loop_dev =
-            String::from_utf8_lossy(&loop_out.stdout).trim().to_string();
+        let loop_dev = String::from_utf8_lossy(&loop_out.stdout).trim().to_string();
 
         // Scope-guard: always attempt losetup -d + umount on any error.
         let cleanup_loop = |dev: &str| {
@@ -355,8 +341,7 @@ fn assemble_rootfs_real(
         };
 
         // 4. Mount
-        let mount_point =
-            rootfs_path.with_extension("mnt");
+        let mount_point = rootfs_path.with_extension("mnt");
         if std::fs::create_dir_all(&mount_point).is_err() {
             cleanup_loop(&loop_dev);
             let _ = std::fs::remove_file(rootfs_path);
@@ -468,7 +453,9 @@ fn assemble_rootfs_fallback(
 /// Firecracker.
 pub fn is_real_ext4(path: &std::path::Path) -> bool {
     use std::io::{Read, Seek, SeekFrom};
-    let Ok(mut f) = std::fs::File::open(path) else { return false; };
+    let Ok(mut f) = std::fs::File::open(path) else {
+        return false;
+    };
     // ext4 superblock is at offset 1024; magic is at offset 0x38 within it.
     if f.seek(SeekFrom::Start(1024 + 0x38)).is_err() {
         return false;
