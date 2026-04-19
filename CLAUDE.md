@@ -1,6 +1,6 @@
 # world-compute Development Guidelines
 
-Last updated: 2026-04-18
+Last updated: 2026-04-19
 
 ## Project Overview
 
@@ -11,6 +11,8 @@ World Compute is a decentralized, volunteer-built compute federation. The codeba
 - CID-addressed content store (cid 0.11, multihash 0.19), erasure-coded (reed-solomon-erasure 6) (003-stub-replacement)
 - Rust stable (tested on 1.95.0) + libp2p 0.54, tonic 0.12, ed25519-dalek 2, wasmtime 27, openraft 0.9, opentelemetry 0.27, clap 4, reqwest 0.12, oauth2 4, x509-parser 0.16, reed-solomon-erasure 6, cid 0.11, multihash 0.19 (004-full-implementation)
 - CID-addressed content store (SHA-256), erasure-coded RS(10,18) (004-full-implementation)
+- Rust stable 1.95+ (current CI matrix is 1.95.0 on Linux/macOS/Windows + Sandbox KVM + swtpm). Secondary languages: Swift 5.9+ for Apple VF helper binary (macOS-only); TypeScript + React for Tauri GUI frontend; shell (bash) for operator scripts. + libp2p 0.54 (+ new: `libp2p-websocket`, `libp2p-tls`/`libp2p-websocket-websys` for WSS-over-443 transport; `hickory-resolver` with DoH for FR-005); wasmtime 27; candle 0.7+ OR `diffusers-rs` / custom PyTorch-via-FFI for the diffusion backbone (pending research); tonic 0.12 (gRPC); ed25519-dalek 2, ecdsa 0.16, rsa 0.9 (attestation); threshold_crypto 0.4 (BLS); reed-solomon-erasure 6; openraft 0.9; opentelemetry 0.27; clap 4; reqwest 0.12; rcgen 0.13; oci-spec 0.7 + tar 0.4 + `loopdev` or `fscommon`-style library for real Firecracker rootfs; `sysinfo` 0.33 + `nvml-wrapper` 0.10 (GPU metrics for `current_load`); `tss-esapi` 7 or `tpm2-tss` for TPM2-backed confidential compute sealing; Tauri 2 for GUI; `kube` 0.96 + `k8s-openapi` for K8s CRD operator. (005-production-readiness)
+- CID-addressed content store (SHA-256) with RS(10,18) erasure coding (already in place); CRDT OR-Map ledger with BLS threshold signing (already in place); per-donor working directory (size-capped, wiped on agent exit) — implemented, no change. (005-production-readiness)
 
 - **Language**: Rust (stable, tested on 1.95.0)
 - **Networking**: rust-libp2p 0.54 (QUIC, TCP, mDNS, Kademlia, gossipsub)
@@ -138,7 +140,7 @@ Two GitHub Actions workflows:
 - `safety-hardening-ci.yml` — multi-platform (Linux/macOS/Windows) with Principle V evidence artifacts
 
 ## Recent Changes
+- 005-production-readiness: Added Rust stable 1.95+ (current CI matrix is 1.95.0 on Linux/macOS/Windows + Sandbox KVM + swtpm). Secondary languages: Swift 5.9+ for Apple VF helper binary (macOS-only); TypeScript + React for Tauri GUI frontend; shell (bash) for operator scripts. + libp2p 0.54 (+ new: `libp2p-websocket`, `libp2p-tls`/`libp2p-websocket-websys` for WSS-over-443 transport; `hickory-resolver` with DoH for FR-005); wasmtime 27; candle 0.7+ OR `diffusers-rs` / custom PyTorch-via-FFI for the diffusion backbone (pending research); tonic 0.12 (gRPC); ed25519-dalek 2, ecdsa 0.16, rsa 0.9 (attestation); threshold_crypto 0.4 (BLS); reed-solomon-erasure 6; openraft 0.9; opentelemetry 0.27; clap 4; reqwest 0.12; rcgen 0.13; oci-spec 0.7 + tar 0.4 + `loopdev` or `fscommon`-style library for real Firecracker rootfs; `sysinfo` 0.33 + `nvml-wrapper` 0.10 (GPU metrics for `current_load`); `tss-esapi` 7 or `tpm2-tss` for TPM2-backed confidential compute sealing; Tauri 2 for GUI; `kube` 0.96 + `k8s-openapi` for K8s CRD operator.
 
 - **004-full-implementation** (2026-04-18): Merged scaffolding + significant implementation for #57 and its sub-issues (#28–#56, and a first pass on #27/#54 mesh LLM). 802 tests passing across Linux/macOS/Windows + Sandbox KVM + swtpm CI. Landed: full production P2P daemon with libp2p NAT-traversal stack (TCP + QUIC + Noise + mDNS + Kademlia + identify + ping + AutoNAT + Relay v2 server/client + DCUtR), AutoRelay reservations, public libp2p bootstrap relays as default rendezvous, TaskOffer + TaskDispatch request-response protocols over CBOR, real WASM execution of dispatched jobs, `worldcompute job submit --executor <multiaddr> --workload <wasm>` CLI command, end-to-end 3-node relay-circuit integration test. Also landed: ~12 sub-issues fully completed (policy engine, GPU passthrough, adversarial tests, test coverage, credit decay, preemption, confidential compute, mTLS, energy metering, storage GC, documentation, scheduler matchmaking); ~16 sub-issues partially addressed with scaffolding (see Remaining Stubs above); #27/#54 mesh LLM orchestration shell complete but real LLaMA inference deferred. Critical open issue #60 tracks cross-machine WAN mesh formation behind firewalls.
 - **003-stub-replacement** (2026-04-16): Replaced all implementation stubs (#7, #8–#26). 77 tasks, 489+ tests. Added reqwest, oauth2, x509-parser, rcgen dependencies. Wired CLI, sandboxes, attestation, identity, transparency, telemetry, consensus, network.
-- **002-safety-hardening** (2026-04-16): Red team review (#4). Policy engine, attestation, governance, incident response, egress, identity hardening. 110 tasks, PR #6.
