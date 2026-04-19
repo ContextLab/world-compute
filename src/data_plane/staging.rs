@@ -103,6 +103,8 @@ mod tests {
             acceptable_use_classes: vec![AcceptableUseClass::Scientific],
             max_wallclock_ms: 60_000,
             submitter_signature: vec![0u8; 64],
+            allowed_endpoints: Vec::new(),
+            confidentiality_level: None,
         }
     }
 

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Release.Name }}-agent
+  labels:
+    app: worldcompute
+    component: agent
+spec:
+  selector:
+    matchLabels:
+      app: worldcompute
+      component: agent
+  template:
+    metadata:
+      labels:
+        app: worldcompute
+        component: agent
+    spec:
+      containers:
+        - name: agent
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["donor", "join", "--consent=general_compute"]
+          resources:
+            {{- toYaml .Values.agent.resources | nindent 12 }}

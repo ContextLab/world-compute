@@ -13,7 +13,9 @@ pub enum RateLimitClass {
     /// Job submission requests: 10 per minute.
     JobSubmit,
     /// Governance vote submissions: 5 per minute.
-    GovernanceVote,
+    Governance,
+    /// Cluster status queries: 30 per minute.
+    ClusterStatus,
     /// Administrative actions: 1 per minute.
     AdminAction,
 }
@@ -24,48 +26,79 @@ impl RateLimitClass {
         match self {
             Self::DonorHeartbeat => 120,
             Self::JobSubmit => 10,
-            Self::GovernanceVote => 5,
+            Self::Governance => 5,
+            Self::ClusterStatus => 30,
             Self::AdminAction => 1,
         }
+    }
+
+    /// Tokens per second refill rate.
+    pub fn refill_rate(self) -> f64 {
+        self.per_minute() as f64 / 60.0
     }
 }
 
 /// Per-class token bucket state.
 #[derive(Debug)]
-struct Bucket {
-    tokens: f64,
-    capacity: f64,
+pub struct TokenBucket {
+    /// Current number of tokens available.
+    pub tokens: f64,
+    /// Maximum number of tokens (bucket capacity).
+    pub max_tokens: f64,
     /// Tokens added per second.
-    refill_rate: f64,
-    last_refill: Instant,
+    pub refill_rate: f64,
+    /// Last time the bucket was refilled.
+    pub last_refill: Instant,
 }
 
-impl Bucket {
-    fn new(per_minute: u32) -> Self {
+impl TokenBucket {
+    /// Create a new bucket for the given rate limit class.
+    pub fn new(per_minute: u32) -> Self {
         let capacity = per_minute as f64;
         Self {
             tokens: capacity,
-            capacity,
+            max_tokens: capacity,
             refill_rate: capacity / 60.0,
             last_refill: Instant::now(),
         }
     }
 
-    /// Attempt to consume one token. Returns true if successful.
-    fn try_consume(&mut self) -> bool {
+    /// Refill tokens based on elapsed time, then attempt to consume one.
+    /// Returns `Ok(())` on success, or `Err` with retry-after seconds on failure.
+    pub fn try_consume(&mut self) -> Result<(), f64> {
         let now = Instant::now();
         let elapsed = now.duration_since(self.last_refill).as_secs_f64();
-        self.tokens = (self.tokens + elapsed * self.refill_rate).min(self.capacity);
+        self.tokens = (self.tokens + elapsed * self.refill_rate).min(self.max_tokens);
         self.last_refill = now;
 
         if self.tokens >= 1.0 {
             self.tokens -= 1.0;
-            true
+            Ok(())
         } else {
-            false
+            // Calculate how long until 1 token is available
+            let deficit = 1.0 - self.tokens;
+            let retry_after = deficit / self.refill_rate;
+            Err(retry_after)
         }
     }
 }
+
+/// Error returned when a request is rate-limited.
+#[derive(Debug, Clone)]
+pub struct RateLimitError {
+    /// How many seconds until the caller should retry.
+    pub retry_after_secs: f64,
+    /// Human-readable message.
+    pub message: String,
+}
+
+impl std::fmt::Display for RateLimitError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} (retry after {:.1}s)", self.message, self.retry_after_secs)
+    }
+}
+
+impl std::error::Error for RateLimitError {}
 
 /// Token-bucket rate limiter keyed by `(caller_id, RateLimitClass)`.
 ///
@@ -73,7 +106,7 @@ impl Bucket {
 /// (caller, class) pair has an independent bucket.
 #[derive(Debug, Clone)]
 pub struct RateLimiter {
-    buckets: Arc<Mutex<HashMap<(String, RateLimitClass), Bucket>>>,
+    buckets: Arc<Mutex<HashMap<(String, RateLimitClass), TokenBucket>>>,
 }
 
 impl RateLimiter {
@@ -89,19 +122,35 @@ impl RateLimiter {
         let mut buckets = self.buckets.lock().unwrap();
         let bucket = buckets
             .entry((caller_id.to_string(), class))
-            .or_insert_with(|| Bucket::new(class.per_minute()));
+            .or_insert_with(|| TokenBucket::new(class.per_minute()));
 
-        if bucket.try_consume() {
-            Ok(())
-        } else {
-            Err(WcError::new(
+        match bucket.try_consume() {
+            Ok(()) => Ok(()),
+            Err(_retry_after) => Err(WcError::new(
                 ErrorCode::RateLimited,
                 format!(
                     "Rate limit exceeded for class {class:?}: max {} req/min",
                     class.per_minute()
                 ),
-            ))
+            )),
         }
+    }
+
+    /// Attempt to acquire a token for the given class and key.
+    /// Returns `Ok(())` on success, or `RateLimitError` with `retry_after_secs`.
+    pub fn try_acquire(&self, class: RateLimitClass, key: &str) -> Result<(), RateLimitError> {
+        let mut buckets = self.buckets.lock().unwrap();
+        let bucket = buckets
+            .entry((key.to_string(), class))
+            .or_insert_with(|| TokenBucket::new(class.per_minute()));
+
+        bucket.try_consume().map_err(|retry_after| RateLimitError {
+            retry_after_secs: retry_after,
+            message: format!(
+                "Rate limit exceeded for class {class:?}: max {} req/min",
+                class.per_minute()
+            ),
+        })
     }
 
     /// Drain the bucket for testing: consume all tokens so the next call fails.
@@ -110,9 +159,8 @@ impl RateLimiter {
         let mut buckets = self.buckets.lock().unwrap();
         let bucket = buckets
             .entry((caller_id.to_string(), class))
-            .or_insert_with(|| Bucket::new(class.per_minute()));
-        // Set last_refill far in the past then drain tokens
-        bucket.last_refill = Instant::now() - std::time::Duration::from_secs(0);
+            .or_insert_with(|| TokenBucket::new(class.per_minute()));
+        bucket.last_refill = Instant::now();
         bucket.tokens = 0.0;
     }
 }
@@ -162,5 +210,31 @@ mod tests {
     #[test]
     fn job_submit_allows_10_per_minute() {
         assert_eq!(RateLimitClass::JobSubmit.per_minute(), 10);
+    }
+
+    #[test]
+    fn cluster_status_allows_30_per_minute() {
+        assert_eq!(RateLimitClass::ClusterStatus.per_minute(), 30);
+    }
+
+    #[test]
+    fn governance_allows_5_per_minute() {
+        assert_eq!(RateLimitClass::Governance.per_minute(), 5);
+    }
+
+    #[test]
+    fn try_acquire_succeeds_under_limit() {
+        let limiter = RateLimiter::new();
+        assert!(limiter.try_acquire(RateLimitClass::DonorHeartbeat, "node-1").is_ok());
+        assert!(limiter.try_acquire(RateLimitClass::DonorHeartbeat, "node-1").is_ok());
+    }
+
+    #[test]
+    fn try_acquire_returns_retry_after_on_exhaustion() {
+        let limiter = RateLimiter::new();
+        limiter.exhaust("node-x", RateLimitClass::AdminAction);
+        let err = limiter.try_acquire(RateLimitClass::AdminAction, "node-x").unwrap_err();
+        assert!(err.retry_after_secs > 0.0, "retry_after_secs should be positive");
+        assert!(err.message.contains("Rate limit exceeded"));
     }
 }

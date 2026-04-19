@@ -42,6 +42,8 @@ fn compromised_manifest() -> worldcompute::scheduler::manifest::JobManifest {
         acceptable_use_classes: vec![worldcompute::acceptable_use::AcceptableUseClass::Scientific],
         max_wallclock_ms: 3_600_000,
         submitter_signature: vec![0u8; 64],
+        allowed_endpoints: Vec::new(),
+        confidentiality_level: None,
     };
     let message = worldcompute::policy::rules::manifest_signing_bytes(&manifest);
     let signature = signing_key().sign(&message);

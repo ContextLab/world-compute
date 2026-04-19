@@ -48,6 +48,8 @@ fn malicious_manifest(
         acceptable_use_classes: vec![worldcompute::acceptable_use::AcceptableUseClass::Scientific],
         max_wallclock_ms: 3_600_000,
         submitter_signature: sig,
+        allowed_endpoints: Vec::new(),
+        confidentiality_level: None,
     }
 }
 

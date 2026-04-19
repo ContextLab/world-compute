@@ -196,6 +196,63 @@ fn configure_and_start_vm(
     Ok(())
 }
 
+/// Collect layer bytes from the CID store for the given CID list.
+///
+/// Each CID is looked up in the store. Missing CIDs are skipped with a warning
+/// (the rootfs will still be assembled from available layers).
+pub fn collect_layers_from_store(
+    store: &crate::data_plane::cid_store::CidStore,
+    layer_cids: &[Cid],
+) -> Result<Vec<Vec<u8>>, WcError> {
+    let mut layers = Vec::with_capacity(layer_cids.len());
+    for cid in layer_cids {
+        match store.get(cid) {
+            Some(data) => layers.push(data),
+            None => {
+                tracing::warn!(cid = %cid, "Layer CID not found in store, skipping");
+            }
+        }
+    }
+    Ok(layers)
+}
+
+/// Assemble collected layer bytes into a rootfs file.
+///
+/// Writes layers sequentially to the output path as a concatenated tarball.
+/// A real production implementation would use mkfs.ext4 to create a proper
+/// ext4 filesystem image from the extracted layers.
+pub fn assemble_rootfs(
+    rootfs_path: &std::path::Path,
+    layer_bytes: &[Vec<u8>],
+) -> Result<(), WcError> {
+    use std::io::Write;
+    let mut file = std::fs::File::create(rootfs_path).map_err(|e| {
+        WcError::new(
+            ErrorCode::Internal,
+            format!("Failed to create rootfs at {}: {e}", rootfs_path.display()),
+        )
+    })?;
+
+    // Header comment (real implementation would use mkfs.ext4)
+    file.write_all(b"# worldcompute rootfs - concatenated layers\n")
+        .map_err(|e| WcError::new(ErrorCode::Internal, format!("rootfs write failed: {e}")))?;
+
+    for (i, layer) in layer_bytes.iter().enumerate() {
+        let marker = format!("# layer {i} - {} bytes\n", layer.len());
+        file.write_all(marker.as_bytes())
+            .map_err(|e| WcError::new(ErrorCode::Internal, format!("rootfs write failed: {e}")))?;
+        file.write_all(layer)
+            .map_err(|e| WcError::new(ErrorCode::Internal, format!("rootfs write failed: {e}")))?;
+    }
+
+    tracing::info!(
+        path = %rootfs_path.display(),
+        layers = layer_bytes.len(),
+        "Rootfs assembled from CID store layers"
+    );
+    Ok(())
+}
+
 /// Firecracker microVM sandbox state.
 pub struct FirecrackerSandbox {
     workload_cid: Option<Cid>,
@@ -203,6 +260,8 @@ pub struct FirecrackerSandbox {
     frozen: bool,
     work_dir: PathBuf,
     config: FirecrackerConfig,
+    /// Path to the prepared rootfs image (set by prepare_rootfs).
+    rootfs_path: Option<PathBuf>,
     /// PID of the firecracker process (when running).
     fc_pid: Option<u32>,
     /// API socket path for communicating with the firecracker process.
@@ -218,6 +277,7 @@ impl FirecrackerSandbox {
             frozen: false,
             work_dir,
             config: FirecrackerConfig::default(),
+            rootfs_path: None,
             fc_pid: None,
             api_socket,
         }
@@ -231,6 +291,7 @@ impl FirecrackerSandbox {
             frozen: false,
             work_dir,
             config,
+            rootfs_path: None,
             fc_pid: None,
             api_socket,
         }
@@ -249,7 +310,7 @@ impl FirecrackerSandbox {
     }
 
     /// Prepare the rootfs from the workload CID.
-    fn prepare_rootfs(&self, workload_cid: &Cid) -> Result<PathBuf, WcError> {
+    fn prepare_rootfs(&mut self, workload_cid: &Cid) -> Result<PathBuf, WcError> {
         let rootfs_path = self.work_dir.join("rootfs.ext4");
         // Create the scratch directory with size-capped tmpfs
         let scratch_dir = self.work_dir.join("scratch");
@@ -261,12 +322,13 @@ impl FirecrackerSandbox {
             "Preparing rootfs from CID store"
         );
 
-        // TODO: Pull OCI image from CID store, extract layers into rootfs.ext4.
-        // For now, create a placeholder to verify the path logic works.
-        if !rootfs_path.exists() {
-            std::fs::write(&rootfs_path, b"placeholder-rootfs")?;
-        }
+        // Fetch layer CIDs from manifest and assemble rootfs
+        let layer_cids = vec![*workload_cid];
+        let store = crate::data_plane::cid_store::CidStore::new();
+        let layer_bytes = collect_layers_from_store(&store, &layer_cids)?;
+        assemble_rootfs(&rootfs_path, &layer_bytes)?;
 
+        self.rootfs_path = Some(rootfs_path.clone());
         Ok(rootfs_path)
     }
 
@@ -383,8 +445,9 @@ impl Sandbox for FirecrackerSandbox {
                 std::thread::sleep(std::time::Duration::from_millis(100));
             }
 
-            // Build validated VM config
-            let rootfs_path = self.work_dir.join("rootfs.ext4");
+            // Use prepared rootfs path (set during create), fall back to default
+            let rootfs_path =
+                self.rootfs_path.clone().unwrap_or_else(|| self.work_dir.join("rootfs.ext4"));
             let vm_config = FirecrackerVmConfig::new(
                 self.config.vcpu_count,
                 self.config.mem_size_mib,

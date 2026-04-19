@@ -8,3 +8,8 @@ license = "Apache-2.0"
 worldcompute = { path = "../.." }
 tokio = { version = "1", features = ["full"] }
 clap = { version = "4", features = ["derive"] }
+kube = { version = "0.88", features = ["runtime", "derive"] }
+k8s-openapi = { version = "0.21", features = ["latest"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"

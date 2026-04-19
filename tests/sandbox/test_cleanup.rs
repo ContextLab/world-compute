@@ -6,6 +6,7 @@ use worldcompute::sandbox::Sandbox;
 fn scratch_space_reclaimed_after_terminate_and_cleanup() {
     use worldcompute::sandbox::firecracker::FirecrackerSandbox;
     let tmp = std::env::temp_dir().join("wc-t025-scratch");
+    let _ = std::fs::remove_dir_all(&tmp); // clean up from previous runs
     std::fs::create_dir_all(tmp.join("scratch")).unwrap();
     // Simulate 10MB scratch data
     let data = vec![0xABu8; 10 * 1024 * 1024];

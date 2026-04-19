@@ -34,6 +34,73 @@ pub fn apply_decay(
     NcuAmount::from_ncu(decayed.max(floor))
 }
 
+/// Record of a single credit decay application for audit/replay.
+#[derive(Debug, Clone)]
+pub struct CreditDecayEvent {
+    /// The account whose balance was decayed.
+    pub account_id: crate::types::PeerId,
+    /// Balance before decay was applied.
+    pub balance_before: crate::types::NcuAmount,
+    /// Balance after decay was applied.
+    pub balance_after: crate::types::NcuAmount,
+    /// The decay rate used (derived from half-life).
+    pub decay_rate: f64,
+    /// The floor that was enforced.
+    pub floor: crate::types::NcuAmount,
+    /// When the decay was applied.
+    pub timestamp: crate::types::Timestamp,
+}
+
+/// Compute a credit decay event for a given account, applying floor protection
+/// and anti-hoarding acceleration.
+///
+/// - `account_id`: the peer whose balance is being decayed.
+/// - `balance`: current balance before decay.
+/// - `days_elapsed`: number of days since last decay application.
+/// - `trailing_earn_rate`: average daily NCU earn rate over trailing 30 days.
+/// - `trailing_redemption`: average daily NCU redemption over trailing period.
+/// - `config`: decay configuration (half-life, floor multiplier).
+///
+/// Anti-hoarding (T125): if balance > 1.1 * trailing_redemption, the effective
+/// half-life is reduced by a factor of 1.5 (decay accelerated).
+///
+/// Floor protection (T124): the decayed balance will not fall below
+/// `trailing_earn_rate * config.min_floor_multiplier`.
+pub fn compute_decay_event(
+    account_id: crate::types::PeerId,
+    balance: NcuAmount,
+    days_elapsed: f64,
+    trailing_earn_rate: NcuAmount,
+    trailing_redemption: NcuAmount,
+    config: &CreditDecayConfig,
+) -> CreditDecayEvent {
+    // T125: Anti-hoarding — if balance > 1.1 * trailing redemption, accelerate decay
+    let effective_half_life = if trailing_redemption.as_ncu() > 0.0
+        && balance.as_ncu() > 1.1 * trailing_redemption.as_ncu()
+    {
+        config.half_life_days / 1.5
+    } else {
+        config.half_life_days
+    };
+
+    let effective_config = CreditDecayConfig { half_life_days: effective_half_life, ..*config };
+
+    // T123 + T124: apply decay with floor protection
+    let balance_after = apply_decay(balance, days_elapsed, trailing_earn_rate, &effective_config);
+
+    let decay_rate = (0.5f64).powf(days_elapsed / effective_half_life);
+    let floor = NcuAmount::from_ncu(trailing_earn_rate.as_ncu() * config.min_floor_multiplier);
+
+    CreditDecayEvent {
+        account_id,
+        balance_before: balance,
+        balance_after,
+        decay_rate,
+        floor,
+        timestamp: crate::types::Timestamp::now(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

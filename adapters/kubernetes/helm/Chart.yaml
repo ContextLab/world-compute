@@ -1,0 +1,12 @@
+apiVersion: v2
+name: worldcompute-k8s-operator
+description: World Compute Kubernetes operator — manages ClusterDonation CRDs
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - worldcompute
+  - distributed-computing
+  - volunteer-computing
+maintainers:
+  - name: World Compute Contributors

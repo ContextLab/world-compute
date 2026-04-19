@@ -1,0 +1,16 @@
+services:
+  coordinator:
+    build: .
+    command: ["--role", "coordinator"]
+    networks: [wc-net]
+  broker:
+    build: .
+    command: ["--role", "broker"]
+    networks: [wc-net]
+  agent:
+    build: .
+    command: ["donor", "join", "--consent=general_compute"]
+    networks: [wc-net]
+networks:
+  wc-net:
+    driver: bridge

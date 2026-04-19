@@ -14,9 +14,33 @@ use std::time::Duration;
 /// dials them to enter the global Kademlia DHT. Replace placeholders with
 /// real records before mainnet launch.
 pub const BOOTSTRAP_DNS_SEEDS: &[&str] = &[
+    // World Compute project seeds (not yet deployed — replace before mainnet).
     "/dnsaddr/bootstrap1.worldcompute.org",
     "/dnsaddr/bootstrap2.worldcompute.org",
     "/dnsaddr/bootstrap3.worldcompute.org",
+];
+
+/// Public libp2p bootstrap relays operated by Protocol Labs and mirrors.
+///
+/// These speak the same base libp2p protocols we use (Noise, Yamux, TCP, QUIC,
+/// Identify, Ping, Relay v2, DCUtR, Kademlia). They do NOT speak our
+/// application-layer protocols (`/worldcompute/dispatch/*`, etc.), so they only
+/// serve as rendezvous/relay nodes — never as executors.
+///
+/// Security: traffic relayed through these nodes is end-to-end Noise-encrypted,
+/// so the relay operators cannot read or tamper with payloads. They can see
+/// peer IDs and traffic volume (metadata), which is acceptable for our public-
+/// good threat model. See SECURITY.md.
+///
+/// Each entry includes the `/p2p/<peer_id>` suffix so the initial Noise
+/// handshake authenticates the relay against its pinned identity — a spoofed
+/// DNS response would produce a handshake mismatch and be rejected.
+pub const PUBLIC_LIBP2P_BOOTSTRAP_RELAYS: &[&str] = &[
+    "/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
+    "/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
+    "/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
+    "/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt",
+    "/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
 ];
 
 /// Result of merging a locally-discovered LAN cluster with the global DHT.
@@ -58,15 +82,20 @@ impl Default for DiscoveryConfig {
     fn default() -> Self {
         // Load bootstrap seeds from environment or use defaults.
         // In production, set WORLDCOMPUTE_BOOTSTRAP_SEEDS to a comma-separated
-        // list of multiaddr strings.
-        let seeds = std::env::var("WORLDCOMPUTE_BOOTSTRAP_SEEDS")
+        // list of multiaddr strings to override.
+        //
+        // The default merges worldcompute project seeds (when deployed) with
+        // the public libp2p bootstrap relays. Public relays provide immediate
+        // NAT-traversal rendezvous without requiring worldcompute to operate
+        // infrastructure itself — as the network grows, any publicly-reachable
+        // donor also acts as a relay (relay::Behaviour in daemon.rs).
+        let seeds: Vec<String> = std::env::var("WORLDCOMPUTE_BOOTSTRAP_SEEDS")
             .map(|s| s.split(',').map(|s| s.trim().to_string()).collect())
             .unwrap_or_else(|_| {
-                vec![
-                    "/dnsaddr/bootstrap1.worldcompute.org".into(),
-                    "/dnsaddr/bootstrap2.worldcompute.org".into(),
-                    "/dnsaddr/bootstrap3.worldcompute.org".into(),
-                ]
+                let mut v: Vec<String> =
+                    BOOTSTRAP_DNS_SEEDS.iter().map(|s| s.to_string()).collect();
+                v.extend(PUBLIC_LIBP2P_BOOTSTRAP_RELAYS.iter().map(|s| s.to_string()));
+                v
             });
 
         Self {

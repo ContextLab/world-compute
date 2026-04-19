@@ -4,6 +4,36 @@
 //! Per FR-S002: default-deny network egress via PF/packet filter rules.
 //! Per FR-S003: guest filesystem fully isolated from host.
 //! No GPU passthrough on macOS (blocked on Apple paravirtual GPU).
+//!
+//! ## Helper binary protocol
+//!
+//! The Rust sandbox communicates with the Swift helper (`wc-apple-vf-helper`)
+//! via JSON messages on stdin/stdout. The helper binary lives at
+//! `tools/apple-vf-helper/` and is built with `swift build` (macOS 13+).
+//!
+//! **Request format** (JSON on stdin):
+//! ```json
+//! {
+//!   "command": "start" | "pause" | "resume" | "stop" | "checkpoint" | "create",
+//!   "cpu_count": 2,           // optional, for start/create
+//!   "mem_bytes": 1073741824,  // optional, for start/create
+//!   "disk_path": "/path",     // optional, for start
+//!   "work_dir": "/path",      // optional, working directory
+//!   "state_path": "/path"     // optional, for checkpoint
+//! }
+//! ```
+//!
+//! **Response format** (JSON on stdout):
+//! ```json
+//! {
+//!   "status": "ok" | "error",
+//!   "message": "human-readable description",
+//!   "checkpoint_cid": "bafy..."  // optional, for checkpoint
+//! }
+//! ```
+//!
+//! The helper path defaults to `wc-apple-vf-helper` on `$PATH` and can be
+//! overridden via the `WC_APPLE_VF_HELPER` environment variable.
 
 use crate::error::{ErrorCode, WcError};
 use crate::sandbox::egress::EgressPolicy;
@@ -278,5 +308,62 @@ mod tests {
     fn default_config_deny_all_egress() {
         let config = AppleVfConfig::default();
         assert!(!config.egress_policy.egress_allowed);
+    }
+
+    /// T162: Verify the JSON command format used to communicate with the Swift helper.
+    #[test]
+    fn vm_command_json_format() {
+        // Build a "start" command like the one sent by AppleVfSandbox::start()
+        let cmd = serde_json::json!({
+            "command": "start",
+            "cpu_count": 2,
+            "mem_bytes": 1073741824_u64,
+            "disk_path": "/tmp/wc/disk.img",
+            "work_dir": "/tmp/wc",
+        });
+        let json_str = cmd.to_string();
+        let parsed: serde_json::Value = serde_json::from_str(&json_str).unwrap();
+        assert_eq!(parsed["command"], "start");
+        assert_eq!(parsed["cpu_count"], 2);
+        assert_eq!(parsed["mem_bytes"], 1073741824_u64);
+        assert_eq!(parsed["disk_path"], "/tmp/wc/disk.img");
+        assert_eq!(parsed["work_dir"], "/tmp/wc");
+    }
+
+    /// Verify pause command JSON structure.
+    #[test]
+    fn vm_command_pause_json() {
+        let cmd = serde_json::json!({
+            "command": "pause",
+            "work_dir": "/tmp/wc",
+        });
+        let parsed: serde_json::Value = serde_json::from_str(&cmd.to_string()).unwrap();
+        assert_eq!(parsed["command"], "pause");
+        assert!(parsed.get("cpu_count").is_none() || parsed["cpu_count"].is_null());
+    }
+
+    /// Verify checkpoint command includes state_path.
+    #[test]
+    fn vm_command_checkpoint_json() {
+        let cmd = serde_json::json!({
+            "command": "checkpoint",
+            "state_path": "/tmp/wc/vm-state.bin",
+            "work_dir": "/tmp/wc",
+        });
+        let parsed: serde_json::Value = serde_json::from_str(&cmd.to_string()).unwrap();
+        assert_eq!(parsed["command"], "checkpoint");
+        assert_eq!(parsed["state_path"], "/tmp/wc/vm-state.bin");
+    }
+
+    /// Verify response format matches the documented protocol.
+    #[test]
+    fn vm_response_json_format() {
+        let resp = serde_json::json!({
+            "status": "ok",
+            "message": "VM started",
+        });
+        let parsed: serde_json::Value = serde_json::from_str(&resp.to_string()).unwrap();
+        assert_eq!(parsed["status"], "ok");
+        assert_eq!(parsed["message"], "VM started");
     }
 }

@@ -187,6 +187,123 @@ impl Broker {
     }
 }
 
+/// Status of a task lease.
+#[derive(Debug, Clone)]
+pub enum LeaseStatus {
+    /// Lease is currently active.
+    Active,
+    /// Lease has expired (TTL elapsed without renewal).
+    Expired,
+    /// Lease was explicitly released by the holder.
+    Released,
+}
+
+/// A time-bounded lease granting a node exclusive rights to execute a task.
+#[derive(Debug, Clone)]
+pub struct Lease {
+    /// Unique identifier for this lease.
+    pub lease_id: String,
+    /// The task this lease covers.
+    pub task_id: String,
+    /// The node holding the lease.
+    pub node_id: crate::types::PeerId,
+    /// When the lease was originally issued.
+    pub issued_at: crate::types::Timestamp,
+    /// Time-to-live in milliseconds.
+    pub ttl_ms: u64,
+    /// When the lease was last renewed, if ever.
+    pub renewed_at: Option<crate::types::Timestamp>,
+    /// Current status of the lease.
+    pub status: LeaseStatus,
+}
+
+/// Extended node capability for matchmaking (T132).
+#[derive(Debug, Clone)]
+pub struct NodeCapability {
+    pub node_id: String,
+    pub cpu_cores: u32,
+    pub gpu_available: bool,
+    pub memory_mb: u64,
+    pub trust_tier: u8,
+    pub autonomous_system: u32,
+}
+
+/// Task requirement for matchmaking (T132).
+#[derive(Debug, Clone)]
+pub struct TaskRequirement {
+    pub min_cpu_cores: u32,
+    pub needs_gpu: bool,
+    pub min_memory_mb: u64,
+    pub min_trust_tier: u8,
+}
+
+/// Match a task's requirements against a set of node capabilities (T132).
+/// Returns references to all nodes that meet the requirements.
+pub fn match_task<'a>(
+    task: &TaskRequirement,
+    nodes: &'a [NodeCapability],
+) -> Vec<&'a NodeCapability> {
+    nodes
+        .iter()
+        .filter(|node| {
+            node.cpu_cores >= task.min_cpu_cores
+                && node.memory_mb >= task.min_memory_mb
+                && node.trust_tier >= task.min_trust_tier
+                && (!task.needs_gpu || node.gpu_available)
+        })
+        .collect()
+}
+
+/// Issue a new lease for a task on a node (T133).
+pub fn issue_lease(task_id: &str, node_id: crate::types::PeerId, ttl_ms: u64) -> Lease {
+    let now = crate::types::Timestamp::now();
+    Lease {
+        lease_id: format!("lease-{}-{}", task_id, now.0),
+        task_id: task_id.to_string(),
+        node_id,
+        issued_at: now,
+        ttl_ms,
+        renewed_at: None,
+        status: LeaseStatus::Active,
+    }
+}
+
+/// Renew a lease by updating its renewed_at timestamp (T134).
+pub fn renew_lease(lease: &mut Lease) {
+    lease.renewed_at = Some(crate::types::Timestamp::now());
+    lease.status = LeaseStatus::Active;
+}
+
+/// Check if a lease has expired (T135).
+/// Returns true if the lease TTL has elapsed since issued_at or last renewed_at.
+pub fn check_lease_expiry(lease: &Lease) -> bool {
+    let now = crate::types::Timestamp::now();
+    let base_us = match lease.renewed_at {
+        Some(t) => t.0,
+        None => lease.issued_at.0,
+    };
+    let ttl_us = lease.ttl_ms * 1000; // convert ms to microseconds
+    now.0 > base_us + ttl_us
+}
+
+/// Select R nodes from different autonomous systems for disjoint replica placement (T136).
+pub fn select_disjoint_replicas<'a>(
+    matches: &[&'a NodeCapability],
+    r: usize,
+) -> Vec<&'a NodeCapability> {
+    let mut seen_as = std::collections::HashSet::new();
+    let mut selected = Vec::new();
+    for node in matches {
+        if seen_as.insert(node.autonomous_system) {
+            selected.push(*node);
+            if selected.len() >= r {
+                break;
+            }
+        }
+    }
+    selected
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

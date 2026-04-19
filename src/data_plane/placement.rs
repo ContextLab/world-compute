@@ -93,6 +93,17 @@ pub fn validate_placement(
     Ok(())
 }
 
+/// Check whether a node's jurisdiction matches the required data residency.
+///
+/// Returns `true` if the node is in the correct jurisdiction for the data,
+/// or if the data residency requirement is "any" (no restriction).
+pub fn check_shard_residency(node_jurisdiction: &str, data_residency: &str) -> bool {
+    if data_residency.eq_ignore_ascii_case("any") || data_residency.is_empty() {
+        return true;
+    }
+    node_jurisdiction.eq_ignore_ascii_case(data_residency)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
