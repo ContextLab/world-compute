@@ -106,12 +106,17 @@ if [[ -n "$unallowed" ]]; then
 fi
 
 if [[ "$MODE" == "--check-empty" ]]; then
-    nonempty=$(grep -vE '^\s*(#|$)' "$ALLOWLIST_FILE" 2>/dev/null | wc -l | tr -d ' ')
-    if [[ "$nonempty" -gt 0 ]]; then
-        echo "ERROR: spec-005-completion gate requires empty $ALLOWLIST_FILE but $nonempty entry/entries present:" >&2
-        grep -vE '^\s*(#|$)' "$ALLOWLIST_FILE" >&2
+    # grep returns non-zero when no non-comment lines exist, which under
+    # set -o pipefail would kill the script. Use `|| true` to absorb the
+    # zero-match case cleanly.
+    nonempty_lines=$(grep -vE '^\s*(#|$)' "$ALLOWLIST_FILE" 2>/dev/null || true)
+    if [[ -n "$nonempty_lines" ]]; then
+        count=$(echo "$nonempty_lines" | wc -l | tr -d ' ')
+        echo "ERROR: spec-005-completion gate requires empty $ALLOWLIST_FILE but $count entry/entries present:" >&2
+        echo "$nonempty_lines" >&2
         exit 65
     fi
 fi
 
 echo "OK: zero placeholder occurrences in production sources ($allowed_count allowed, 0 denied)."
+exit 0
