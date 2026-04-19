@@ -1,11 +1,12 @@
 # World Compute: A Decentralized, Volunteer-Built Compute Public Good
 
 **The World Compute Project**
-**Date**: 2026-04-17
-**Version**: Draft v0.3
+**Date**: 2026-04-18
+**Version**: Draft v0.4
 
 **Changelog**:
-- v0.3 (2026-04-17): All systems described in this whitepaper are now implemented (specs 001–004). 784+ tests passing across 150+ source files. Deep cryptographic attestation (RSA/ECDSA chain verification), real preemption supervisor (sub-10ms SIGSTOP), full policy engine (10-step pipeline with artifact registry and egress allowlist), incident containment with enforcement effects, confidential compute (AES-256-GCM + attested key release), distributed mesh LLM (router, aggregator, self-prompting, safety tiers, governance kill switch), platform adapters (Slurm, Kubernetes, Cloud, Apple VF), Tauri GUI, REST gateway, Docker/Helm deployment, energy metering. Zero TODO comments, zero ignored tests. Real-hardware validation on multi-node testnet is the next milestone.
+- v0.4 (2026-04-18): Corrects v0.3 overstatement. Significant subsystems from specs 001–004 are implemented with 802 tests passing across 150+ source files and full CI green on Linux/macOS/Windows, but several critical paths ship with placeholders (see repository README and open GitHub issues). Fully in place: P2P daemon with full libp2p NAT-traversal stack (relay v2 + DCUtR + AutoNAT, validated end-to-end in-process), distributed job dispatch (request-response over CBOR), WASM execution, policy engine (artifact registry + egress allowlist), preemption supervisor (SIGSTOP via nix), scheduler matchmaking, credit decay, storage GC, confidential compute (AES-256-GCM + X25519), mTLS lifecycle, energy metering, all 8 adversarial tests. Scaffolded but placeholder-bearing: mesh LLM (orchestration real, `load_model()` placeholder — no real LLaMA inference yet), attestation root CA fingerprints (zero placeholders → bypass mode), Rekor pinned public key (zero placeholder), Firecracker rootfs (layers concatenated, not ext4), admin ban, platform adapters (Slurm/K8s/Cloud scaffolds not exercised against live systems), Tauri GUI (scaffold only, never built), Docker/Helm (files exist, never deployed), REST gateway (routing logic only, no HTTP listener). Cross-machine WAN mesh formation behind institutional firewalls is the next spec (#60).
+- v0.3 (2026-04-17): Overstated completeness — see v0.4.
 - v0.2 (2026-04-15): Replaced rigid priority hierarchy with open-access multi-factor scheduling (research/08-priority-redesign.md). Added "Democratic Access and Public Voting" section. Replaced vague self-improvement language with concrete mesh LLM architecture (research/09-mesh-llm.md, research/10-prior-art-distributed-inference.md). Updated "What We Are Not Doing" and FAQ accordingly.
 
 ---

@@ -9,39 +9,42 @@
 
 ---
 
-> **Status notice (updated 2026-04-17)**
+> **Status notice (updated 2026-04-18)**
 >
-> This repository contains a ratified governing constitution, a full research package (~28,600 words), detailed feature specifications, and a comprehensive implementation with **784+ passing tests** across all modules. The CLI is functional with all 5 command groups wired. Core systems are implemented end-to-end.
+> This repository contains a ratified governing constitution, a full research package (~28,600 words), detailed feature specifications, and a substantial implementation with **802 passing tests** across all modules on Linux/macOS/Windows CI. Core systems and the P2P daemon are wired and exercised by unit + integration tests. **However, several subsystems have production scaffolding with placeholder values in critical paths — they are NOT production-ready as shipped.** The open GitHub issues track which pieces remain.
 >
-> **What exists and works:**
-> - Library crate with 784+ passing tests (500+ lib, 284+ integration)
-> - All 5 CLI command groups functional (donor, job, cluster, governance, admin)
-> - WASM sandbox with CID store integration and real workload execution
-> - Firecracker microVM driver with rootfs preparation from OCI images
-> - Full cryptographic attestation (TPM2/SEV-SNP/TDX with RSA/ECDSA chain verification)
-> - Deterministic 10-step policy engine with artifact registry and egress allowlist
-> - Agent lifecycle: heartbeat, pause/checkpoint, withdrawal with zero host residue
-> - Preemption supervisor with sub-10ms SIGSTOP delivery
-> - BrightID, OAuth2, and phone/SMS identity verification
-> - Sigstore Rekor transparency logging with Merkle inclusion proof verification
-> - Raft consensus, CRDT ledger, BLS threshold signing (3-of-5)
-> - Scheduler with ClassAd matchmaking and R=3 disjoint-AS placement
-> - All 8 adversarial test scenarios fully implemented
-> - Confidential compute (AES-256-GCM + X25519 key wrapping)
-> - mTLS certificate management with 90-day auto-rotation
-> - Distributed mesh LLM (router, aggregator, self-prompting, safety tiers, kill switch)
-> - Platform adapters: Slurm, Kubernetes (with Helm chart), Cloud (AWS/GCP/Azure)
-> - Tauri desktop GUI scaffold with React frontend
-> - REST/HTTP+JSON gateway for all 6 gRPC services
-> - Docker + Docker Compose + Helm deployment infrastructure
-> - Energy metering (RAPL) and carbon footprint reporting
-> - CI on Linux/macOS/Windows via GitHub Actions (all green)
+> **What is complete and verified in code:**
+> - P2P daemon: full libp2p NAT-traversal stack (TCP + QUIC + Noise + mDNS + Kademlia + identify + ping + AutoNAT + Relay v2 server/client + DCUtR). Validated end-to-end in-process by `tests/nat_traversal.rs` — a 3-node relay-circuit test that dispatches a real WASM job through the relay in ~5ms.
+> - Distributed job dispatch: TaskOffer and TaskDispatch request-response protocols over CBOR. Real WASM execution on the executor. `worldcompute job submit --executor <multiaddr> --workload <wasm>` CLI command for end-to-end remote dispatch.
+> - All 5 CLI command groups functional
+> - WASM sandbox with CID-store integration and real workload execution (wasmtime)
+> - Deterministic 10-step policy engine with artifact registry + egress allowlist
+> - Preemption supervisor with SIGSTOP via nix (measured and logged)
+> - BrightID / OAuth2 / phone identity verification
+> - Scheduler with ClassAd matchmaking + R=3 disjoint-AS placement
+> - All 8 adversarial test scenarios implemented
+> - Confidential compute: AES-256-GCM + X25519 key wrapping
+> - mTLS certificate lifecycle via rcgen + Ed25519 auth tokens
+> - Credit decay with 45-day half-life + anti-hoarding
+> - Storage GC + acceptable-use filter + shard residency enforcement
+> - Energy metering via Intel RAPL
+> - 802 tests passing on CI (Linux/macOS/Windows + Sandbox KVM + swtpm)
 >
-> **What needs real-hardware validation (next milestone):**
-> - Multi-machine LAN testnet (Phase 1: 3+ physical machines)
-> - 72-hour churn simulation at 30% node failure rate
-> - GPU mesh LLM inference at scale (4+ GPU nodes)
-> - Preemption latency measurement on production hardware
+> **What has scaffolding but placeholder values or missing integration (see issues):**
+> - Mesh LLM (#27, #54): orchestration + router + aggregator + safety + kill switch all exist, but `load_model()` is a placeholder — no real LLaMA inference yet
+> - Attestation root CA fingerprints (#28): AMD ARK / Intel DCAP pinned as `[0u8; 32]` (bypass mode) — need real fingerprints before production
+> - Rekor public key (#29): pinned as `[0u8; 32]` — tree-head signature verification is skipped
+> - Firecracker rootfs (#33): concatenates layer bytes; real mkfs.ext4 + OCI-layer extraction not yet wired
+> - Platform adapters #37/#38/#39 (Slurm, K8s, Cloud): scaffolds + parsers; not exercised against live systems
+> - Tauri GUI (#40): scaffold; never built or run
+> - Docker / Helm deployment (#41): files present; never built or deployed
+> - REST gateway (#43): routing + auth logic present; no HTTP listener bound in daemon
+> - Admin ban (#34): `admin_service::ban()` is an explicit stub returning `Ok(())`
+> - Churn simulator (#51): statistical model; no real kill-rejoin
+> - Apple VF Swift helper (#52): scaffold; never built on macOS
+>
+> **Critical open issue:**
+> - #60: cross-machine firewall traversal. The production NAT stack is validated in-process only. Real WAN operation behind institutional / corporate firewalls is unverified, and our attempts from behind Dartmouth's firewall showed libp2p connections not completing. Resolving this is the next milestone.
 >
 > If you want to help build or test it, see [Contributing](#contributing).
 
@@ -98,7 +101,7 @@ Five constitutional principles govern every design decision. They are not aspira
 
 ## Status
 
-World Compute has completed full functional implementation across all modules with 784+ passing tests. All 5 CLI command groups are wired and functional. Updated 2026-04-17.
+World Compute has substantial implementation with 802 passing tests and a fully-wired P2P daemon. All 5 CLI command groups functional. Several subsystems still have placeholder values in critical paths (see status notice at top of README and open issues #27, #28, #29, #33, #34, #37–#43, #51–#54, #56, #60). Updated 2026-04-18.
 
 ### Design artifacts (complete)
 

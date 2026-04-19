@@ -1,10 +1,10 @@
 # world-compute Development Guidelines
 
-Last updated: 2026-04-17
+Last updated: 2026-04-18
 
 ## Project Overview
 
-World Compute is a decentralized, volunteer-built compute federation. The codebase is a Rust workspace with 150+ source files, 784+ passing tests, and 20 library modules. All 5 CLI command groups are functional (donor, job, cluster, governance, admin). Core modules implemented: WASM sandbox with CID store integration, real Ed25519 signature verification, certificate chain validation (TPM2/SEV-SNP/TDX), BrightID/OAuth2/phone identity verification, Sigstore Rekor transparency logging, OTLP telemetry, STUN-based NAT detection, Raft coordinator consensus, and Firecracker/Apple VF sandbox drivers.
+World Compute is a decentralized, volunteer-built compute federation. The codebase is a Rust workspace with 150+ source files, 802 passing tests, and 20 library modules. All 5 CLI command groups are functional (donor, job, cluster, governance, admin). Production P2P daemon with full libp2p NAT-traversal stack (TCP + QUIC, Noise, mDNS + Kademlia DHT, identify, ping, AutoNAT, Relay v2 server+client, DCUtR) and distributed job dispatch (TaskOffer + TaskDispatch request-response with CBOR + real WASM execution) — validated end-to-end in-process via `tests/nat_traversal.rs`. Core modules implemented: WASM sandbox with CID store integration, real Ed25519 signature verification, certificate chain validation (TPM2/SEV-SNP/TDX), BrightID/OAuth2/phone identity verification, Sigstore Rekor transparency logging, OTLP telemetry, STUN-based NAT detection, Raft coordinator consensus, and Firecracker/Apple VF sandbox drivers.
 
 ## Active Technologies
 - Rust stable (tested on 1.95.0) + libp2p 0.54, tonic 0.12, ed25519-dalek 2, wasmtime 27, openraft 0.9, opentelemetry 0.27, clap 4 (003-stub-replacement)
@@ -69,7 +69,7 @@ gui/src-tauri/              # Tauri GUI scaffold
 
 ```sh
 # Build and test
-cargo test                  # 784+ tests (500+ lib + 284+ integration)
+cargo test                  # 802 tests (500+ lib + 300+ integration)
 cargo clippy --lib -- -D warnings  # Zero warnings enforced
 
 # Build only
@@ -111,9 +111,25 @@ The project is governed by a ratified constitution at `.specify/memory/constitut
 4. **Efficiency & Self-Improvement** — energy-aware scheduling, mesh LLM
 5. **Direct Testing** — real hardware tests required, no mocks for production
 
-## Remaining Stubs
+## Remaining Stubs and Placeholders
 
-**None** — all implementation stubs have been replaced as of spec 004-full-implementation. Zero TODO comments remain in src/. Zero `#[ignore]` tests remain.
+Zero TODO comments in src/ and zero `#[ignore]` tests remain. However, several subsystems have scaffolding landed but placeholders in critical paths — these are not production-ready and are tracked in open issues:
+
+- **Mesh LLM** (#27, #54): `src/agent/mesh_llm/expert.rs::load_model()` is a placeholder — no real LLaMA inference. Orchestration (router, aggregator, safety tiers, kill switch) is complete.
+- **AMD / Intel root CA fingerprints** (#28): pinned as `[0u8; 32]` in `src/verification/attestation.rs`. Validators enter permissive bypass mode when fingerprints are zero.
+- **Rekor public key** (#29): pinned as `[0u8; 32]` in `src/ledger/transparency.rs`. Signed tree head verification is skipped when the key is zero.
+- **Agent lifecycle → gossip wiring** (#30): heartbeat/pause/withdraw return payloads but don't broadcast over gossipsub (the daemon event loop does broadcast separately).
+- **Firecracker rootfs** (#33): concatenates layer bytes; does NOT run mkfs.ext4 + OCI tar extraction. A real boot would fail.
+- **Admin `ban()`** (#34): `src/governance/admin_service.rs::ban()` returns `Ok(())` without updating the trust registry.
+- **Platform adapters** (#37, #38, #39): Slurm/K8s/Cloud scaffolds exist but have not been exercised against live systems.
+- **GUI** (#40): never built or run.
+- **Deployment** (#41): Dockerfile and Helm chart exist but have never been built or deployed.
+- **REST gateway** (#43): routing + auth + rate-limit logic exist but no HTTP listener is bound in the daemon.
+- **Churn simulator** (#51): statistical model, not a real kill-rejoin harness.
+- **Apple VF Swift helper** (#52): never built on macOS.
+- **Receipt verification** (`src/verification/receipt.rs`): structural check only; coordinator public key not yet wired.
+- **Daemon `current_load()`** (`src/agent/daemon.rs:500`): stub returning 0.1.
+- **Cross-machine firewall traversal** (#60): production NAT stack validated in-process only. Real WAN operation behind institutional firewalls is unverified.
 
 ## CI
 
@@ -123,6 +139,6 @@ Two GitHub Actions workflows:
 
 ## Recent Changes
 
-- **004-full-implementation** (2026-04-17): Complete functional implementation (#57, #28–#56). 211 tasks, 784+ tests. Deep cryptographic attestation, agent lifecycle, preemption supervisor, policy engine completion, GPU passthrough, Firecracker rootfs, incident containment, adversarial tests, confidential compute, mTLS, threshold signing, CRDT ledger, scheduler matchmaking, credit decay, storage GC, platform adapters (Slurm/K8s/Cloud/Apple VF), Tauri GUI, REST gateway, mesh LLM, Docker/Helm deployment, energy metering.
+- **004-full-implementation** (2026-04-18): Merged scaffolding + significant implementation for #57 and its sub-issues (#28–#56, and a first pass on #27/#54 mesh LLM). 802 tests passing across Linux/macOS/Windows + Sandbox KVM + swtpm CI. Landed: full production P2P daemon with libp2p NAT-traversal stack (TCP + QUIC + Noise + mDNS + Kademlia + identify + ping + AutoNAT + Relay v2 server/client + DCUtR), AutoRelay reservations, public libp2p bootstrap relays as default rendezvous, TaskOffer + TaskDispatch request-response protocols over CBOR, real WASM execution of dispatched jobs, `worldcompute job submit --executor <multiaddr> --workload <wasm>` CLI command, end-to-end 3-node relay-circuit integration test. Also landed: ~12 sub-issues fully completed (policy engine, GPU passthrough, adversarial tests, test coverage, credit decay, preemption, confidential compute, mTLS, energy metering, storage GC, documentation, scheduler matchmaking); ~16 sub-issues partially addressed with scaffolding (see Remaining Stubs above); #27/#54 mesh LLM orchestration shell complete but real LLaMA inference deferred. Critical open issue #60 tracks cross-machine WAN mesh formation behind firewalls.
 - **003-stub-replacement** (2026-04-16): Replaced all implementation stubs (#7, #8–#26). 77 tasks, 489+ tests. Added reqwest, oauth2, x509-parser, rcgen dependencies. Wired CLI, sandboxes, attestation, identity, transparency, telemetry, consensus, network.
 - **002-safety-hardening** (2026-04-16): Red team review (#4). Policy engine, attestation, governance, incident response, egress, identity hardening. 110 tasks, PR #6.
