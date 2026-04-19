@@ -1,9 +1,9 @@
 //! Compile-time feature-gate assertions for spec 005 (FR-008, FR-010, FR-011a).
 //!
 //! Under `--features production`, the build fails if any pinned root-of-trust
-//! constant is still the zero placeholder. This closes the safety gap where
-//! spec-004 validators silently entered permissive bypass mode when pins were
-//! `[0u8; 32]`.
+//! constant is still the zero sentinel `[0u8; 32]`. This closes the safety
+//! gap where spec-004 validators silently entered permissive bypass mode when
+//! pins were uninitialized.
 //!
 //! The non-production (default) build intentionally allows the bypass so that
 //! development and unit tests can exercise attestation-pipeline code paths

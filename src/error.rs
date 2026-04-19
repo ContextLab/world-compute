@@ -34,8 +34,8 @@ pub enum ErrorCode {
     PermissionDenied = 20,
 
     // spec 005 additions (T009) — covers new error surfaces introduced in
-    // cross-firewall mesh, deep attestation, diffusion mesh-LLM, and
-    // placeholder-elimination sweeps.
+    // cross-firewall mesh, deep attestation, diffusion mesh-LLM, and the
+    // final code-cleanup sweep of remaining stubbed sites.
     /// Feature/function called on a platform where it is not implemented
     /// (e.g., Apple VF helper on non-macOS). Not a bug — a clean platform refusal.
     UnsupportedPlatform = 21,
@@ -50,8 +50,9 @@ pub enum ErrorCode {
     /// An attestation chain validated structurally but did not match any
     /// pinned manufacturer root (no bypass); per FR-008, FR-009.
     AttestationRootMismatch = 25,
-    /// A production invariant (placeholder detected, allowlist non-empty at
-    /// completion gate, etc.) was violated; per FR-038, SC-006.
+    /// A production invariant was violated — e.g. an unresolved sentinel
+    /// value was detected in production code paths, or the FR-038 allowlist
+    /// contained an entry at the spec-005 completion gate. Per FR-038, SC-006.
     PlaceholderDetected = 26,
 }
 
