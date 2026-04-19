@@ -29,6 +29,22 @@ pub enum DonorCommand {
         /// Bootstrap peer addresses to connect to (comma-separated multiaddrs)
         #[arg(long)]
         bootstrap: Option<String>,
+        // spec 005 US1 T024 / FR-003, FR-005, FR-007a — cross-firewall mesh flags
+        /// Trust SSL-inspecting middlebox certificates on the WSS/443 fallback
+        /// transport (lowers trust tier to `Inspected`). Required only when a
+        /// corporate/institutional proxy MITMs all outbound HTTPS.
+        #[arg(long)]
+        allow_ssl_inspection: bool,
+        /// Listen on port 443 for inbound WSS circuits. Typically only
+        /// dedicated relay operators set this. Requires root or appropriate
+        /// cap_net_bind_service capability.
+        #[arg(long)]
+        wss_listen: bool,
+        /// Skip the OS resolver and use the bundled DoH fallback directly for
+        /// all DNS queries. Useful on captive-portal networks where the OS
+        /// resolver is hijacked.
+        #[arg(long)]
+        doh_only: bool,
     },
     /// Show current donor status, trust score, and caliber class
     Status,
@@ -56,7 +72,7 @@ pub enum DonorCommand {
 /// For daemon mode, use `execute_async` instead.
 pub fn execute(cmd: &DonorCommand) -> String {
     match cmd {
-        DonorCommand::Join { consent, daemon, port, bootstrap: _ } => {
+        DonorCommand::Join { consent, daemon, port, bootstrap: _, .. } => {
             let classes: Vec<AcceptableUseClass> =
                 consent.split(',').filter_map(|s| parse_use_class(s.trim())).collect();
 
@@ -107,7 +123,7 @@ pub fn execute(cmd: &DonorCommand) -> String {
 /// Execute a donor join command in daemon mode (async, blocks until shutdown).
 pub async fn execute_daemon(cmd: &DonorCommand) -> Result<(), Box<dyn std::error::Error>> {
     match cmd {
-        DonorCommand::Join { consent, daemon: _, port, bootstrap } => {
+        DonorCommand::Join { consent, daemon: _, port, bootstrap, .. } => {
             let classes: Vec<AcceptableUseClass> =
                 consent.split(',').filter_map(|s| parse_use_class(s.trim())).collect();
 

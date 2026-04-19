@@ -1,0 +1,28 @@
+name: drift-check
+
+# Weekly refetch of pinned AMD ARK / Intel DCAP / Sigstore Rekor values
+# from upstream. Opens a repository issue on mismatch. Per spec 005 FR-011a.
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift-check:
+    name: drift-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssl python3 curl jq gh
+
+      - name: Run drift check
+        run: bash scripts/drift-check.sh --open-issue
