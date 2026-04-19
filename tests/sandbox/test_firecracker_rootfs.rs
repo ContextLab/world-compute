@@ -36,7 +36,7 @@ fn assemble_rootfs_creates_file_with_layers() {
     std::fs::create_dir_all(&tmp).unwrap();
 
     let rootfs_path = tmp.join("rootfs.ext4");
-    let layers = vec![b"first-layer-bytes".to_vec(), b"second-layer-bytes".to_vec()];
+    let layers = [b"first-layer-bytes".to_vec(), b"second-layer-bytes".to_vec()];
 
     assemble_rootfs(&rootfs_path, &layers).unwrap();
 

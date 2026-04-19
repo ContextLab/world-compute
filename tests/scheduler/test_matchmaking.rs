@@ -29,7 +29,7 @@ fn cpu_node(id: &str, as_num: u32) -> NodeCapability {
 
 #[test]
 fn match_gpu_task_to_gpu_node() {
-    let nodes = vec![cpu_node("cpu-1", 100), gpu_node("gpu-1", 200), cpu_node("cpu-2", 300)];
+    let nodes = [cpu_node("cpu-1", 100), gpu_node("gpu-1", 200), cpu_node("cpu-2", 300)];
     let task = TaskRequirement {
         min_cpu_cores: 4,
         needs_gpu: true,
@@ -43,7 +43,7 @@ fn match_gpu_task_to_gpu_node() {
 
 #[test]
 fn match_cpu_task_returns_all_eligible() {
-    let nodes = vec![cpu_node("cpu-1", 100), gpu_node("gpu-1", 200), cpu_node("cpu-2", 300)];
+    let nodes = [cpu_node("cpu-1", 100), gpu_node("gpu-1", 200), cpu_node("cpu-2", 300)];
     let task = TaskRequirement {
         min_cpu_cores: 2,
         needs_gpu: false,
@@ -56,7 +56,7 @@ fn match_cpu_task_returns_all_eligible() {
 
 #[test]
 fn match_trust_tier_filter() {
-    let nodes = vec![cpu_node("low-trust", 100), gpu_node("high-trust", 200)];
+    let nodes = [cpu_node("low-trust", 100), gpu_node("high-trust", 200)];
     let task = TaskRequirement {
         min_cpu_cores: 1,
         needs_gpu: false,
@@ -99,7 +99,7 @@ fn expired_lease_detected() {
 
 #[test]
 fn disjoint_as_selection() {
-    let nodes = vec![
+    let nodes = [
         gpu_node("n1", 100),
         gpu_node("n2", 100), // same AS as n1
         gpu_node("n3", 200),

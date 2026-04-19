@@ -137,11 +137,11 @@ async fn distributed_wasm_job_dispatch_end_to_end() {
             tokio::select! {
                 event = broker.select_next_some() => {
                     match event {
-                        SwarmEvent::ConnectionEstablished { peer_id, .. } => {
-                            if peer_id == executor_peer && !request_sent {
-                                broker.behaviour_mut().dispatch.send_request(&executor_peer, request.clone());
-                                request_sent = true;
-                            }
+                        SwarmEvent::ConnectionEstablished { peer_id, .. }
+                            if peer_id == executor_peer && !request_sent =>
+                        {
+                            broker.behaviour_mut().dispatch.send_request(&executor_peer, request.clone());
+                            request_sent = true;
                         }
                         SwarmEvent::Behaviour(TestBehaviourEvent::Dispatch(
                             request_response::Event::Message {
