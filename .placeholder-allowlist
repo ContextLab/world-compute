@@ -1,0 +1,11 @@
+# spec-005 placeholder allowlist (FR-038, SC-006)
+#
+# Each non-empty non-comment line is a legitimate exemption in the format:
+#   <path>:<line> — <rationale>
+#
+# MUST be empty (no non-comment lines) at the moment spec-005 is declared
+# complete. The `verify-no-placeholders.sh --check-empty` CI gate enforces
+# this. The allowlist mechanism exists only for long-term post-005 maintenance
+# (e.g., to exempt a doc-comment that legitimately describes historic context).
+#
+# During spec-005 implementation: ELIMINATE every placeholder; do NOT exempt.

@@ -13,10 +13,19 @@ use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 
-/// Rekor public key (Ed25519) — pinned for signature verification.
-/// This is a placeholder; replace with the production key fetched from
-/// <https://rekor.sigstore.dev/api/v1/log/publicKey> for release builds.
-const REKOR_PUBLIC_KEY: [u8; 32] = [0u8; 32];
+/// Pinned Sigstore Rekor public key fingerprint (spec 005 FR-010, FR-011a).
+///
+/// Rekor uses ECDSA P-256, not Ed25519; the raw pubkey is 65 bytes uncompressed
+/// or ~91 bytes as SPKI DER. We pin the 32-byte SHA-256 of the DER-encoded
+/// SubjectPublicKeyInfo as the stable rotation-detectable fingerprint.
+///
+/// Verified 2026-04-19 from `https://rekor.sigstore.dev/api/v1/log/publicKey`.
+/// Weekly drift-check enforces this still matches upstream.
+/// The `production` feature guarantees non-zero at compile time (features.rs).
+pub const REKOR_PUBLIC_KEY: [u8; 32] = [
+    0xc0, 0xd2, 0x3d, 0x6a, 0xd4, 0x06, 0x97, 0x3f, 0x95, 0x59, 0xf3, 0xba, 0x2d, 0x1c, 0xa0, 0x1f,
+    0x84, 0x14, 0x7d, 0x8f, 0xfc, 0x5b, 0x84, 0x45, 0xc2, 0x24, 0xf9, 0x8b, 0x95, 0x91, 0x80, 0x1d,
+];
 
 /// Signed tree head from the transparency log.
 #[derive(Debug, Clone)]

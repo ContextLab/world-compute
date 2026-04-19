@@ -23,15 +23,40 @@ use rsa::pkcs1v15::VerifyingKey as RsaVerifyingKey;
 use rsa::signature::Verifier;
 use rsa::RsaPublicKey;
 
-// ─── Pinned root CA fingerprints ────────────────────────────────────────
+// ─── Pinned root CA fingerprints (spec 005 FR-008, FR-011a) ─────────────
+//
+// Values verified at release cut time against the authoritative upstream
+// endpoints. Weekly CI drift-check refetches each value and opens an
+// issue on any mismatch. See `docs/releases.md` and `.github/workflows/drift-check.yml`.
+//
+// The `production` cargo feature guarantees these are non-zero at compile time
+// via the `const _: () = assert!(...)` block in `src/features.rs`.
 
-/// SHA-256 fingerprint of the AMD ARK (AMD Root Key) certificate DER encoding.
-/// Replace with real AMD ARK fingerprint for production deployment.
-const AMD_ARK_SHA256_FINGERPRINT: [u8; 32] = [0u8; 32]; // Replace with real AMD ARK fingerprint
+/// SHA-256 fingerprint of the self-signed AMD ARK-Milan certificate (DER encoding).
+///
+/// Verified 2026-04-19 from `https://kdsintf.amd.com/vcek/v1/Milan/cert_chain`.
+pub const AMD_ARK_SHA256_FINGERPRINT: [u8; 32] = [
+    0x69, 0xd0, 0x63, 0xb4, 0x53, 0x44, 0xd2, 0x6a, 0x2e, 0x94, 0xe1, 0xf4, 0x21, 0x0d, 0xe4, 0x9e,
+    0xf5, 0x55, 0x30, 0x82, 0x87, 0xd4, 0xc1, 0x74, 0x44, 0x5c, 0x95, 0x63, 0x9a, 0x54, 0x0b, 0xcd,
+];
 
-/// SHA-256 fingerprint of the Intel SGX/TDX Root CA certificate DER encoding.
-/// Replace with real Intel DCAP root CA fingerprint for production deployment.
-const INTEL_ROOT_CA_SHA256_FINGERPRINT: [u8; 32] = [0u8; 32]; // Replace with real Intel DCAP fingerprint
+/// SHA-256 fingerprint of the self-signed AMD ARK-Genoa certificate (DER encoding).
+/// Newer EPYC generations. Either Milan OR Genoa ARK is accepted during chain validation.
+///
+/// Verified 2026-04-19 from `https://kdsintf.amd.com/vcek/v1/Genoa/cert_chain`.
+pub const AMD_ARK_GENOA_SHA256_FINGERPRINT: [u8; 32] = [
+    0x4c, 0x65, 0x98, 0xd1, 0x9c, 0x18, 0x71, 0x9c, 0x5d, 0xfd, 0x4a, 0x7d, 0x33, 0x5f, 0x67, 0x4e,
+    0x5b, 0xfe, 0x1d, 0x8f, 0x80, 0x0c, 0xea, 0x2c, 0xf2, 0x70, 0xc1, 0x0d, 0x10, 0x3d, 0xb2, 0xf1,
+];
+
+/// SHA-256 fingerprint of the self-signed "Intel SGX Root CA" DER certificate.
+///
+/// Verified 2026-04-19 from
+/// `https://certificates.trustedservices.intel.com/Intel_SGX_Provisioning_Certification_RootCA.cer`.
+pub const INTEL_ROOT_CA_SHA256_FINGERPRINT: [u8; 32] = [
+    0x44, 0xa0, 0x19, 0x6b, 0x2b, 0x99, 0xf8, 0x89, 0xb8, 0xe1, 0x49, 0xe9, 0x5b, 0x80, 0x7a, 0x35,
+    0x0e, 0x74, 0x24, 0x96, 0x43, 0x99, 0xe8, 0x85, 0xa7, 0xcb, 0xb8, 0xcc, 0xfa, 0xb6, 0x74, 0xd3,
+];
 
 // ─── Cryptographic signature verification helpers (T019, T020) ──────────
 
