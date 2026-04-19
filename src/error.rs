@@ -5,7 +5,9 @@
 
 use thiserror::Error;
 
-/// Canonical World Compute error codes (WC-001 through WC-020).
+/// Canonical World Compute error codes (WC-001 through WC-026).
+///
+/// Codes 001-020 are from spec 001 (core). Codes 021-026 added by spec 005 (T009).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[repr(u16)]
 #[allow(dead_code)]
@@ -30,6 +32,28 @@ pub enum ErrorCode {
     NotFound = 18,
     AlreadyExists = 19,
     PermissionDenied = 20,
+
+    // spec 005 additions (T009) — covers new error surfaces introduced in
+    // cross-firewall mesh, deep attestation, diffusion mesh-LLM, and the
+    // final code-cleanup sweep of remaining stubbed sites.
+    /// Feature/function called on a platform where it is not implemented
+    /// (e.g., Apple VF helper on non-macOS). Not a bug — a clean platform refusal.
+    UnsupportedPlatform = 21,
+    /// libp2p dial failure with full root-cause context; per FR-004.
+    DialFailureWithDetail = 22,
+    /// Relay reservation could not be acquired from any bootstrap relay
+    /// after fallback transport exhaustion; per FR-006, FR-007.
+    ReservationAcquisitionFailed = 23,
+    /// ParaDiGMS Picard iteration failed to converge within its budget AND
+    /// strict-sequential fallback also failed; per FR-025 edge case.
+    ParaDiGMSNonconvergence = 24,
+    /// An attestation chain validated structurally but did not match any
+    /// pinned manufacturer root (no bypass); per FR-008, FR-009.
+    AttestationRootMismatch = 25,
+    /// A production invariant was violated — e.g. an unresolved sentinel
+    /// value was detected in production code paths, or the FR-038 allowlist
+    /// contained an entry at the spec-005 completion gate. Per FR-038, SC-006.
+    PlaceholderDetected = 26,
 }
 
 impl ErrorCode {
@@ -56,6 +80,13 @@ impl ErrorCode {
             Self::NotFound => 5,                     // NOT_FOUND
             Self::AlreadyExists => 6,                // ALREADY_EXISTS
             Self::PermissionDenied => 7,             // PERMISSION_DENIED
+            // spec 005 additions
+            Self::UnsupportedPlatform => 12,   // UNIMPLEMENTED
+            Self::DialFailureWithDetail => 14, // UNAVAILABLE
+            Self::ReservationAcquisitionFailed => 14, // UNAVAILABLE
+            Self::ParaDiGMSNonconvergence => 10, // ABORTED
+            Self::AttestationRootMismatch => 16, // UNAUTHENTICATED
+            Self::PlaceholderDetected => 9,    // FAILED_PRECONDITION
         }
     }
 
@@ -82,6 +113,13 @@ impl ErrorCode {
             Self::NotFound => 404,
             Self::AlreadyExists => 409,
             Self::PermissionDenied => 403,
+            // spec 005 additions
+            Self::UnsupportedPlatform => 501,   // Not Implemented
+            Self::DialFailureWithDetail => 503, // Service Unavailable
+            Self::ReservationAcquisitionFailed => 503, // Service Unavailable
+            Self::ParaDiGMSNonconvergence => 409, // Conflict (convergence)
+            Self::AttestationRootMismatch => 401, // Unauthorized
+            Self::PlaceholderDetected => 422,   // Unprocessable Entity
         }
     }
 }

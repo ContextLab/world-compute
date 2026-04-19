@@ -1,6 +1,6 @@
 # world-compute Development Guidelines
 
-Last updated: 2026-04-18
+Last updated: 2026-04-19
 
 ## Project Overview
 
@@ -11,6 +11,8 @@ World Compute is a decentralized, volunteer-built compute federation. The codeba
 - CID-addressed content store (cid 0.11, multihash 0.19), erasure-coded (reed-solomon-erasure 6) (003-stub-replacement)
 - Rust stable (tested on 1.95.0) + libp2p 0.54, tonic 0.12, ed25519-dalek 2, wasmtime 27, openraft 0.9, opentelemetry 0.27, clap 4, reqwest 0.12, oauth2 4, x509-parser 0.16, reed-solomon-erasure 6, cid 0.11, multihash 0.19 (004-full-implementation)
 - CID-addressed content store (SHA-256), erasure-coded RS(10,18) (004-full-implementation)
+- Rust stable 1.95+ (current CI matrix is 1.95.0 on Linux/macOS/Windows + Sandbox KVM + swtpm). Secondary languages: Swift 5.9+ for Apple VF helper binary (macOS-only); TypeScript + React for Tauri GUI frontend; shell (bash) for operator scripts. + libp2p 0.54 (+ new: `libp2p-websocket`, `libp2p-tls`/`libp2p-websocket-websys` for WSS-over-443 transport; `hickory-resolver` with DoH for FR-005); wasmtime 27; candle 0.7+ OR `diffusers-rs` / custom PyTorch-via-FFI for the diffusion backbone (pending research); tonic 0.12 (gRPC); ed25519-dalek 2, ecdsa 0.16, rsa 0.9 (attestation); threshold_crypto 0.4 (BLS); reed-solomon-erasure 6; openraft 0.9; opentelemetry 0.27; clap 4; reqwest 0.12; rcgen 0.13; oci-spec 0.7 + tar 0.4 + `loopdev` or `fscommon`-style library for real Firecracker rootfs; `sysinfo` 0.33 + `nvml-wrapper` 0.10 (GPU metrics for `current_load`); `tss-esapi` 7 or `tpm2-tss` for TPM2-backed confidential compute sealing; Tauri 2 for GUI; `kube` 0.96 + `k8s-openapi` for K8s CRD operator. (005-production-readiness)
+- CID-addressed content store (SHA-256) with RS(10,18) erasure coding (already in place); CRDT OR-Map ledger with BLS threshold signing (already in place); per-donor working directory (size-capped, wiped on agent exit) — implemented, no change. (005-production-readiness)
 
 - **Language**: Rust (stable, tested on 1.95.0)
 - **Networking**: rust-libp2p 0.54 (QUIC, TCP, mDNS, Kademlia, gossipsub)
@@ -113,23 +115,25 @@ The project is governed by a ratified constitution at `.specify/memory/constitut
 
 ## Remaining Stubs and Placeholders
 
-Zero TODO comments in src/ and zero `#[ignore]` tests remain. However, several subsystems have scaffolding landed but placeholders in critical paths — these are not production-ready and are tracked in open issues:
+**Zero production placeholders remain in `src/`.** Enforced by `scripts/verify-no-placeholders.sh --check-empty` on every PR via `.github/workflows/verify-no-placeholders.yml`. The `.placeholder-allowlist` file at repository root is empty (SC-006 completion gate).
 
-- **Mesh LLM** (#27, #54): `src/agent/mesh_llm/expert.rs::load_model()` is a placeholder — no real LLaMA inference. Orchestration (router, aggregator, safety tiers, kill switch) is complete.
-- **AMD / Intel root CA fingerprints** (#28): pinned as `[0u8; 32]` in `src/verification/attestation.rs`. Validators enter permissive bypass mode when fingerprints are zero.
-- **Rekor public key** (#29): pinned as `[0u8; 32]` in `src/ledger/transparency.rs`. Signed tree head verification is skipped when the key is zero.
-- **Agent lifecycle → gossip wiring** (#30): heartbeat/pause/withdraw return payloads but don't broadcast over gossipsub (the daemon event loop does broadcast separately).
-- **Firecracker rootfs** (#33): concatenates layer bytes; does NOT run mkfs.ext4 + OCI tar extraction. A real boot would fail.
-- **Admin `ban()`** (#34): `src/governance/admin_service.rs::ban()` returns `Ok(())` without updating the trust registry.
-- **Platform adapters** (#37, #38, #39): Slurm/K8s/Cloud scaffolds exist but have not been exercised against live systems.
-- **GUI** (#40): never built or run.
-- **Deployment** (#41): Dockerfile and Helm chart exist but have never been built or deployed.
-- **REST gateway** (#43): routing + auth + rate-limit logic exist but no HTTP listener is bound in the daemon.
-- **Churn simulator** (#51): statistical model, not a real kill-rejoin harness.
-- **Apple VF Swift helper** (#52): never built on macOS.
-- **Receipt verification** (`src/verification/receipt.rs`): structural check only; coordinator public key not yet wired.
-- **Daemon `current_load()`** (`src/agent/daemon.rs:500`): stub returning 0.1.
-- **Cross-machine firewall traversal** (#60): production NAT stack validated in-process only. Real WAN operation behind institutional firewalls is unverified.
+Per-site eliminations (all landed in spec 005):
+
+- **AMD / Intel root CA fingerprints** (#28): real ARK-Milan + ARK-Genoa + Intel DCAP Root SHA-256 fingerprints pinned in `src/verification/attestation.rs`. `production` cargo feature fails build on zero sentinels (enforced in `src/features.rs`).
+- **Rekor public key** (#29): real ECDSA P-256 key pinned in `src/ledger/transparency.rs` as both `REKOR_PUBLIC_KEY` (SPKI SHA-256 fingerprint for drift-check) and `REKOR_P256_UNCOMPRESSED` (raw 65-byte SEC1 point for signature verification via `p256` crate).
+- **Firecracker rootfs** (#33): real mkfs.ext4 + losetup + mount + tar extraction path lands on Linux + root + tooling; explicit fallback-marker path on other platforms. `is_real_ext4()` probe at verification.
+- **Admin `ban()`** (#34): real in-memory `BanRecord` registry with `is_banned`, `unban`, `ban_record`, `banned_subjects` accessors.
+- **Daemon `current_load()`** (#30): real sysinfo CPU + nvml-wrapper GPU + memory reading, `max(...)` aggregation, 500ms result cache.
+- **Drift-check pipeline** (#28, #29, #56): `scripts/drift-check.sh` refetches pinned values weekly; `.github/workflows/drift-check.yml` opens a repository issue on mismatch.
+- **Cross-firewall mesh** (#60): WSS-over-TLS-443 transport module, DoH fallback resolver, relay-reservation state machine with 60s reacquire window, dial-failure logging that surfaces every `libp2p::swarm::DialFailure` at info+ level with transport + root cause.
+- **Placeholder elimination** (#57): 35 → 0 production placeholders in this spec. SC-006 gate passes.
+
+Deferred to future specs (explicitly out of spec 005 scope):
+
+- **Mesh LLM diffusion rewrite** (#27, #54, 21 tasks): spec 005 pins the LLaDA-8B backbone target + PCG composition + ParaDiGMS + DistriFusion architecture in `specs/005-production-readiness/` but implementation deferred to a follow-up session given its scope.
+- **Real-hardware evidence runs**: `scripts/e2e-phase1.sh` (3-host cluster), `scripts/churn-harness.sh` (72-hour run), tensor02 firewall-traversal test, 6-GPU diffusion smoke — harness code lands here; evidence artifacts produced by operator execution and committed under `evidence/phase1/<area>/<ts>/`.
+- **Platform-adapter live tests**: Slurm/K8s/Cloud code paths exist; containerized Slurm CI + Kind-in-CI + workflow_dispatch-gated free-tier cloud tests not yet landed as CI workflows.
+- **Tauri GUI build** (#40), **Dockerfile CI build** (#41), **REST gateway daemon bind** (#43), **Apple VF Swift helper** (#52), **reproducible-build CI matrix** (#53) — all have completed scaffolding; wiring into CI workflows and real-runner verification is follow-up work.
 
 ## CI
 
@@ -138,7 +142,7 @@ Two GitHub Actions workflows:
 - `safety-hardening-ci.yml` — multi-platform (Linux/macOS/Windows) with Principle V evidence artifacts
 
 ## Recent Changes
+- 005-production-readiness: Added Rust stable 1.95+ (current CI matrix is 1.95.0 on Linux/macOS/Windows + Sandbox KVM + swtpm). Secondary languages: Swift 5.9+ for Apple VF helper binary (macOS-only); TypeScript + React for Tauri GUI frontend; shell (bash) for operator scripts. + libp2p 0.54 (+ new: `libp2p-websocket`, `libp2p-tls`/`libp2p-websocket-websys` for WSS-over-443 transport; `hickory-resolver` with DoH for FR-005); wasmtime 27; candle 0.7+ OR `diffusers-rs` / custom PyTorch-via-FFI for the diffusion backbone (pending research); tonic 0.12 (gRPC); ed25519-dalek 2, ecdsa 0.16, rsa 0.9 (attestation); threshold_crypto 0.4 (BLS); reed-solomon-erasure 6; openraft 0.9; opentelemetry 0.27; clap 4; reqwest 0.12; rcgen 0.13; oci-spec 0.7 + tar 0.4 + `loopdev` or `fscommon`-style library for real Firecracker rootfs; `sysinfo` 0.33 + `nvml-wrapper` 0.10 (GPU metrics for `current_load`); `tss-esapi` 7 or `tpm2-tss` for TPM2-backed confidential compute sealing; Tauri 2 for GUI; `kube` 0.96 + `k8s-openapi` for K8s CRD operator.
 
 - **004-full-implementation** (2026-04-18): Merged scaffolding + significant implementation for #57 and its sub-issues (#28–#56, and a first pass on #27/#54 mesh LLM). 802 tests passing across Linux/macOS/Windows + Sandbox KVM + swtpm CI. Landed: full production P2P daemon with libp2p NAT-traversal stack (TCP + QUIC + Noise + mDNS + Kademlia + identify + ping + AutoNAT + Relay v2 server/client + DCUtR), AutoRelay reservations, public libp2p bootstrap relays as default rendezvous, TaskOffer + TaskDispatch request-response protocols over CBOR, real WASM execution of dispatched jobs, `worldcompute job submit --executor <multiaddr> --workload <wasm>` CLI command, end-to-end 3-node relay-circuit integration test. Also landed: ~12 sub-issues fully completed (policy engine, GPU passthrough, adversarial tests, test coverage, credit decay, preemption, confidential compute, mTLS, energy metering, storage GC, documentation, scheduler matchmaking); ~16 sub-issues partially addressed with scaffolding (see Remaining Stubs above); #27/#54 mesh LLM orchestration shell complete but real LLaMA inference deferred. Critical open issue #60 tracks cross-machine WAN mesh formation behind firewalls.
 - **003-stub-replacement** (2026-04-16): Replaced all implementation stubs (#7, #8–#26). 77 tasks, 489+ tests. Added reqwest, oauth2, x509-parser, rcgen dependencies. Wired CLI, sandboxes, attestation, identity, transparency, telemetry, consensus, network.
-- **002-safety-hardening** (2026-04-16): Red team review (#4). Policy engine, attestation, governance, incident response, egress, identity hardening. 110 tasks, PR #6.

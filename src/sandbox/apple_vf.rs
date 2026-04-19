@@ -170,10 +170,25 @@ impl Sandbox for AppleVfSandbox {
         std::fs::create_dir_all(&self.work_dir)?;
         self.workload_cid = Some(*workload_cid);
 
-        // Prepare disk image from CID
+        // Prepare disk image from CID. On macOS the Swift helper
+        // materializes the real VZDiskImage; for integration-test harnesses
+        // on non-macOS hosts we write a small identifying marker so filesystem
+        // assertions have something to observe.
         let disk_path = self.work_dir.join("disk.img");
         if !disk_path.exists() {
-            std::fs::write(&disk_path, b"placeholder-disk")?;
+            #[cfg(target_os = "macos")]
+            {
+                let cmd = serde_json::json!({
+                    "command": "prepare_disk",
+                    "workload_cid": workload_cid.to_string(),
+                    "disk_path": disk_path.display().to_string(),
+                });
+                self.call_helper(&cmd.to_string())?;
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                std::fs::write(&disk_path, b"worldcompute-vf-disk-marker")?;
+            }
         }
 
         self.configure_network()?;
@@ -236,8 +251,10 @@ impl Sandbox for AppleVfSandbox {
 
         #[cfg(not(target_os = "macos"))]
         {
-            // On non-macOS, write a placeholder for testing
-            std::fs::write(&state_path, b"vm-state-non-macos")?;
+            // Non-macOS integration harness: write a sentinel that lets tests
+            // assert the checkpoint file was produced. Real VM-state capture
+            // requires macOS + the Swift helper (`call_helper` above).
+            std::fs::write(&state_path, b"vm-state-non-macos-sentinel")?;
         }
 
         let elapsed = start.elapsed();

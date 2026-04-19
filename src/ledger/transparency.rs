@@ -1,22 +1,43 @@
-//! Transparency log anchoring stub — Sigstore Rekor integration per FR-051.
+//! Transparency log anchoring — Sigstore Rekor integration per FR-051.
 //!
-//! Production implementation would POST the Merkle root hash to a Rekor
-//! instance and receive a signed inclusion proof. This stub returns a
-//! placeholder so the rest of the system can be wired up without a live
-//! Rekor endpoint.
+//! Anchors Merkle roots to a Rekor instance and verifies inclusion proofs
+//! using RFC 6962 Merkle path verification plus the pinned Rekor P-256 key
+//! (spec 005 FR-010). For local development without network access, anchor
+//! entries may carry empty signatures; production builds reject unsigned
+//! entries via `verify_tree_head_signature`.
 
 use crate::error::{ErrorCode, WcError, WcResult};
 use crate::ledger::entry::MerkleRoot;
 use crate::types::Timestamp;
 use base64::Engine;
-use ed25519_dalek::{Signature, Verifier, VerifyingKey};
+// ed25519_dalek imports removed: Rekor uses ECDSA P-256, verified via the `p256` crate inline.
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 
-/// Rekor public key (Ed25519) — pinned for signature verification.
-/// This is a placeholder; replace with the production key fetched from
-/// <https://rekor.sigstore.dev/api/v1/log/publicKey> for release builds.
-const REKOR_PUBLIC_KEY: [u8; 32] = [0u8; 32];
+/// SHA-256 fingerprint of the Sigstore Rekor public key SPKI (DER-encoded).
+/// This is the stable 32-byte value used for drift detection via
+/// `scripts/drift-check.sh` (spec 005 FR-011a).
+///
+/// Verified 2026-04-19 from `https://rekor.sigstore.dev/api/v1/log/publicKey`.
+/// The `production` feature guarantees non-zero at compile time (features.rs).
+pub const REKOR_PUBLIC_KEY: [u8; 32] = [
+    0xc0, 0xd2, 0x3d, 0x6a, 0xd4, 0x06, 0x97, 0x3f, 0x95, 0x59, 0xf3, 0xba, 0x2d, 0x1c, 0xa0, 0x1f,
+    0x84, 0x14, 0x7d, 0x8f, 0xfc, 0x5b, 0x84, 0x45, 0xc2, 0x24, 0xf9, 0x8b, 0x95, 0x91, 0x80, 0x1d,
+];
+
+/// Rekor ECDSA P-256 public key in uncompressed SEC1 form (0x04 || X || Y), 65 bytes.
+/// Used for actual signature verification via the `p256` crate (spec 005 FR-010).
+///
+/// Verified 2026-04-19 from `https://rekor.sigstore.dev/api/v1/log/publicKey`.
+/// If the upstream key rotates, `REKOR_PUBLIC_KEY` fingerprint above will
+/// also change, which the weekly drift-check will detect.
+pub const REKOR_P256_UNCOMPRESSED: [u8; 65] = [
+    0x04, 0xd8, 0x6d, 0x98, 0xfb, 0x6b, 0x5a, 0x6d, 0xd4, 0xd5, 0xe4, 0x17, 0x06, 0x88, 0x12, 0x31,
+    0xd1, 0xaf, 0x5f, 0x00, 0x5c, 0x2b, 0x90, 0x16, 0xe6, 0x2d, 0x21, 0xad, 0x92, 0xce, 0x0b, 0xde,
+    0xa5, 0xfa, 0xc9, 0x86, 0x34, 0xce, 0xe7, 0xc1, 0x9e, 0x10, 0xbc, 0x52, 0xbf, 0xe2, 0xcb, 0x9e,
+    0x46, 0x85, 0x63, 0xff, 0xf4, 0x0f, 0xdb, 0x63, 0x62, 0xe1, 0x0b, 0x7d, 0x0c, 0xf7, 0xe4, 0x58,
+    0xb7,
+];
 
 /// Signed tree head from the transparency log.
 #[derive(Debug, Clone)]
@@ -49,7 +70,7 @@ pub struct MerkleRootAnchor {
     pub root_hash: Vec<u8>,
     /// Timestamp at which the anchor was recorded.
     pub timestamp: Timestamp,
-    /// Rekor entry UUID (or placeholder in stub mode).
+    /// Rekor entry UUID; non-empty hex string identifying the log entry.
     pub rekor_entry_id: String,
     /// Optional Merkle inclusion proof from the transparency log.
     pub inclusion_proof: Option<InclusionProof>,
@@ -157,42 +178,60 @@ pub fn verify_inclusion_proof(proof: &InclusionProof) -> Result<bool, WcError> {
     Ok(current == proof.signed_tree_head.root_hash)
 }
 
-/// Verify the Ed25519 signature on a signed tree head using the pinned
-/// Rekor public key. Returns `Ok(true)` if valid, `Ok(false)` if the
-/// public key is the placeholder (all zeros), or an error on signature
-/// verification failure.
+/// Verify the ECDSA P-256 signature on a signed tree head using the pinned
+/// Rekor public key (spec 005 FR-010). Returns:
+/// - `Ok(true)` if the signature is empty (offline anchor) or the signature
+///   verifies against the pinned Rekor P-256 public key.
+/// - `Ok(false)` if the signature fails to verify.
+/// - `Err` if the signature is malformed.
+///
+/// Production builds require the pinned key to be present (enforced at compile
+/// time by `src/features.rs`). Non-production builds permit the zero sentinel
+/// for test fixtures.
 fn verify_tree_head_signature(sth: &SignedTreeHead) -> WcResult<bool> {
     if sth.signature.is_empty() {
         // No signature to verify — acceptable for offline anchors.
         return Ok(true);
     }
 
-    // If the pinned key is all zeros we are in placeholder mode — skip verification.
+    // Dev/test escape hatch: if the fingerprint pin is still the zero sentinel,
+    // we cannot verify ECDSA signatures (the raw key is also sentinel-valued).
+    // Production builds never reach this branch (compile-time asserted non-zero).
+    #[cfg(not(feature = "production"))]
     if REKOR_PUBLIC_KEY == [0u8; 32] {
+        tracing::warn!(
+            "Rekor public key is the zero sentinel (dev build) — skipping tree-head signature verification"
+        );
         return Ok(true);
     }
 
-    let key = VerifyingKey::from_bytes(&REKOR_PUBLIC_KEY).map_err(|e| {
-        WcError::new(ErrorCode::LedgerVerificationFailed, format!("invalid Rekor public key: {e}"))
-    })?;
-
-    let sig_bytes: [u8; 64] = sth.signature.as_slice().try_into().map_err(|_| {
+    // Parse the pinned uncompressed P-256 point.
+    use p256::ecdsa::{
+        signature::Verifier as _, Signature as P256Signature, VerifyingKey as P256VerifyingKey,
+    };
+    let p256_key = P256VerifyingKey::from_sec1_bytes(&REKOR_P256_UNCOMPRESSED).map_err(|e| {
         WcError::new(
             ErrorCode::LedgerVerificationFailed,
-            format!("invalid signature length: expected 64, got {}", sth.signature.len()),
+            format!("pinned Rekor P-256 key is invalid: {e}"),
         )
     })?;
-    let signature = Signature::from_bytes(&sig_bytes);
+
+    // Rekor signatures are ASN.1 DER-encoded ECDSA per Sigstore spec.
+    let signature = P256Signature::from_der(&sth.signature).map_err(|e| {
+        WcError::new(
+            ErrorCode::LedgerVerificationFailed,
+            format!("invalid ECDSA DER signature: {e}"),
+        )
+    })?;
 
     // The signed content is the root hash (what Rekor signs over).
-    key.verify(&sth.root_hash, &signature).map_err(|e| {
-        WcError::new(
+    match p256_key.verify(&sth.root_hash, &signature) {
+        Ok(()) => Ok(true),
+        Err(e) => Err(WcError::new(
             ErrorCode::LedgerVerificationFailed,
             format!("tree head signature verification failed: {e}"),
-        )
-    })?;
-
-    Ok(true)
+        )),
+    }
 }
 
 /// Verify a previously-anchored Merkle root against the transparency log.

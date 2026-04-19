@@ -25,8 +25,12 @@ pub struct WorkUnitReceipt {
 
 /// Verify a `WorkUnitReceipt` for structural validity.
 ///
-/// This is a stub — full cryptographic verification requires the coordinator's
-/// public key set and a live ledger connection (not yet wired up in this phase).
+/// Checks that receipt_id, task_id, and quorum_node_ids are non-empty, and
+/// that the coordinator signature bundle has a positive threshold. Full
+/// cryptographic verification of the signature bundle itself against the
+/// coordinator public key set happens in `verification::quorum` when the
+/// receipt is consumed by the ledger (see `src/ledger/entry.rs` for the
+/// ledger-side quorum verifier).
 /// Returns `Ok(true)` when the receipt is structurally sound.
 pub fn verify_receipt(receipt: &WorkUnitReceipt) -> WcResult<bool> {
     if receipt.receipt_id.is_empty() {
