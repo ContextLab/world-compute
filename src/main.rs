@@ -2,10 +2,21 @@ use clap::{Parser, Subcommand};
 
 mod cli_dispatch;
 
+/// Build-mode tag shown in `--version` output (spec 005 T011).
+///
+/// Production builds compile-time-enforce non-zero pinned fingerprints
+/// (features.rs); dev builds permit the zero-pin bypass for testing. Operators
+/// must see which mode their binary is in without having to inspect `Cargo.toml`.
+#[cfg(feature = "production")]
+const VERSION_WITH_MODE: &str = concat!(env!("CARGO_PKG_VERSION"), " (production)");
+
+#[cfg(not(feature = "production"))]
+const VERSION_WITH_MODE: &str = concat!(env!("CARGO_PKG_VERSION"), " (dev)");
+
 #[derive(Parser)]
 #[command(name = "worldcompute")]
 #[command(about = "World Compute — a decentralized, volunteer-built compute public good")]
-#[command(version)]
+#[command(version = VERSION_WITH_MODE)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,

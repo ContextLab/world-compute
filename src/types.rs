@@ -133,3 +133,141 @@ pub enum AttestationType {
 
 /// Ed25519 public key for identity verification.
 pub type PublicKey = VerifyingKey;
+
+// ─── spec 005 additions (T010) ──────────────────────────────────────────
+
+/// State of a single libp2p Relay v2 reservation held by this agent.
+/// Transitions per data-model §A.1.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum ReservationStatus {
+    /// Reservation request sent, awaiting response.
+    Requesting,
+    /// Reservation accepted and currently active.
+    Active,
+    /// Renewal request sent near expiry.
+    Renewing,
+    /// Reservation was dropped (relay reboot, connection loss). Must reacquire
+    /// within 60 s per FR-006.
+    Lost,
+    /// Reservation request denied or timed out.
+    Failed,
+}
+
+/// libp2p transport kind, used for dial-logging visibility (FR-004).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum TransportKind {
+    /// Plain TCP + Noise handshake.
+    Tcp,
+    /// QUIC (UDP).
+    Quic,
+    /// WebSocket-over-TLS on port 443; spec 005 fallback for hostile firewalls.
+    Wss,
+    /// Connection via a libp2p relay-v2 circuit.
+    Relay,
+}
+
+/// Outcome of a dial attempt (FR-004). Every non-success outcome is emitted
+/// at `info` level or higher with full root-cause detail.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DialOutcome {
+    /// Connection established.
+    Success,
+    /// Dial timed out without upgrading.
+    Timeout,
+    /// Transport-layer error (TCP refused, QUIC unreachable, TLS handshake failure).
+    TransportError(String),
+    /// Remote peer explicitly denied the dial.
+    Denied(String),
+}
+
+/// Safety tier for mesh-LLM / diffusion inference requests (FR-029).
+/// Re-exported for convenience; the diffusion service uses this.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum SafetyTier {
+    /// Content may be made public without further review.
+    Public,
+    /// Content is usable inside the organization / federation.
+    Internal,
+    /// Content is restricted; policy review required before exposure.
+    Restricted,
+}
+
+/// Identifier for a specialized SSD-2-style diffusion expert (spec 005 US6).
+/// Opaque UUID wrapper; experts are registered by ID and selected by the router.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct ExpertId(pub String);
+
+impl ExpertId {
+    pub fn new() -> Self {
+        Self(uuid::Uuid::new_v4().to_string())
+    }
+
+    pub fn from_str(s: impl Into<String>) -> Self {
+        Self(s.into())
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl Default for ExpertId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl fmt::Display for ExpertId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+/// Denoising-step index within a diffusion inference request (0..denoising_steps).
+/// Wrapper around u32 for type safety — avoids confusing token-step with denoising-step.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct DenoisingStep(pub u32);
+
+impl fmt::Display for DenoisingStep {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "step-{}", self.0)
+    }
+}
+
+#[cfg(test)]
+mod spec_005_type_tests {
+    use super::*;
+
+    #[test]
+    fn reservation_status_variants_distinct() {
+        use ReservationStatus::*;
+        let all = [Requesting, Active, Renewing, Lost, Failed];
+        for i in 0..all.len() {
+            for j in (i + 1)..all.len() {
+                assert_ne!(all[i], all[j]);
+            }
+        }
+    }
+
+    #[test]
+    fn transport_kind_variants_distinct() {
+        use TransportKind::*;
+        assert_ne!(Tcp, Quic);
+        assert_ne!(Tcp, Wss);
+        assert_ne!(Quic, Wss);
+        assert_ne!(Wss, Relay);
+    }
+
+    #[test]
+    fn expert_id_round_trip() {
+        let a = ExpertId::new();
+        let s = a.as_str().to_owned();
+        let b = ExpertId::from_str(&s);
+        assert_eq!(a, b);
+    }
+
+    #[test]
+    fn denoising_step_display() {
+        assert_eq!(format!("{}", DenoisingStep(42)), "step-42");
+    }
+}
