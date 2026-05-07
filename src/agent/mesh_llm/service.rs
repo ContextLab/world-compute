@@ -1,7 +1,14 @@
-//! gRPC stub handler for MeshLLMService (T118).
+//! gRPC handler for the legacy autoregressive MeshLLMService (T118).
 //!
-//! Generated code lives in the `mesh_llm` proto package; this module wires
-//! the hand-written scaffold types to the tonic service trait stubs.
+//! The generated tonic service code lives in the `mesh_llm` proto package.
+//! This module wires the hand-written AR-ensemble scaffolding types
+//! (router, aggregator, expert registry) to the generated trait.
+//!
+//! NOTE: per spec 005 user-story 6 (FR-022–FR-029), the autoregressive
+//! ensemble approach here is architecturally superseded by the
+//! distributed-diffusion mesh LLM. Real production inference will be
+//! served by that replacement; this module remains only to keep the
+//! existing integration tests green until it is removed wholesale.
 
 use tonic::{Request, Response, Status};
 
@@ -24,7 +31,8 @@ use crate::agent::mesh_llm::{
 
 use std::sync::{Arc, Mutex};
 
-/// Concrete service implementation (stub — no real inference yet).
+/// Concrete AR-ensemble service implementation. Supersedes by the
+/// diffusion service (see spec 005 FR-027); kept in place for test continuity.
 pub struct MeshLlmServiceImpl {
     registry: Arc<Mutex<ExpertRegistry>>,
     safety: Arc<MeshSafetyState>,

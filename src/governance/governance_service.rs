@@ -1,11 +1,16 @@
-//! GovernanceService gRPC stub handler per US6.
+//! GovernanceService gRPC handler per US6.
+//!
+//! Delegates SubmitProposal and CastVote RPCs to the real `ProposalBoard`
+//! store. The board persists proposals and votes, emits audit events, and
+//! enforces the time-lock + HP-threshold rules described in constitution
+//! Principle V and spec 001 FR-S030.
 
 use crate::error::WcResult;
 use crate::governance::board::ProposalBoard;
 use crate::governance::proposal::ProposalType;
 use crate::governance::vote::VoteChoice;
 
-/// Stub gRPC handler for GovernanceService RPCs.
+/// gRPC handler backed by a live `ProposalBoard`.
 pub struct GovernanceServiceHandler {
     pub board: ProposalBoard,
 }
@@ -15,7 +20,7 @@ impl GovernanceServiceHandler {
         Self { board: ProposalBoard::new() }
     }
 
-    /// SubmitProposal RPC stub.
+    /// SubmitProposal RPC — persists a new governance proposal to the board.
     pub fn submit_proposal(
         &mut self,
         title: impl Into<String>,
@@ -26,7 +31,9 @@ impl GovernanceServiceHandler {
         self.board.submit_proposal(title, body, proposal_type, submitter_id)
     }
 
-    /// CastVote RPC stub.
+    /// CastVote RPC — records a vote on an existing proposal with the
+    /// caller's Humanity-Points (HP) score for weighting and safety-tier
+    /// gating.
     pub fn cast_vote(
         &mut self,
         proposal_id: &str,

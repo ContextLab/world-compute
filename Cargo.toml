@@ -41,7 +41,13 @@ libp2p = { version = "0.54", features = [
     "cbor",
     "ed25519",
     "macros",
+    # spec 005: WSS-over-TLS-443 fallback transport for cross-firewall mesh (FR-003)
+    "websocket",
+    "tls",
 ] }
+
+# DNS-over-HTTPS resolver fallback (FR-005) - used when OS resolver fails on /dnsaddr/ lookups
+hickory-resolver = { version = "0.24", features = ["dns-over-https-rustls", "tokio-runtime"] }
 
 # gRPC
 tonic = "0.12"
@@ -124,8 +130,29 @@ candle-core = "0.8"
 candle-transformers = "0.8"
 tokenizers = "0.20"
 
-# System info (energy metering)
+# System info (energy metering + real current_load per FR-033)
 sysinfo = "0.32"
+# GPU metrics for current_load on NVIDIA hosts (FR-033)
+nvml-wrapper = "0.10"
+
+# spec 005: TPM2-backed confidential-compute key sealing (FR-034)
+# Optional: only built when the tpm2 feature is enabled; not all hosts have a TPM.
+tss-esapi = { version = "7", optional = true }
+
+# spec 005: OCI image handling for real Firecracker rootfs (FR-012 - FR-014)
+oci-spec = "0.7"
+tar = "0.4"
+flate2 = "1"
+
+# spec 005: zstd compression for DistriFusion activation tensors (FR-026)
+zstd = "0.13"
+
+[features]
+default = []
+# Production build: compile-time enforces non-zero pinned fingerprints (FR-008, FR-010, FR-011a)
+production = []
+# Optional TPM2 seal/unseal via tss-esapi (FR-034); requires a working TPM device
+tpm2 = ["dep:tss-esapi"]
 
 [dev-dependencies]
 time = "0.3"

@@ -130,11 +130,12 @@ impl AgentInstance {
         })
     }
 
-    /// T040: Heartbeat — report state, receive lease offers.
+    /// Heartbeat — report state + resource usage (T040).
     ///
-    /// Creates a `HeartbeatPayload` with current node state and resource usage,
-    /// serializes to JSON, and returns the payload plus a placeholder response.
-    /// The actual gossipsub transport will be wired in the async runtime.
+    /// Creates a `HeartbeatPayload` with current node state and resource usage.
+    /// The daemon event loop (`src/agent/daemon.rs`) publishes these payloads
+    /// over gossipsub at its heartbeat interval; this function is the source
+    /// that the daemon consults when assembling each heartbeat.
     pub fn heartbeat(&mut self) -> Result<HeartbeatPayload, WcError> {
         let node =
             self.node.as_mut().ok_or_else(|| WcError::new(ErrorCode::NotFound, "Not enrolled"))?;

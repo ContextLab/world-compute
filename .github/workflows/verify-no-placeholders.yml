@@ -1,0 +1,28 @@
+name: verify-no-placeholders
+
+# Hard-block CI check for spec 005 (FR-038, SC-006).
+# Runs on every PR and push. On the 005 branch and on merges to main,
+# additionally enforces that .placeholder-allowlist is empty (spec-005
+# completion gate).
+
+on:
+  push:
+    branches: [main, "005-production-readiness"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: verify-no-placeholders
+    runs-on: ubuntu-latest
+    env:
+      GIT_REF: ${{ github.ref }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run placeholder scan
+        run: bash scripts/verify-no-placeholders.sh
+
+      - name: Enforce empty allowlist (spec-005 completion gate)
+        if: env.GIT_REF == 'refs/heads/main' || env.GIT_REF == 'refs/heads/005-production-readiness'
+        run: bash scripts/verify-no-placeholders.sh --check-empty

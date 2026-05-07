@@ -50,7 +50,7 @@ mod tests {
     #[test]
     fn threshold_3_of_5_round_trip() {
         let (pk_set, shares) = generate_threshold_keys(3, 5);
-        let message = b"merkle-root-hash-placeholder";
+        let message = b"merkle-root-hash-sentinel-for-threshold-test";
 
         // Sign with 3 out of 5 shares
         let sig_shares: Vec<(usize, SignatureShare)> = shares

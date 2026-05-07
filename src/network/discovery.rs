@@ -36,11 +36,34 @@ pub const BOOTSTRAP_DNS_SEEDS: &[&str] = &[
 /// handshake authenticates the relay against its pinned identity — a spoofed
 /// DNS response would produce a handshake mismatch and be rejected.
 pub const PUBLIC_LIBP2P_BOOTSTRAP_RELAYS: &[&str] = &[
+    // Protocol Labs public libp2p bootstrap relays (existing).
     "/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN",
     "/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa",
     "/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb",
     "/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt",
     "/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",
+    // spec 005 T022 / FR-007a — project-operated WSS/443 launch fallback relays.
+    //
+    // These are the project's own relays speaking the full World Compute
+    // application-layer protocols AND the libp2p WSS-over-TLS-443 transport.
+    // They guarantee a fallback rendezvous point for donors whose firewalls
+    // block all outbound libp2p transports except WSS/443.
+    //
+    // The entries below are commented out until the relays are deployed.
+    // `docs/operators/running-a-relay.md` documents how a volunteer brings up
+    // a WSS/443 relay that auto-announces into the mesh via the Identify /
+    // peer-exchange protocols, at which point these can be uncommented or
+    // replaced without a client update.
+    //
+    // (Awaiting deployment tracked in docs/operators/running-a-relay.md —
+    //  uncomment and update with real multiaddrs once the project-operated
+    //  WSS/443 fallback relays are stood up. Until then, donors without WSS
+    //  support still bootstrap via the Protocol Labs relays above, which do
+    //  NOT speak WSS/443 — meaning a donor behind a strict HTTPS-only
+    //  firewall cannot join yet.)
+    //
+    // "/dns6/relay1.worldcompute.org/tcp/443/tls/ws/p2p/<peer_id_1>",
+    // "/dns6/relay2.worldcompute.org/tcp/443/tls/ws/p2p/<peer_id_2>",
 ];
 
 /// Result of merging a locally-discovered LAN cluster with the global DHT.

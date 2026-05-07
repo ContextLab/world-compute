@@ -26,3 +26,9 @@ Thumbs.db
 # Evidence artifacts (generated, not committed)
 evidence/
 .credentials
+
+# Private notes folder (personal workspace - per CLAUDE.md global instructions)
+notes/
+
+# Credentials file (never commit)
+.credentials

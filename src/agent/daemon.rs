@@ -282,6 +282,35 @@ pub async fn start_daemon(
                         state.relayed_peers.remove(&peer_id);
                         tracing::info!(%peer_id, peers = state.connected_peers.len(), "Peer disconnected");
                     }
+                    // spec 005 US1 T023 / FR-004 — surface every outgoing dial
+                    // failure at info level with transport + root cause. Never
+                    // swallow silently at debug.
+                    SwarmEvent::OutgoingConnectionError { connection_id: _, peer_id, error } => {
+                        use crate::network::dial_logging::{DialAttempt, emit_dial_event};
+                        use crate::types::{DialOutcome, TransportKind};
+                        // libp2p::swarm::DialError does not cleanly expose the failed multiaddrs in all cases,
+                        // but we can log what we know. The error Display gives root cause.
+                        let error_str = format!("{error:?}");
+                        // Best-effort: classify transport from the error message.
+                        let transport = if error_str.contains("Quic") || error_str.contains("quic") {
+                            TransportKind::Quic
+                        } else if error_str.contains("Tcp") || error_str.contains("tcp") {
+                            TransportKind::Tcp
+                        } else if error_str.contains("Websocket") || error_str.contains("Wss") {
+                            TransportKind::Wss
+                        } else {
+                            TransportKind::Tcp
+                        };
+                        let target = peer_id.map(|p| p.to_string()).unwrap_or_else(|| "<unknown>".into());
+                        // Construct a record manually since we don't always have a Multiaddr in hand.
+                        let outcome = DialOutcome::TransportError(error_str.clone());
+                        // Synthesize a multiaddr from the peer id if available.
+                        let synth_addr: Multiaddr = format!("/p2p/{target}").parse()
+                            .unwrap_or_else(|_| "/ip4/0.0.0.0/tcp/0".parse().unwrap());
+                        let attempt = DialAttempt::failure(&synth_addr, transport, outcome, error_str.clone());
+                        emit_dial_event(&attempt);
+                        let _ = attempt; // suppress unused warn if future refactor drops emit
+                    }
                     SwarmEvent::Behaviour(NodeBehaviourEvent::Gossipsub(
                         gossipsub::Event::Message { message, propagation_source, .. }
                     )) => {
@@ -497,10 +526,108 @@ fn evaluate_offer(offer: &TaskOffer) -> bool {
         && offer.max_wallclock_ms <= 600_000
 }
 
-/// Report current load as a fraction 0.0–1.0. Stub returns 0.1 (mostly idle).
+/// Report current load as a fraction 0.0–1.0 (spec 005 T033 / FR-033).
+///
+/// Returns `max(cpu_usage, gpu_usage, memory_usage)` — the sovereignty
+/// supervisor must react to the most-loaded resource, because that is the
+/// resource the donor's local user experiences contention on.
+///
+/// Caches the result for 500 ms to avoid per-heartbeat overhead.
+///
+/// GPU usage on NVIDIA hosts is read via NVML when available. On hosts without
+/// NVIDIA drivers, `gpu_usage` is 0.0. Apple Silicon GPU and AMD ROCm are
+/// deferred to a follow-up.
 fn current_load() -> f32 {
-    // Production: query system load avg, active leases, etc.
-    0.1
+    use std::sync::Mutex;
+    use std::time::Instant;
+
+    static CACHE: Mutex<Option<(Instant, f32)>> = Mutex::new(None);
+    const CACHE_TTL: Duration = Duration::from_millis(500);
+
+    // Fast path — return cached value if fresh.
+    {
+        let guard = CACHE.lock().unwrap();
+        if let Some((ts, val)) = *guard {
+            if ts.elapsed() < CACHE_TTL {
+                return val;
+            }
+        }
+    }
+
+    let cpu_usage = read_cpu_usage();
+    let gpu_usage = read_gpu_usage();
+    let memory_usage = read_memory_usage();
+    let overall = cpu_usage.max(gpu_usage).max(memory_usage);
+
+    // Store in cache.
+    let mut guard = CACHE.lock().unwrap();
+    *guard = Some((Instant::now(), overall));
+
+    tracing::trace!(cpu_usage, gpu_usage, memory_usage, overall, "current_load computed");
+
+    overall
+}
+
+/// CPU usage across all cores, normalized to [0.0, 1.0].
+fn read_cpu_usage() -> f32 {
+    use sysinfo::System;
+
+    // A fresh System must be refreshed twice with a sleep in between to get a
+    // valid CPU reading; we don't sleep here (would stall the caller). Instead
+    // we keep a long-lived System and refresh on each call. First call after
+    // startup yields 0.0, which is acceptable given the 500ms cache.
+    static SYS: std::sync::OnceLock<std::sync::Mutex<System>> = std::sync::OnceLock::new();
+    let sys = SYS.get_or_init(|| std::sync::Mutex::new(System::new()));
+    let mut sys = sys.lock().unwrap();
+    sys.refresh_cpu_usage();
+    let avg = sys.global_cpu_usage() / 100.0;
+    avg.clamp(0.0, 1.0)
+}
+
+/// GPU usage (highest across all NVIDIA devices), normalized to [0.0, 1.0].
+/// Returns 0.0 on non-NVIDIA hosts or when NVML cannot initialize.
+fn read_gpu_usage() -> f32 {
+    use nvml_wrapper::Nvml;
+
+    static NVML: std::sync::OnceLock<Option<Nvml>> = std::sync::OnceLock::new();
+    let nvml = NVML.get_or_init(|| Nvml::init().ok());
+
+    let Some(nvml) = nvml else {
+        return 0.0;
+    };
+
+    let Ok(count) = nvml.device_count() else {
+        return 0.0;
+    };
+
+    let mut max_util: f32 = 0.0;
+    for i in 0..count {
+        if let Ok(device) = nvml.device_by_index(i) {
+            if let Ok(util) = device.utilization_rates() {
+                let g = util.gpu as f32 / 100.0;
+                if g > max_util {
+                    max_util = g;
+                }
+            }
+        }
+    }
+    max_util.clamp(0.0, 1.0)
+}
+
+/// Memory usage normalized to [0.0, 1.0].
+fn read_memory_usage() -> f32 {
+    use sysinfo::System;
+
+    static SYS: std::sync::OnceLock<std::sync::Mutex<System>> = std::sync::OnceLock::new();
+    let sys = SYS.get_or_init(|| std::sync::Mutex::new(System::new()));
+    let mut sys = sys.lock().unwrap();
+    sys.refresh_memory();
+    let total = sys.total_memory();
+    let used = sys.used_memory();
+    if total == 0 {
+        return 0.0;
+    }
+    (used as f32 / total as f32).clamp(0.0, 1.0)
 }
 
 /// Execute a dispatched task in a WASM sandbox and return the result.
